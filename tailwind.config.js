@@ -10,12 +10,12 @@ export default {
     ],
 
     theme: {
-        extend: {
-            fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
-            },
-        },
-    },
-
+  extend: {
+    fontFamily: {
+      afacad: ['Afacad', 'sans-serif'],
+      archivo: ['Archivo', 'sans-serif'],
+    }
+  }
+},
     plugins: [forms],
 };
