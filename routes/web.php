@@ -26,7 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('owner')->group(function () {
         Route::get('/dashboard', function () {
             return view('owner.dashboard');
-        });
+        })->name('owner.dashboard');
 
         Route::get('/fields', function () {
             return view('owner.fields');
@@ -38,6 +38,10 @@ Route::middleware('auth')->group(function () {
     });
     
     /* PLAYER */
+
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('player.dashboard');
 
     Route::get('/fields', function () {
         return view('fields.index');

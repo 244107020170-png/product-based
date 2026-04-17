@@ -1,18 +1,17 @@
 // TOGGLE PASSWORD
-const eyeBtn = document.querySelector('.eye');
-const passwordInput = document.querySelector('.password-input');
+document.addEventListener('DOMContentLoaded', () => {
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
 
-if (eyeBtn && passwordInput) {
-    eyeBtn.addEventListener('click', () => {
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            eyeBtn.innerText = "🙈";
-        } else {
-            passwordInput.type = "password";
-            eyeBtn.innerText = "👁";
-        }
+    if (!passwordInput || !togglePassword) return;
+
+    togglePassword.addEventListener('click', () => {
+        const isHidden = passwordInput.type === 'password';
+
+        passwordInput.type = isHidden ? 'text' : 'password';
+        togglePassword.textContent = isHidden ? '🙈' : '';
     });
-}
+});
 
 // FLOATING RANDOMIZER (BIAR GA KAKU)
 const char = document.querySelector('.floating');

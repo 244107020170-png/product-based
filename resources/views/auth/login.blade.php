@@ -3,88 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    @vite('resources/css/app.css')
+    @vite('resources/css/app.css', 'resources/js/app.js')
 </head>
 
-<body class="h-screen bg-login flex overflow-hidden">
+<body class="h-screen bg-login flex overflow-hidden relative">
+
+    <!-- CHARACTER BACKGROUND -->
+    <img 
+        src="{{ asset('assets/images/characters/char.png') }}"
+        class="absolute bottom-0 right-0 h-full w-[1000px] object-contain pointer-events-none floating"
+    >
 
     <!-- LEFT -->
-    <div class="card auth w-[371px] h-[464px] p-6 flex flex-col justify-between">
+    <div class="absolute top-1/2 left-32 transform -translate-y-1/2 card auth w-[500px] h-screen flex items-center justify-center relative z-10">
 
-        <div class="card-auth w-full p-6">
+        <div class="card-auth w-full p-12">
 
             <!-- TOP -->
             <div class="flex justify items-center">
-                <img src="{{ asset('assets/images/logo/logo.png') }}" class="w-28">
+                <img src="{{ asset('assets/images/logo/logo.png') }}" class="w-33">
 
-                <div class="flex gap-3 text-[10px] text-indigo-950">
-                    <span>Jelajahi</span>
-                    <span>Bantuan</span>
+                <div class="flex gap-3 text-[12px] text-indigo-950 text-allign-right ml-auto">
+                    <a href="" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Jelajahi</a>
+                    <a href="" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Bantuan</a>
                 </div>
             </div>
 
             <!-- TITLE -->
-            <h1 class="text-4xl font-bold text-indigo-950 mt-2">Sign in</h1>
+            <h1 class="text-5xl font-bold text-indigo-950 mt-6 mb-8">Sign in</h1>
 
-            <!-- INPUT -->
-            <div class="space-y-3 mt-4">
+            <!-- FORM LOGIN -->
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
 
-                <input 
-                    type="text"
-                    placeholder="Username atau Email"
-                    class="w-full px-4 py-2 input-neu outline-none text-sm"
-                >
+                <!-- INPUT -->
+                <div class="space-y-5 mt-6">
 
-                <div class="relative">
-                    <input 
-                        type="password"
-                        placeholder="Password"
-                        class="password-input w-full px-4 py-2 input-neu outline-none text-sm"
-                    >
-                    <span class="eye absolute right-4 top-2 cursor-pointer text-sm">👁</span>
+                    <div>
+                        <input 
+                            type="text"
+                            name="email"
+                            placeholder="Username atau Email"
+                            class="w-full px-4 py-2 input-neu outline-none text-sm"
+                            value="{{ old('email') }}"
+                            required
+                        >
+                        @error('email')
+                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="relative">
+                        <input 
+                            id="password"
+                            type="password"
+                            name="password"
+                            placeholder="Password"
+                            class="password-input w-full px-4 py-2 input-neu outline-none text-sm pr-10"
+                            required
+                        >
+
+                        <span 
+                            id="togglePassword"
+                            class="eye absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer select-none text-sm"
+                        >
+                        </span>
+
+                        @error('password')
+                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
+
                 </div>
 
-            </div>
+                <!-- FORGOT -->
+                <div class="text-right text-[12px] text-indigo-950 mt-4 mb-4">
+                    <a href="{{ route('password.request') }}" class="transition-colors duration-200 hover:text-orange-500">Lupa password?</a>
+                </div>
 
-            <!-- FORGOT -->
-            <div class="text-right text-[10px] text-indigo-950 mt-1">
-                Lupa password?
-            </div>
+                <!-- BUTTON MASUK -->
+                <button type="submit" class="btn-main w-full text-white text-sm font-bold py-2 rounded-lg mt-6 mb-2">
+                    Masuk
+                </button>
 
-            <!-- BUTTON -->
-            <button class="btn-main w-full text-white text-sm font-bold py-2 rounded-lg mt-3">
-                Masuk
-            </button>
+            </form>
 
             <!-- GOOGLE -->
-            <div class="flex items-center gap-2 mt-2">
-                <button class="btn-main flex-1 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
+            <div class="flex items-center gap-2 mt-2 mb-3">
+                <button type="button" onclick="alert('Google login belum disetup')" class="btn-main w-full text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
                     <img src="{{ asset('assets/images/icons/google.png') }}" class="w-4">
                     Masuk dengan Google
                 </button>
 
-                <div class="btn-main p-2 rounded-lg">
-                    <img src="{{ asset('assets/images/icons/user-add.png') }}" class="w-4">
-                </div>
+                <button type="button" onclick="window.location.href='{{ route('register') }}'" class="btn-main py-2 px-4 rounded-lg cursor-pointer flex items-center justify-center">
+                    <img src="{{ asset('assets/images/icons/user-add.png') }}" class="w-5 h-5">
+                </button>
             </div>
 
             <!-- REGISTER -->
-            <p class="text-[10px] mt-2">
+            <p class="text-[12px] mt-3">
                 Belum punya akun? 
-                <a href="#register.blade.php" class="font-bold underline">Daftar</a>
+                <a href="{{ route('register') }}" class="font-bold transition-colors duration-200 hover:text-orange-500">Daftar</a>
             </p>
 
         </div>
-
-    </div>
-
-    <!-- CHARACTER ONLY (NO BG HERE!) -->
-    <div class="flex-1 relative">
-
-        <img 
-            src="{{ asset('assets/images/characters/char.png') }}"
-            class="absolute bottom-0 right-0 h-full max-h-screen object-contain floating"
-        >
 
     </div>
 
