@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
@@ -18,6 +19,13 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9_]+$/',
+                Rule::unique(User::class)->ignore($this->user()->id),
+            ],
             'email' => [
                 'required',
                 'string',
@@ -27,5 +35,15 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'username' => Str::lower(trim((string) $this->input('username'))),
+        ]);
     }
 }

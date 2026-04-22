@@ -29,6 +29,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->patch('/profile', [
                 'name' => 'Test User',
+                'username' => 'test_user',
                 'email' => 'test@example.com',
             ]);
 
@@ -39,6 +40,7 @@ class ProfileTest extends TestCase
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
+        $this->assertSame('test_user', $user->username);
         $this->assertSame('test@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
     }
@@ -51,6 +53,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->patch('/profile', [
                 'name' => 'Test User',
+                'username' => $user->username,
                 'email' => $user->email,
             ]);
 
@@ -59,6 +62,25 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
+    }
+
+    public function test_username_must_remain_unique_when_updating_profile(): void
+    {
+        $user = User::factory()->create();
+        $anotherUser = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => $user->name,
+                'username' => $anotherUser->username,
+                'email' => $user->email,
+            ]);
+
+        $response
+            ->assertSessionHasErrors('username')
+            ->assertRedirect('/profile');
     }
 
     public function test_user_can_delete_their_account(): void
