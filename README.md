@@ -1,4 +1,4 @@
-# ActiveHub Setup
+# SpiesSport Setup
 
 ## Requirements
 
