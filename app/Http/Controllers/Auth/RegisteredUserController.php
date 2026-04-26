@@ -19,9 +19,17 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
-        return view('auth.register');
+        $role = $request->query('role');
+
+        if (! in_array($role, ['player', 'owner'], true)) {
+            return redirect()->route('choose.role');
+        }
+
+        return view('auth.register', [
+            'role' => $role,
+        ]);
     }
 
     /**
@@ -39,6 +47,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9_]+$/', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'role' => ['required', 'in:player,owner'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -47,12 +56,13 @@ class RegisteredUserController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('player.dashboard', absolute: false));
+        return redirect(route('dashboard', absolute: false));
     }
 }
