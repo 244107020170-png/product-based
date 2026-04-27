@@ -24,6 +24,10 @@ Route::get('/dashboard', function () {
     }
 })->middleware(['auth'])->name('dashboard');
 
+Route::get('/explore', function () {
+    return view('pages.preview');
+})->name('explore');
+
 Route::middleware('auth')->group(function () {
 
     /* OWNER */
