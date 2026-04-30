@@ -40,8 +40,8 @@
                     >
 
                     <nav class="register-mini-nav" aria-label="Menu cepat">
-                        <a href="{{ url('/') }}">Jelajahi</a>
-                        <a href="{{ url('/') }}">Bantuan</a>
+                        <a href="{{ route('explore') }}">Jelajahi</a>
+                        <a href="{{ route('preview.help') }}">Bantuan</a>
                     </nav>
                 </header>
 

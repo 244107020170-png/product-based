@@ -82,7 +82,7 @@
 
         <div class="flex gap-6 text-orange-100 font-semibold">
             <a href="{{ route('login') }}" class="hover:text-white">Masuk</a>
-            <a href="#" class="hover:text-white">Bantuan</a>
+            <a href="{{ route('preview.help') }}" class="hover:text-white">Bantuan</a>
         </div>
     </div>
 
@@ -153,7 +153,7 @@
 
     <!-- CTA -->
     <div class="absolute bottom-28 md:bottom-40 w-full flex justify-center z-20">
-        <a href="{{ route('login') }}"
+        <a href="{{ route('register') }}"
            class="px-10 py-3 bg-red-400 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg transition">
             Ayo main!
         </a>

@@ -25,7 +25,7 @@
 
                 <div class="flex gap-3 text-[12px] text-indigo-950 text-allign-right ml-auto">
                     <a href="{{ route('explore') }}" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Jelajahi</a>
-                    <a href="" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Bantuan</a>
+                    <a href="{{ route('preview.help') }}" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Bantuan</a>
                 </div>
             </div>
 

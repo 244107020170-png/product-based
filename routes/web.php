@@ -28,6 +28,10 @@ Route::get('/explore', function () {
     return view('pages.preview');
 })->name('explore');
 
+Route::get('/preview-help', function () {
+    return view('pages.help');
+})->name('preview.help');
+
 Route::middleware('auth')->group(function () {
 
     /* OWNER */
