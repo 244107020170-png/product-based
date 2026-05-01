@@ -29,9 +29,9 @@
     ];
 
     $recommendedMatches = [
-        ['icon' => asset('assets/images/icons/gor.png'), 'title' => 'Basket', 'location' => 'GOR Bimasakti Malang', 'schedule' => 'Hari ini, 20:00', 'badge' => 'For You'],
-        ['icon' => asset('assets/images/icons/bultang.png'), 'title' => 'Badminton', 'location' => 'GOR Bulu Tangkis Tidar', 'schedule' => 'Besok, 09:00', 'badge' => 'For You'],
-        ['icon' => asset('assets/images/icons/futsal.png'), 'title' => 'Futsal', 'location' => 'Champion Futsal Malang', 'schedule' => '20 April 2026, 20:00', 'badge' => 'For You'],
+        ['icon' => asset('assets/images/icons/gor.png'), 'title' => 'Basket', 'location' => 'GOR Bimasakti Malang', 'schedule' => 'Hari ini, 20:00', 'badge' => 'Untuk Anda'],
+        ['icon' => asset('assets/images/icons/bultang.png'), 'title' => 'Badminton', 'location' => 'GOR Bulu Tangkis Tidar', 'schedule' => 'Besok, 09:00', 'badge' => 'Untuk Anda'],
+        ['icon' => asset('assets/images/icons/futsal.png'), 'title' => 'Futsal', 'location' => 'Champion Futsal Malang', 'schedule' => '20 April 2026, 20:00', 'badge' => 'Untuk Anda'],
     ];
 
     $favoriteFields = [
@@ -74,7 +74,7 @@
                 <div class="player-sidebar__inner">
                     <div class="player-sidebar__header">
                         <a href="{{ route('dashboard') }}" class="player-sidebar__brand" aria-label="Dashboard player">
-                            <img src="{{ asset('assets/images/logo/logo.png') }}" alt="Spies Sport" class="player-sidebar__logo">
+                            <img src="{{ asset('assets/images/logo/logodb.png') }}" alt="Spies Sport" class="player-sidebar__logo">
                         </a>
 
                         <button type="button" class="player-sidebar__close" data-sidebar-close aria-label="Tutup sidebar">
@@ -391,7 +391,7 @@
                                     <div class="player-stack-item__top">
                                         <img src="{{ $field['icon'] }}" alt="" class="player-sport-icon">
                                         <h3>{{ $field['title'] }}</h3>
-                                        <span class="player-quick-button">Quick Book</span>
+                                        <span class="player-quick-button">Pesan Cepat</span>
                                     </div>
                                     <p>{{ $field['location'] }}</p>
                                 </article>

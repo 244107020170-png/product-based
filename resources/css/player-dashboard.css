@@ -17,7 +17,7 @@
     margin: 0;
     background:
         linear-gradient(rgba(255, 250, 236, 0.9), rgba(255, 250, 236, 0.9)),
-        url('/assets/images/bg/bg-daftar.png') center/cover fixed no-repeat;
+        url('/assets/images/bg/bg-login.png') center/cover fixed no-repeat;
     color: var(--pd-primary);
 }
 
@@ -207,6 +207,7 @@
     flex: 1;
     min-width: 0;
     padding: 24px 22px 40px 18px;
+    background: transparent;
 }
 
 .player-dashboard-topbar,
@@ -215,7 +216,7 @@
 .player-dashboard-grid,
 .player-dashboard-rebook {
     width: 100%;
-    max-width: 1320px;
+    max-width: 2550px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -474,9 +475,9 @@
 
 .player-dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
     margin-top: 34px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
 }
 
 .player-dashboard-card {
@@ -486,10 +487,12 @@
     background: rgba(255, 255, 255, 0.92);
     box-shadow: var(--pd-shadow);
     backdrop-filter: blur(14px);
+    
 }
 
 .player-dashboard-card--hero {
     padding: 16px 18px 14px;
+    position:relative;
 }
 
 .player-dashboard-card--notifications {
@@ -522,6 +525,8 @@
 .player-hero__title {
     font-size: clamp(1.55rem, 1.85vw, 1.95rem) !important;
     line-height: 1.05 !important;
+    margin-top: 15px !important;
+    padding-left: 25px !important;
 }
 
 .player-section-icon,
@@ -585,9 +590,11 @@
 .player-hero {
     display: grid;
     grid-template-columns: minmax(0, 0.92fr) minmax(250px, 1.08fr);
-    gap: 10px;
+    gap: 30px;
     align-items: center;
-    margin-top: 8px;
+    margin-top: 18px;
+    padding-left: 40px;
+    bottom: 20px;
 }
 
 .player-review-card,
@@ -764,6 +771,11 @@
     justify-content: center;
     width: min(100%, 340px);
     min-height: 238px;
+    position: absolute;
+    right: -70px;
+    bottom: -10px;
+    top: 10px;
+    width: 495px;
 }
 
 .player-hero__character-image {
@@ -1111,10 +1123,6 @@
     .player-search {
         min-width: 0;
         width: 100%;
-    }
-
-    .player-hero {
-        grid-template-columns: 1fr;
     }
 
     .player-hero__art {
