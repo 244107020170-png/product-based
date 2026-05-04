@@ -68,7 +68,7 @@
             'resources/js/player-dashboard.js',
         ])
     </head>
-    <body class="player-dashboard-page">
+    <body class="player-dashboard-page" style="--player-dashboard-bg: url('{{ asset('assets/images/bg/bg-login.png') }}');">
         <div class="player-dashboard-shell">
             <aside class="player-sidebar" data-sidebar>
                 <div class="player-sidebar__inner">
