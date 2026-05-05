@@ -14,6 +14,8 @@ class PlayerDashboardTest extends TestCase
     {
         $user = User::factory()->create([
             'role' => 'player',
+            'gender' => 'perempuan',
+            'avatar_profile' => 'profil2.png',
         ]);
 
         $response = $this
@@ -24,6 +26,7 @@ class PlayerDashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Hi, Sport Enthusiast!')
             ->assertSee('Konfirmasi gagal')
-            ->assertSee('Pesan lagi');
+            ->assertSee('Pesan lagi')
+            ->assertSee('profil2.png');
     }
 }

@@ -2,9 +2,10 @@
     $user = auth()->user();
     $userName = $user?->name ?: 'Sport Enthusiast';
     $currentDate = \Carbon\Carbon::now()->locale('id')->translatedFormat('j F Y');
-    $profileAvatar = asset('assets/images/characters/image%2024.png');
-    $reviewAvatar = asset('assets/images/characters/image%2024.png');
-    $heroCharacter = asset('assets/images/characters/image%2022.png');
+    $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
+    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile);
+    $reviewAvatar = asset('assets/images/characters/review.png');
+    $heroCharacter = asset('assets/images/characters/hero.png');
 
     $sidebarItems = [
         ['label' => 'Dashboard', 'icon' => asset('assets/images/icons/dashboard.png'), 'href' => route('dashboard'), 'active' => true],
@@ -23,10 +24,20 @@
     ];
 
     $notifications = [
-        ['icon' => asset('assets/images/icons/gor.png'), 'title' => 'GOR Bimasakti Malang', 'meta' => 'Hari ini, 15.00', 'status' => null, 'status_tone' => null, 'filter' => 'today'],
-        ['icon' => asset('assets/images/icons/bultang.png'), 'title' => 'GOR Bulu Tangkis Tidar', 'meta' => 'Besok, 15.00', 'status' => null, 'status_tone' => null, 'filter' => 'tomorrow'],
-        ['icon' => asset('assets/images/icons/futsal.png'), 'title' => 'Champion Futsal Malang', 'meta' => 'Perlu dicek ulang', 'status' => 'Konfirmasi gagal', 'status_tone' => 'danger', 'filter' => 'status'],
-    ];
+    [
+        'icon' => asset('assets/images/icons/gor.png'),
+        'title' => 'GOR Bimasakti Malang',
+        'type' => 'success',
+        'time' => 'Hari ini, 15:00 WIB',
+        'maps' => 'https://maps.google.com'
+    ],
+    [
+        'icon' => asset('assets/images/icons/futsal.png'),
+        'title' => 'Champion Futsal Malang',
+        'type' => 'error',
+        'message' => 'Coba hubungi pemilik lapangan.'
+    ],
+];
 
     $recommendedMatches = [
         ['icon' => asset('assets/images/icons/gor.png'), 'title' => 'Basket', 'location' => 'GOR Bimasakti Malang', 'schedule' => 'Hari ini, 20:00', 'badge' => 'Untuk Anda'],
@@ -181,7 +192,7 @@
 
                         <button type="button" class="player-profile-pill" aria-label="Profil pengguna">
                             <span class="player-profile-pill__avatar" data-asset-slot="profile-avatar">
-                                <img src="{{ $profileAvatar }}" alt="" class="player-avatar-image">
+                                <img src="{{ $profileAvatar }}" alt="Foto profil {{ $userName }}" class="player-avatar-image player-avatar-image--profile">
                             </span>
                             <span class="player-profile-pill__name">{{ $userName }}</span>
                         </button>
@@ -221,14 +232,15 @@
                         <div class="player-hero">
                             <div class="player-review-card" data-dashboard-searchable="review rating lapangan futsal veteran kota malang permainan sport enthusiast">
                                 <div class="player-review-card__header">
-                                    <div class="player-review-card__meta">
-                                        <div class="player-review-card__avatar" data-asset-slot="review-avatar">
-                                            <img src="{{ $reviewAvatar }}" alt="" class="player-avatar-image">
-                                        </div>
+                                    <div class="player-review-card__avatar" data-asset-slot="review-avatar">
+                                        <img src="{{ $reviewAvatar }}" alt="Foto profil {{ $userName }}" class="player-avatar-image player-avatar-image--review">
+                                    </div>
+                                    
+                                    <div class="player-review-card__content">
                                         <div class="player-review-card__copy">
                                             <h3>Gimana permainan nya?</h3>
-                                            <p>Lapangan Futsal, Veteran</p>
-                                            <span>(Kota Malang)</span>
+                                            <p>Lapangan Futsal, Veteran <span>(Kota Malang)</span></p>
+                                            <span class="player-review-card__time">10 Apr - 14:00 WIB</span>
                                         </div>
                                     </div>
 
@@ -242,8 +254,6 @@
                                         <img src="{{ asset('assets/images/icons/bookmark.png') }}" alt="" class="player-bookmark-icon">
                                     </button>
                                 </div>
-
-                                <div class="player-review-card__time">10 Apr - 14:00 WIB</div>
 
                                 <div class="player-rating" data-rating-root>
                                     @for ($star = 1; $star <= 5; $star++)
@@ -281,8 +291,8 @@
                                 <article
                                     class="player-list-card"
                                     data-notification-item
-                                    data-filter-value="{{ $notification['filter'] }}"
-                                    data-dashboard-searchable="{{ strtolower('notifikasi '.$notification['title'].' '.$notification['meta'].' '.$notification['status']) }}"
+                                    data-filter-value="{{ $notification['type'] }}"
+                                    data-dashboard-searchable="{{ strtolower('notifikasi '.$notification['title']) }}"
                                 >
                                     <div class="player-list-card__side">
                                         <img src="{{ $notification['icon'] }}" alt="" class="player-sport-icon">
@@ -290,21 +300,32 @@
 
                                     <div class="player-list-card__content">
                                         <h3>{{ $notification['title'] }}</h3>
-                                        @if ($notification['status'])
-                                            <p class="player-list-card__status player-list-card__status--{{ $notification['status_tone'] }}">{{ $notification['status'] }}</p>
+
+                                        @if ($notification['type'] === 'success')
+                                            <p>
+                                                <span class="notif-success">Dikonfirmasi!</span>
+                                                {{ $notification['time'] }}
+                                            </p>
                                         @else
-                                            <p>{{ $notification['meta'] }}</p>
+                                            <p>
+                                                <span class="notif-error">Konfirmasi Gagal!</span>
+                                                {{ $notification['message'] }}
+                                            </p>
                                         @endif
                                     </div>
 
-                                    <div class="player-list-card__side player-list-card__side--end">
-                                        <span class="player-inline-icon player-inline-icon--pin" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24" fill="none">
-                                                <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
-                                                <circle cx="12" cy="10.5" r="2.2" stroke="currentColor" stroke-width="1.8"></circle>
-                                            </svg>
-                                        </span>
-                                    </div>
+                                    @if ($notification['type'] === 'success')
+                                        <div class="player-list-card__side player-list-card__side--end">
+                                            <a href="{{ $notification['maps'] }}" target="_blank">
+                                                <span class="player-inline-icon player-inline-icon--pin">
+                                                    <svg viewBox="0 0 24 24" fill="none">
+                                                        <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="1.8"/>
+                                                        <circle cx="12" cy="10.5" r="2.2" stroke="currentColor" stroke-width="1.8"/>
+                                                    </svg>
+                                                </span>
+                                            </a>
+                                        </div>
+                                    @endif
                                 </article>
                             @endforeach
                         </div>
@@ -334,11 +355,6 @@
 
                             <div class="player-upcoming-card__participants">
                                 <div class="player-upcoming-card__avatars">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                    <small>+2</small>
                                 </div>
                                 <div class="player-upcoming-card__countdown">
                                     Starts In <strong>2h 1m</strong>

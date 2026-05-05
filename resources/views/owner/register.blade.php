@@ -156,25 +156,7 @@
                             @enderror
                         </div>
 
-                        <div class="register-field register-field--select">
-                            <label for="gender" class="sr-only">Gender</label>
-                            <select
-                                id="gender"
-                                name="gender"
-                                class="register-input register-input--select"
-                                required
-                                autocomplete="sex"
-                            >
-                                <option value="" disabled {{ old('gender') ? '' : 'selected' }}>Pilih Gender</option>
-                                <option value="laki-laki" {{ old('gender') === 'laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="perempuan" {{ old('gender') === 'perempuan' ? 'selected' : '' }}>Perempuan</option>
-                            </select>
-                            @error('gender')
-                                <span class="register-error">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="register-field">
+                        <div class="register-field register-field--full">
                             <label for="email" class="sr-only">Email</label>
                             <input
                                 id="email"

@@ -27,6 +27,10 @@ class RegisteredUserController extends Controller
             return redirect()->route('choose.role');
         }
 
+        if ($role === 'owner') {
+            return redirect()->route('owner.register');
+        }
+
         return view('auth.register', [
             'role' => $role,
         ]);
@@ -43,13 +47,24 @@ class RegisteredUserController extends Controller
             'username' => Str::lower(trim((string) $request->input('username'))),
         ]);
 
-        $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9_]+$/', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'role' => ['required', 'in:player,owner'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ];
+
+        // Add gender validation only for player role
+        if ($request->role === 'player') {
+            $rules['gender'] = ['required', 'in:laki-laki,perempuan'];
+        }
+
+        $request->validate($rules);
+
+        $avatarProfile = $request->gender === 'perempuan'
+            ? 'profil2.png'
+            : 'profil1.png';
 
         $user = User::create([
             'name' => $request->name,
@@ -57,6 +72,8 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'gender' => $request->role === 'player' ? $request->gender : null,
+            'avatar_profile' => $avatarProfile,
         ]);
 
         event(new Registered($user));

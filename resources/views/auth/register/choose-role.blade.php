@@ -36,7 +36,7 @@
         </a>
 
         <!-- OWNER -->
-        <a href="{{ route('register', ['role' => 'owner']) }}" class="role-card">
+        <a href="{{ route('owner.register') }}" class="role-card">
             
             <div class="role-box">
                 Pemilik
