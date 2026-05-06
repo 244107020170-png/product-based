@@ -15,7 +15,7 @@
         ['label' => 'Cari tim', 'icon' => asset('assets/images/icons/caritim.png'), 'href' => url('/matches'), 'active' => false],
         ['label' => 'Booking', 'icon' => asset('assets/images/icons/booking.png'), 'href' => url('/fields'), 'active' => false],
         ['label' => 'Keahlianmu', 'icon' => asset('assets/images/icons/keahlian.png'), 'href' => null, 'active' => false],
-        ['label' => 'Profil', 'icon' => asset('assets/images/icons/profil.png'), 'href' => route('profile.edit'), 'active' => false],
+        ['label' => 'Profil', 'icon' => asset('assets/images/icons/profil.png'), 'href' => route('profile.show'), 'active' => false],
     ];
 
     $sidebarUtilities = [

@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 class ProfileUpdateRequest extends FormRequest
 {
     /**
-     * Get the validation rules that apply to the request.
+     * Validation rules for profile update.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -19,13 +19,15 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+
             'username' => [
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-z0-9_]+$/',
+                'regex:/^[a-z0-9_.]+$/',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+
             'email' => [
                 'required',
                 'string',
@@ -34,12 +36,33 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+
+            'gender'           => ['nullable', 'string', 'in:laki-laki,perempuan'],
+            'phone'            => ['nullable', 'string', 'max:20'],
+            'bio'              => ['nullable', 'string', 'max:500'],
+            'sport_preference' => ['nullable', 'string', 'max:255'],
+
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 
-    /**
-     * Prepare the data for validation.
-     */
+    /** Pesan validasi dalam Bahasa Indonesia */
+    public function messages(): array
+    {
+        return [
+            'name.required'      => 'Nama lengkap wajib diisi.',
+            'username.required'  => 'Username wajib diisi.',
+            'username.regex'     => 'Username hanya boleh huruf kecil, angka, titik, dan underscore.',
+            'username.unique'    => 'Username sudah dipakai, coba yang lain.',
+            'email.required'     => 'Email wajib diisi.',
+            'email.email'        => 'Format email tidak valid.',
+            'email.unique'       => 'Email sudah terdaftar.',
+            'avatar.image'       => 'File harus berupa gambar.',
+            'avatar.max'         => 'Ukuran foto maksimal 2MB.',
+        ];
+    }
+
+    /** Normalize username to lowercase before validation */
     protected function prepareForValidation(): void
     {
         $this->merge([

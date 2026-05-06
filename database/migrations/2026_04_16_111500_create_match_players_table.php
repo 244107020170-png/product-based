@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('match_players', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('match_id')->constrained('matches')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
+
+            $table->unique(['match_id', 'user_id']); // satu user hanya bisa join sekali
         });
     }
 

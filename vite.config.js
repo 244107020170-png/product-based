@@ -7,6 +7,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/player-dashboard.css',
+                'resources/css/player-profile.css',
+                'resources/css/player-profile-view.css',
                 'resources/js/app.js',
                 'resources/js/player-dashboard.js',
             ],
