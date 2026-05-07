@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\SkillController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -59,6 +61,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/matches', function () {
         return view('matches.index');
     });
+
+    /* HISTORY */
+    Route::get('/history', [HistoryController::class, 'index'])->name('history.index');
+
+    /* KEAHLIAN */
+    Route::get('/keahlian', [SkillController::class, 'index'])->name('skill.index');
 
     /* PROFILE */
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
