@@ -1,7 +1,5 @@
 @php
-    use App\Models\Field;
     use Carbon\Carbon;
-    $fields = Field::with('owner')->get();
     $userName = Auth::user()->name ?? 'Player';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
@@ -13,7 +11,7 @@
         ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>null,                  'active'=>false],
         ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>null,                  'active'=>false],
         ['label'=>'Cari tim',   'icon'=>asset('assets/images/icons/caritim.png'),   'href'=>route('matches.index'),'active'=>false],
-        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>null,                  'active'=>true],
+        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),       'active'=>true],
         ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>null,                  'active'=>false],
         ['label'=>'Profil',     'icon'=>asset('assets/images/icons/profil.png'),    'href'=>route('profile.show'), 'active'=>false],
     ];
@@ -28,7 +26,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Cari Lapangan – {{ config('app.name', 'Spies Sport') }}</title>
+    <title>Booking Saya – {{ config('app.name', 'Spies Sport') }}</title>
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
@@ -90,11 +88,11 @@
     <header class="player-dashboard-topbar">
         <div class="player-dashboard-topbar__left">
             <button type="button" class="player-dashboard-topbar__menu" data-sidebar-open><span></span><span></span><span></span></button>
-            <label class="player-search" for="fields-search">
+            <label class="player-search" for="booking-list-search">
                 <span class="player-search__icon">
                     <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.75" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 </span>
-                <input id="fields-search" type="search" placeholder="Cari lapangan...">
+                <input id="booking-list-search" type="search" placeholder="Cari lapangan...">
             </label>
         </div>
         <div class="player-dashboard-topbar__right">
@@ -118,45 +116,50 @@
         </div>
     </header>
 
-    <section style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+    <section style="padding: 20px; max-width: 1200px; margin: 0 auto;">
 
-        <div style="margin-bottom: 30px;">
-            <h2 style="font-size: 28px; font-weight: bold; color: #001a4d; margin-bottom: 10px;">🏐 Lapangan Tersedia</h2>
-            <p style="color: #666;">Pilih lapangan yang ingin kamu booking</p>
+        @if(session('success'))
+        <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+            ✅ {{ session('success') }}
         </div>
+        @endif
 
-        @if($fields->isEmpty())
-        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px;">
-            <h3 style="font-size: 20px; color: #001a4d; margin-bottom: 10px;">Belum Ada Lapangan</h3>
-            <p style="color: #666;">Tidak ada lapangan yang tersedia saat ini.</p>
+        @if($bookings->isEmpty())
+        <div style="text-align: center; padding: 60px 20px;">
+            <h2 style="font-size: 24px; font-weight: bold; color: #001a4d; margin-bottom: 10px;">📚 Belum Ada Booking</h2>
+            <p style="color: #666; margin-bottom: 30px;">Mulai booking lapangan favorit kamu sekarang juga!</p>
+            <a href="{{ route('dashboard') }}" style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Cari Lapangan
+            </a>
         </div>
         @else
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
-            @foreach($fields as $field)
-            <a href="{{ route('booking.show', $field->id) }}" style="text-decoration: none; color: inherit; transition: all 0.3s ease;"
-               onmouseover="this.style.transform = 'translateY(-8px)'; this.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';"
-               onmouseout="this.style.transform = 'translateY(0)'; this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';">
-                <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column;">
-                    <div style="position: relative; height: 200px; overflow: hidden;">
-                        <img src="{{ $field->image ?? asset('assets/images/bg/Explore.png') }}" 
-                             alt="{{ $field->name }}"
-                             style="width: 100%; height: 100%; object-fit: cover;">
-                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600;">
-                            ⭐ {{ $field->rating ?? '4.8' }}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            @foreach($bookings as $booking)
+            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); color: white; padding: 16px;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold;">{{ $booking->field->name }}</h3>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">📍 {{ $booking->field->location }}</p>
+                </div>
+                <div style="padding: 16px;">
+                    <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+                            <span style="color: #666;">📅 Tanggal:</span>
+                            <span style="font-weight: 600; color: #001a4d;">{{ $booking->date->format('d M Y') }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                            <span style="color: #666;">⏰ Jam:</span>
+                            <span style="font-weight: 600; color: #001a4d;">{{ $booking->start_time }} - {{ $booking->end_time }}</span>
                         </div>
                     </div>
-                    <div style="padding: 18px; flex: 1; display: flex; flex-direction: column;">
-                        <h3 style="font-size: 18px; font-weight: 700; color: #001a4d; margin: 0 0 10px 0;">{{ $field->name }}</h3>
-                        <p style="color: #666; font-size: 13px; margin: 0 0 12px 0; flex: 1;">{{ $field->location }}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0;">
-                            <span style="font-size: 16px; font-weight: 700; color: #f59e0b;">{{ $field->formattedPrice() }}</span>
-                            <button type="button" style="padding: 8px 16px; background: #f59e0b; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">
-                                Booking →
-                            </button>
-                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 14px; color: #666;">Total: <span style="font-weight: 700; color: #001a4d;">Rp{{ number_format($booking->total_price, 0, ',', '.') }}</span></span>
+                        <span style="display: inline-block; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 600;
+                            {{ $booking->status === 'confirmed' ? 'background: #d4edda; color: #155724;' : 'background: #fff3cd; color: #856404;' }}">
+                            {{ ucfirst($booking->status) }}
+                        </span>
                     </div>
                 </div>
-            </a>
+            </div>
             @endforeach
         </div>
         @endif

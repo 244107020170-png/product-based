@@ -11,7 +11,7 @@
         ['label' => 'Aktivitas',  'icon' => asset('assets/images/icons/aktivitas.png'),  'href' => url('/matches'),          'active' => true],
         ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'),  'href' => route('favorite.index'),  'active' => false],
         ['label' => 'Histori',   'icon' => asset('assets/images/icons/histori.png'),    'href' => route('history.index'),   'active' => false],
-        ['label' => 'Cari tim',  'icon' => asset('assets/images/icons/caritim.png'),   'href' => url('/matches'),          'active' => false],
+        ['label' => 'Cari tim',  'icon' => asset('assets/images/icons/caritim.png'),   'href' => route('matches.index'),   'active' => false],
         ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => url('/fields'),           'active' => false],
         ['label' => 'Keahlianmu','icon' => asset('assets/images/icons/keahlian.png'),  'href' => route('skill.index'),     'active' => false],
         ['label' => 'Profil',    'icon' => asset('assets/images/icons/profil.png'),    'href' => route('profile.show'),    'active' => false],

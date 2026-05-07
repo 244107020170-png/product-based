@@ -6,5 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class MatchPlayer extends Model
 {
-    //
+    protected $fillable = [
+        'match_id',
+        'user_id',
+    ];
 }

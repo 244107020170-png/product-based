@@ -42,7 +42,7 @@ class Booking extends Model
         $end   = \Carbon\Carbon::parse($this->end_time);
         $hours = max(1, $start->diffInHours($end));
 
-        return $this->field->price_per_hour * $hours;
+        return ($this->field->price_per_hour * $hours) + 2000; // + Rp2000 admin fee
     }
 
     /**

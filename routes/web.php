@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\MatchController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,7 +62,12 @@ Route::middleware('auth')->group(function () {
         return view('fields.index');
     });
 
+    Route::get('/booking/{field}', [BookingController::class, 'show'])->name('booking.show');
+    Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+    Route::get('/bookings', [BookingController::class, 'index'])->name('booking.index');
+
     Route::get('/matches', [ActivityController::class, 'index'])->name('activity.index');
+    Route::get('/cari-tim', [MatchController::class, 'index'])->name('matches.index');
 
     /* FAVORIT */
     Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorite.index');
