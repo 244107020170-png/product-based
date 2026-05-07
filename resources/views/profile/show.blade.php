@@ -187,6 +187,11 @@
             </div>
             @endif
 
+            {{-- Progress Points Component --}}
+            <div class="mt-8 mb-8">
+                <x-progress-points :user="$user" />
+            </div>
+
             {{-- TABS --}}
             <div class="profview-tabs" role="tablist">
                 <button class="profview-tab is-active" data-profview-tab="histori" role="tab" aria-selected="true" aria-controls="panel-histori">Histori Tim</button>

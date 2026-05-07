@@ -45,10 +45,9 @@ class SkillController extends Controller
 
         // Progress bar % ke level berikutnya
         if ($nextLevel) {
-            $progressRange = $nextLevel['min'] - $currentLevel['min'];
-            $progressDone  = $totalPoints - $currentLevel['min'];
-            $progressPct   = min(100, round(($progressDone / $progressRange) * 100));
-            $pointsToNext  = $nextLevel['min'] - $totalPoints;
+            $progressPct  = min(100, round(($totalPoints / max(1, $nextLevel['min'])) * 100));
+            if ($totalPoints > 0 && $progressPct < 5) $progressPct = 5;
+            $pointsToNext = max(0, $nextLevel['min'] - $totalPoints);
         } else {
             $progressPct  = 100;
             $pointsToNext = 0;

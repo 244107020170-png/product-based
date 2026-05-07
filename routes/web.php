@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\SkillController;
+use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\ActivityController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,9 +60,12 @@ Route::middleware('auth')->group(function () {
         return view('fields.index');
     });
 
-    Route::get('/matches', function () {
-        return view('matches.index');
-    });
+    Route::get('/matches', [ActivityController::class, 'index'])->name('activity.index');
+
+    /* FAVORIT */
+    Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorite.index');
+    Route::post('/favorit/toggle', [FavoriteController::class, 'toggle'])->name('favorite.toggle');
+    Route::delete('/favorit/{fieldId}', [FavoriteController::class, 'destroy'])->name('favorite.destroy');
 
     /* HISTORY */
     Route::get('/history', [HistoryController::class, 'index'])->name('history.index');

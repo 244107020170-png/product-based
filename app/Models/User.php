@@ -22,6 +22,7 @@ class User extends Authenticatable
         'phone',
         'bio',
         'sport_preference',
+        'points',
     ];
 
     protected $hidden = [
@@ -88,4 +89,65 @@ class User extends Authenticatable
         if (!$this->sport_preference) return [];
         return array_filter(array_map('trim', explode(',', $this->sport_preference)));
     }
+
+    /** Helper: Get next tier target points */
+    public function nextTierTarget(): int
+    {
+        $currentPoints = $this->points ?? 0;
+        
+        if ($currentPoints < 20) return 20;
+        if ($currentPoints < 50) return 50;
+        if ($currentPoints < 100) return 100;
+        return 100; // Max tier
+    }
+
+    /** Helper: Get points needed to reach next tier */
+    public function pointsNeeded(): int
+    {
+        $target = $this->nextTierTarget();
+        $current = $this->points ?? 0;
+        
+        return max(0, $target - $current);
+    }
+
+    /** Helper: Get tier name based on points */
+    public function tierName(): string
+    {
+        $currentPoints = $this->points ?? 0;
+        
+        if ($currentPoints >= 100) return 'Champion';
+        if ($currentPoints >= 50) return 'Master';
+        if ($currentPoints >= 20) return 'Pro';
+        return 'Beginner';
+    }
+
+    /** Helper: Get tier color */
+    public function tierColor(): string
+    {
+        return match($this->tierName()) {
+            'Champion' => '#fbbf24',
+            'Master'   => '#7c3aed',
+            'Pro'      => '#1d6fcf',
+            default    => '#6b7280',
+        };
+    }
+
+    /** Helper: Get progress percentage */
+    public function progressPercentage(): float
+    {
+        $target = $this->nextTierTarget();
+        $current = $this->points ?? 0;
+        $previousTarget = match(true) {
+            $target == 20 => 0,
+            $target == 50 => 20,
+            $target == 100 => 50,
+            default => 100,
+        };
+        
+        $totalInTier = $target - $previousTarget;
+        $progressInTier = $current - $previousTarget;
+        
+        return min(100, ($progressInTier / $totalInTier) * 100);
+    }
 }
+
