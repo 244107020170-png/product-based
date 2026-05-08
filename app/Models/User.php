@@ -73,14 +73,24 @@ class User extends Authenticatable
         return asset('assets/images/characters/' . $default);
     }
 
-    /** Helper: badge berdasarkan jumlah match */
+    /** Helper: badge berdasarkan jumlah match (Bahasa Indonesia) */
     public function playerBadge(): string
     {
         $count = $this->createdMatches()->count() + $this->joinedMatches()->count();
 
         if ($count >= 20) return 'Pro Player';
-        if ($count >= 6)  return 'Active Player';
+        if ($count >= 5)  return 'Active Player';
         return 'Beginner';
+    }
+
+    /** Helper: badge label Bahasa Indonesia */
+    public function playerBadgeId(): string
+    {
+        return match($this->playerBadge()) {
+            'Pro Player'    => 'Pemain Pro',
+            'Active Player' => 'Pemain Aktif',
+            default         => 'Pemula',
+        };
     }
 
     /** Sport tags sebagai array */
@@ -94,11 +104,11 @@ class User extends Authenticatable
     public function nextTierTarget(): int
     {
         $currentPoints = $this->points ?? 0;
-        
-        if ($currentPoints < 20) return 20;
-        if ($currentPoints < 50) return 50;
+
+        if ($currentPoints < 20)  return 20;
+        if ($currentPoints < 50)  return 50;
         if ($currentPoints < 100) return 100;
-        return 100; // Max tier
+        return 100; // Already at max tier
     }
 
     /** Helper: Get points needed to reach next tier */
@@ -110,15 +120,26 @@ class User extends Authenticatable
         return max(0, $target - $current);
     }
 
-    /** Helper: Get tier name based on points */
+    /** Helper: Get tier name based on points (English key) */
     public function tierName(): string
     {
         $currentPoints = $this->points ?? 0;
-        
+
         if ($currentPoints >= 100) return 'Champion';
-        if ($currentPoints >= 50) return 'Master';
-        if ($currentPoints >= 20) return 'Pro';
+        if ($currentPoints >= 50)  return 'Master';
+        if ($currentPoints >= 20)  return 'Pro';
         return 'Beginner';
+    }
+
+    /** Helper: Get tier name in Bahasa Indonesia */
+    public function tierNameId(): string
+    {
+        return match($this->tierName()) {
+            'Champion' => 'Juara',
+            'Master'   => 'Master',
+            'Pro'      => 'Pro',
+            default    => 'Pemula',
+        };
     }
 
     /** Helper: Get tier color */

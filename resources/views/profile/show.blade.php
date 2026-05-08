@@ -12,25 +12,31 @@
 
     /* Sidebar */
     $sidebarItems = [
-        ['label'=>'Dashboard',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>false],
-        ['label'=>'Aktivitas',  'icon'=>asset('assets/images/icons/aktivitas.png'), 'href'=>url('/matches'),       'active'=>false],
-        ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>null,                  'active'=>false],
-        ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>null,                  'active'=>false],
-        ['label'=>'Cari tim',   'icon'=>asset('assets/images/icons/caritim.png'),   'href'=>route('matches.index'),'active'=>false],
-        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>url('/fields'),        'active'=>false],
-        ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>null,                  'active'=>false],
-        ['label'=>'Profil',     'icon'=>asset('assets/images/icons/profil.png'),    'href'=>route('profile.show'), 'active'=>true],
+        ['label'=>'Dashboard',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),       'active'=>false],
+        ['label'=>'Aktivitas',  'icon'=>asset('assets/images/icons/aktivitas.png'), 'href'=>route('activity.index'),  'active'=>false],
+        ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),  'active'=>false],
+        ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>route('history.index'),   'active'=>false],
+        ['label'=>'Cari tim',   'icon'=>asset('assets/images/icons/caritim.png'),   'href'=>route('matches.index'),   'active'=>false],
+        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),   'active'=>false],
+        ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),     'active'=>false],
+        ['label'=>'Profil',     'icon'=>asset('assets/images/icons/profil.png'),    'href'=>route('profile.show'),    'active'=>true],
     ];
     $sidebarUtilities = [
         ['label'=>'Bantuan',    'icon'=>asset('assets/images/icons/bantuan.png'),    'href'=>route('preview.help')],
         ['label'=>'Pengaturan', 'icon'=>asset('assets/images/icons/pengaturan.png'), 'href'=>route('profile.edit')],
     ];
 
+    /* Badge indo label */
+    $badgeLabel = match($badge) {
+        'Pro Player'    => 'Pemain Pro',
+        'Active Player' => 'Pemain Aktif',
+        default         => 'Pemula',
+    };
     /* Badge color */
     $badgeColor = match($badge) {
         'Pro Player'    => '#7c3aed',
         'Active Player' => '#1d6fcf',
-        default         => '#6b7280',
+        default         => '#1d6fcf',
     };
 
     /* Helper: build match card data from DB record */
@@ -169,10 +175,10 @@
             <div class="profview-identity">
                 <h2 class="profview-name">{{ $userName }}</h2>
                 <span class="profview-badge-pill" style="--badge-color: {{ $badgeColor }};">
-                    <span class="profview-badge-pill__icon">
+                    <span class="profview-badge-pill__icon" style="background:{{ $badgeColor }};">
                         <svg viewBox="0 0 24 24" fill="none"><path d="M5 12L10 17L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </span>
-                    <span class="profview-badge-pill__label">{{ $badge }}</span>
+                    <span class="profview-badge-pill__label">{{ $badgeLabel }}</span>
                 </span>
             </div>
             <span class="profview-username">{{ $username }}</span>

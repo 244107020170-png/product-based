@@ -26,7 +26,8 @@ Route::get('/dashboard', function () {
     } elseif ($user->role === 'admin') {
         return redirect('/admin/dashboard');
     } else {
-        return view('dashboard'); // player
+        $fields = \App\Models\Field::with('owner')->get();
+        return view('fields.index', compact('fields')); // player dashboard now shows available fields
     }
 })->middleware(['auth'])->name('dashboard');
 
@@ -58,8 +59,9 @@ Route::middleware('auth')->group(function () {
     });
 
     /* PLAYER */
+    // The dashboard now acts as the fields list, so we redirect /fields to dashboard to prevent duplicate pages.
     Route::get('/fields', function () {
-        return view('fields.index');
+        return redirect()->route('dashboard');
     });
 
     Route::get('/booking/{field}', [BookingController::class, 'show'])->name('booking.show');

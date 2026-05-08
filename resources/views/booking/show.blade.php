@@ -7,15 +7,19 @@
     $allFields = $allFields;
     $availableTimes = $availableTimes;
     
+    $visibleFields = ['id', 'name', 'location', 'price_per_hour', 'image', 'facilities', 'rating'];
+    $selectedFieldJson = $field->makeVisible($visibleFields);
+    $allFieldsJson = $allFields->map(fn($f) => $f->makeVisible($visibleFields))->toArray();
+    
     // Sidebar
     $sidebarItems = [
-        ['label'=>'Dashboard',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>false],
-        ['label'=>'Aktivitas',  'icon'=>asset('assets/images/icons/aktivitas.png'), 'href'=>url('/matches'),       'active'=>false],
-        ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>null,                  'active'=>false],
-        ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>null,                  'active'=>false],
+        ['label'=>'Dashboard',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>true],
+        ['label'=>'Aktivitas',  'icon'=>asset('assets/images/icons/aktivitas.png'), 'href'=>route('activity.index'),       'active'=>false],
+        ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),                  'active'=>false],
+        ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>route('history.index'),                  'active'=>false],
         ['label'=>'Cari tim',   'icon'=>asset('assets/images/icons/caritim.png'),   'href'=>route('matches.index'),'active'=>false],
-        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.show', $field->id),       'active'=>true],
-        ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>null,                  'active'=>false],
+        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),       'active'=>false],
+        ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),                  'active'=>false],
         ['label'=>'Profil',     'icon'=>asset('assets/images/icons/profil.png'),    'href'=>route('profile.show'), 'active'=>false],
     ];
     $sidebarUtilities = [
@@ -37,9 +41,85 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        /* Custom styles for booking page */
+        .bk-container { max-width: 900px; margin: 0 auto; padding: 20px; font-family: 'Inter', sans-serif; }
+        .bk-card { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; margin-bottom: 24px; }
+        
+        /* Top Card */
+        .bk-top-wrap { display: flex; padding: 20px; gap: 24px; align-items: center; }
+        .bk-carousel { width: 320px; height: 200px; border-radius: 12px; overflow: hidden; position: relative; flex-shrink: 0; }
+        .bk-carousel img { width: 100%; height: 100%; object-fit: cover; }
+        .bk-carousel-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; }
+        .bk-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+        .bk-dot.active { background: #ff4d4d; }
+        .bk-carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #333; }
+        .bk-carousel-btn.right { right: 10px; }
+        
+        .bk-info h1 { font-size: 24px; font-weight: 800; color: #000; margin: 0 0 12px 0; }
+        .bk-meta { display: flex; align-items: center; gap: 16px; font-size: 14px; color: #333; font-weight: 600; }
+        .bk-meta-item { display: flex; align-items: center; gap: 6px; }
+        
+        /* Fasilitas Toggle */
+        .bk-fasilitas-wrapper { background: #fffdf5; border-radius: 0 0 20px 20px; margin-top: -10px; padding: 24px 20px 20px; border-top: 1px dashed #eee; display: none; }
+        .bk-fasilitas-wrapper.open { display: block; }
+        .bk-toggle-btn { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); background: white; border: 1px solid #eee; border-radius: 6px; width: 50px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.05); z-index: 10; }
+        
+        .bk-fasilitas-title { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; color: #000; margin-bottom: 16px; }
+        .bk-fasilitas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+        .bk-f-item { display: flex; align-items: center; gap: 10px; background: white; border-radius: 8px; padding: 10px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); font-weight: 600; color: #555; font-size: 13px; border: 1px solid #f1f5f9; }
+        
+        /* Bottom Form Card */
+        .bk-form-wrap { display: flex; gap: 30px; padding: 24px; }
+        .bk-form-left { flex: 1; }
+        .bk-form-right { width: 300px; flex-shrink: 0; }
+        
+        /* Dropdowns & Pickers Container */
+        .bk-input-group { margin-bottom: 24px; }
+        .bk-label { display: block; font-size: 16px; font-weight: 700; color: #000; margin-bottom: 10px; }
+        .bk-input-box { border: 1px solid #d4cbb8; border-radius: 10px; padding: 14px 16px; width: 100%; display: flex; align-items: center; justify-content: space-between; background: #FAF8F1; font-weight: 600; color: #333; cursor: pointer; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        .bk-input-box input { border: none; background: transparent; width: 100%; outline: none; font-weight: 600; font-size: 15px; color: #333; cursor: pointer; }
+        
+        .bk-dropdown { position: absolute; top: calc(100% + 8px); left: 0; width: 100%; background: #FAF8F1; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 50; max-height: 280px; overflow-y: auto; display: none; padding: 16px; border: 1px solid #d4cbb8; }
+        .bk-dropdown.open { display: block; }
+        
+        /* Time Grid */
+        .bk-time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .bk-time-pill { padding: 8px 4px; text-align: center; border: 1px solid #666; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: #333; }
+        .bk-time-pill:hover:not(.disabled) { background: #e8e4d9; }
+        .bk-time-pill.selected { background: #00004d; color: white; border-color: #00004d; }
+        .bk-time-pill.full { background: #d32f2f; color: white; border-color: #d32f2f; cursor: not-allowed; opacity: 0.9; }
+        
+        /* Sub-field Grid */
+        .bk-subfield-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .bk-subfield-pill { padding: 8px 4px; text-align: center; border: 1px solid #666; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: #333; }
+        .bk-subfield-pill:hover:not(.disabled) { background: #e8e4d9; }
+        .bk-subfield-pill.selected { background: #00004d; color: white; border-color: #00004d; }
+        .bk-subfield-pill.full { background: #d32f2f; color: white; border-color: #d32f2f; cursor: not-allowed; opacity: 0.9; }
+        
+        /* Summary Box */
+        .bk-summary { border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .bk-summary-title { font-size: 18px; font-weight: 700; color: #000; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        
+        .bk-divider { height: 1px; background: #e2e8f0; margin: 16px 0; }
+        
+        .bk-sum-row { display: flex; justify-content: space-between; font-size: 14px; color: #555; margin-bottom: 12px; font-weight: 500; }
+        .bk-sum-val { color: #000; font-weight: 600; }
+        
+        .bk-total-row { display: flex; justify-content: space-between; font-size: 20px; font-weight: 800; color: #000; margin: 20px 0; align-items: center;}
+        
+        .bk-btn-submit { width: 100%; background: #00004d; color: white; border: none; border-radius: 8px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .bk-btn-submit:hover { background: #000033; }
+        
+        @media (max-width: 768px) {
+            .bk-top-wrap { flex-direction: column; }
+            .bk-carousel { width: 100%; }
+            .bk-form-wrap { flex-direction: column; }
+            .bk-form-right { width: 100%; }
+        }
+    </style>
 </head>
-<body class="player-dashboard-page"
-      style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">
+<body class="player-dashboard-page" style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">
 <div class="player-dashboard-shell">
 
 {{-- ============ SIDEBAR ============ --}}
@@ -90,7 +170,7 @@
 {{-- ============ MAIN ============ --}}
 <main class="player-dashboard-main">
 
-    {{-- Topbar (same as Skill page) --}}
+    {{-- Topbar --}}
     <header class="player-dashboard-topbar">
         <div class="player-dashboard-topbar__left">
             <button type="button" class="player-dashboard-topbar__menu" data-sidebar-open><span></span><span></span><span></span></button>
@@ -122,180 +202,277 @@
         </div>
     </header>
 
-    <section style="padding: 20px; max-width: 1400px; margin: 0 auto;">
-        <div x-data="bookingApp()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            {{-- ===== KIRI: Field Card ===== --}}
-            <div>
-                <!-- Display yang dipilih -->
-                <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                    <div style="position: relative; overflow: hidden; height: 250px;">
-                        <img :src="selectedField.image || '{{ asset('assets/images/bg/Explore.png') }}'" 
-                             alt="Field" style="width: 100%; height: 100%; object-fit: cover;">
-                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 16px; border-radius: 50px; font-size: 14px;">
-                            ⭐ <span x-text="selectedField.rating || '4.8'"></span>
-                        </div>
-                    </div>
-                    <div style="padding: 20px;">
-                        <h3 x-text="selectedField.name" style="font-size: 20px; font-weight: bold; margin: 0 0 10px 0; color: #001a4d;"></h3>
-                        <div style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 14px; color: #666;">
-                            <span>📍 <span x-text="selectedField.location"></span></span>
-                            <span>💰 <span x-text="selectedField.formattedPrice || 'Rp120.000/jam'"></span></span>
-                        </div>
+    <div class="bk-container" x-data="bookingApp()">
+        
+        {{-- ==== TOP CARD: Info Lapangan ==== --}}
+        <div class="bk-card" style="z-index: 10;">
+            <div class="bk-top-wrap">
+                {{-- Carousel --}}
+                <div class="bk-carousel">
+                    <img :src="selectedField.image || '{{ asset('assets/images/bg/Explore.png') }}'" alt="Field">
+                    <button class="bk-carousel-btn right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                    <div class="bk-carousel-dots">
+                        <div class="bk-dot"></div>
+                        <div class="bk-dot"></div>
+                        <div class="bk-dot active"></div>
+                        <div class="bk-dot"></div>
                     </div>
                 </div>
-
-                {{-- Fasilitas --}}
-                <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold; color: #001a4d;">⭐ Fasilitas</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
-                        <template x-for="facility in selectedFieldFacilities" :key="facility.name">
-                            <div style="background: #f0f4ff; border: 1px solid #d4e0f5; border-radius: 12px; padding: 12px; text-align: center;">
-                                <div style="font-size: 24px; margin-bottom: 5px;" x-text="facility.icon"></div>
-                                <div style="font-size: 12px; color: #001a4d; font-weight: 500;" x-text="facility.name"></div>
-                            </div>
-                        </template>
+                
+                {{-- Info --}}
+                <div class="bk-info">
+                    <h1 x-text="selectedField.name"></h1>
+                    <div class="bk-meta">
+                        <div class="bk-meta-item">
+                            <span style="color: #ff4d4d; font-size: 18px;">📍</span>
+                            <span x-text="selectedField.location"></span>
+                        </div>
+                        <div class="bk-meta-item">
+                            <span style="color: #fbbf24; font-size: 18px;">⭐</span>
+                            <span x-text="selectedField.rating || '4.8'"></span>
+                        </div>
+                        <div class="bk-meta-item">
+                            <span style="color: #b45309; font-size: 18px;">💰</span>
+                            <span x-text="formatPrice(selectedField.price_per_hour) + ' / jam'"></span>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {{-- ===== KANAN: Form Booking ===== --}}
-            <div>
-                <form @submit.prevent="submitBooking()" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-
-                    {{-- Pilih Tanggal --}}
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #001a4d; font-size: 14px;">Pilih Tanggal</label>
-                        <div style="position: relative;">
-                            <input type="text" 
-                                   x-ref="dateInput"
-                                   @change="updateDate"
-                                   placeholder="Pilih tanggal" 
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; cursor: pointer; appearance: none;">
-                            <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #666;">📅</div>
+            
+            {{-- Toggle Button --}}
+            <button class="bk-toggle-btn" @click="showFasilitas = !showFasilitas">
+                <svg x-show="!showFasilitas" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <svg x-show="showFasilitas" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+            
+            {{-- Fasilitas (Collapsible) --}}
+            <div class="bk-fasilitas-wrapper" :class="{ 'open': showFasilitas }">
+                <div class="bk-fasilitas-title">
+                    <span style="color: #fbbf24;">⭐</span> Fasilitas
+                </div>
+                <div class="bk-fasilitas-grid">
+                    <template x-for="f in selectedFieldFacilities" :key="f.name">
+                        <div class="bk-f-item">
+                            <span x-text="f.icon" style="font-size: 16px;"></span>
+                            <span x-text="f.name"></span>
                         </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        
+        {{-- ==== BOTTOM CARD: Form Booking ==== --}}
+        <div class="bk-card bk-form-wrap">
+            <div class="bk-form-left">
+                
+                {{-- Tanggal --}}
+                <div class="bk-input-group">
+                    <label class="bk-label">Pilih Tanggal</label>
+                    <div class="bk-input-box">
+                        <span style="color: #666; display: flex; align-items: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </span>
+                        <input type="text" x-ref="dateInput" placeholder="Pilih tanggal" readonly style="margin-left: 12px;">
+                        <span style="color: #666;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </span>
                     </div>
-
-                    {{-- Pilih Jam --}}
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #001a4d; font-size: 14px;">Pilih Jam</label>
-                        <select x-model="selectedTime" @change="updateTime()"
-                                style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;">
-                            <option value="">Pilih waktu</option>
+                </div>
+                
+                {{-- Jam --}}
+                <div class="bk-input-group" style="position: relative;">
+                    <label class="bk-label">Pilih Jam</label>
+                    <div class="bk-input-box" @click="showTimeDropdown = !showTimeDropdown; showFieldDropdown = false">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="color: #666;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </span>
+                            <span x-text="selectedTimeDisplay || 'Pilih Waktu'" :style="!selectedTimeDisplay && 'color: #94a3b8'"></span>
+                        </div>
+                        <span style="color: #666;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </span>
+                    </div>
+                    
+                    <div class="bk-dropdown" :class="{ 'open': showTimeDropdown }">
+                        <div class="bk-time-grid">
                             <template x-for="time in availableTimes" :key="time.start">
-                                <option :value="time.start" x-text="time.display"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    {{-- Pilih Lapangan --}}
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #001a4d; font-size: 14px;">Pilih Lapangan</label>
-                        <div @click="toggleFieldDropdown()" 
-                             style="padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                            <span x-text="selectedField.name" style="color: #333;"></span>
-                            <span x-text="showFieldDropdown ? '▲' : '▼'" style="color: #666;"></span>
-                        </div>
-
-                        {{-- Field Dropdown --}}
-                        <div x-show="showFieldDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px; max-height: 300px; overflow-y: auto; z-index: 10; margin-top: -8px; padding-top: 8px;">
-                            <template x-for="f in allFields" :key="f.id">
-                                <div @click="selectField(f)" 
-                                     style="padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: center;"
-                                     :style="{ 'background-color': selectedField.id === f.id ? '#f0f4ff' : 'white' }">
-                                    <img :src="f.image || '{{ asset('assets/images/bg/Explore.png') }}'" 
-                                         style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
-                                    <div style="flex: 1;">
-                                        <div style="font-weight: 600; color: #001a4d;" x-text="f.name"></div>
-                                        <div style="font-size: 12px; color: #666;" x-text="f.location"></div>
-                                        <div style="font-size: 12px; color: #1d6fcf; font-weight: 600;" x-text="formatPrice(f.price_per_hour)"></div>
-                                    </div>
+                                <div class="bk-time-pill" 
+                                     :class="{ 
+                                        'selected': selectedTime === time.start,
+                                        'full': time.isFull,
+                                        'disabled': time.isFull 
+                                     }"
+                                     @click="if(!time.isFull) { selectedTime = time.start; selectedTimeDisplay = time.display; showTimeDropdown = false; calculateTotal(); checkSubfieldsAvailability(); }">
+                                    <span x-text="time.start"></span>
                                 </div>
                             </template>
                         </div>
                     </div>
-
-                    {{-- Ringkasan Pesanan --}}
-                    <div style="background: #f9fafb; border-radius: 12px; padding: 16px; margin-top: 24px; border: 1px solid #e0e0e0;">
-                        <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #001a4d;">📍 Ringkasan Pesanan</h4>
-                        <div style="font-size: 13px; color: #666; line-height: 1.8;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>Harga/jam:</span>
-                                <span style="font-weight: 600;" x-text="formatPrice(selectedField.price_per_hour)"></span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>Durasi:</span>
-                                <span style="font-weight: 600;" x-text="bookingDuration + ' jam'"></span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
-                                <span>Biaya Admin:</span>
-                                <span style="font-weight: 600;">Rp2.000</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-weight: 700; color: #001a4d; font-size: 16px;">
-                                <span>Total</span>
-                                <span x-text="formatPrice(totalPrice)"></span>
-                            </div>
+                </div>
+                
+                {{-- Lapangan (Sub-fields) --}}
+                <div class="bk-input-group" style="position: relative;">
+                    <label class="bk-label">Pilih Lapangan</label>
+                    <div class="bk-input-box" @click="showFieldDropdown = !showFieldDropdown; showTimeDropdown = false">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="color: #666;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="12" y2="12"></line></svg>
+                            </span>
+                            <span x-text="selectedSubfield ? selectedSubfield.name : 'Pilih Lapangan'"></span>
+                        </div>
+                        <span style="color: #666;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </span>
+                    </div>
+                    
+                    <div class="bk-dropdown" :class="{ 'open': showFieldDropdown }">
+                        <div class="bk-subfield-grid">
+                            <template x-for="sf in subFields" :key="sf.id">
+                                <div class="bk-subfield-pill"
+                                     :class="{ 
+                                        'selected': selectedSubfield && selectedSubfield.id === sf.id,
+                                        'full': sf.isFull,
+                                        'disabled': sf.isFull
+                                     }"
+                                     @click="if(!sf.isFull) { selectedSubfield = sf; showFieldDropdown = false; calculateTotal(); }">
+                                    <span x-text="sf.name"></span>
+                                </div>
+                            </template>
                         </div>
                     </div>
-
-                    {{-- Book Now Button --}}
-                    <button type="submit" style="width: 100%; margin-top: 16px; padding: 12px; background: #00004d; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">
-                        Book Now
-                    </button>
-                </form>
+                </div>
+                
             </div>
-        </div>
-
-        {{-- ===== BROWSING FIELDS ===== --}}
-        <div style="margin-top: 40px;">
-            <h2 style="font-size: 24px; font-weight: bold; color: #001a4d; margin-bottom: 20px;">🏐 Lapangan Lainnya</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
-                <template x-for="f in allFields" :key="f.id">
-                    <div @click="selectField(f)"
-                         style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;"
-                         @mouseenter="$el.style.transform = 'translateY(-8px)'; $el.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';"
-                         @mouseleave="$el.style.transform = 'translateY(0)'; $el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                         :style="{ 'border': selectedField.id === f.id ? '2px solid #003d99' : '1px solid transparent' }">
-                        <div style="position: relative; height: 180px; overflow: hidden;">
-                            <img :src="f.image || '{{ asset('assets/images/bg/Explore.png') }}'" 
-                                 style="width: 100%; height: 100%; object-fit: cover;">
-                            <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 6px 12px; border-radius: 50px; font-size: 12px;">
-                                ⭐ <span x-text="f.rating || '4.8'"></span>
-                            </div>
-                        </div>
-                        <div style="padding: 16px;">
-                            <h3 x-text="f.name" style="font-size: 16px; font-weight: bold; margin: 0 0 8px 0; color: #001a4d;"></h3>
-                            <div style="font-size: 12px; color: #666; margin-bottom: 10px;">📍 <span x-text="f.location"></span></div>
-                            <div style="font-size: 14px; color: #1d6fcf; font-weight: 700;" x-text="formatPrice(f.price_per_hour)"></div>
+            
+            {{-- Ringkasan --}}
+            <div class="bk-form-right">
+                <div class="bk-summary">
+                    <div class="bk-summary-title">Ringkasan Pesanan</div>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                        <span style="color: #ff4d4d; font-size: 18px; margin-top: 2px;">📍</span>
+                        <div>
+                            <div style="font-weight: 700; color: #000; font-size: 14px;" x-text="selectedField.name"></div>
+                            <div style="font-size: 12px; color: #666; margin-top: 2px;" x-text="selectedField.location"></div>
                         </div>
                     </div>
-                </template>
+                    
+                    <div class="bk-divider"></div>
+                    
+                    <div class="bk-sum-row">
+                        <span>Harga /jam</span>
+                        <span class="bk-sum-val" x-text="formatPrice(selectedField.price_per_hour)"></span>
+                    </div>
+                    <div class="bk-sum-row">
+                        <span>Durasi</span>
+                        <span class="bk-sum-val">1 Jam</span>
+                    </div>
+                    <div class="bk-sum-row">
+                        <span>Biaya Admin</span>
+                        <span class="bk-sum-val" x-text="formatPrice(adminFee)"></span>
+                    </div>
+                    
+                    <div class="bk-divider"></div>
+                    
+                    <div class="bk-total-row">
+                        <span>Total</span>
+                        <span x-text="formatPrice(totalPrice)"></span>
+                    </div>
+                    
+                    <button class="bk-btn-submit" @click.prevent="submitBooking()">Book Now</button>
+                </div>
             </div>
         </div>
-    </section>
+        
+    </div>
 
 </main>
 </div>
 
-document.addEventListener('DOMContentLoaded', function() {
-{{-- Alpine.js Data --}}
 <script>
 function bookingApp() {
     return {
-        selectedField: @json($field->makeVisible(['id', 'name', 'location', 'price_per_hour', 'image', 'facilities', 'rating'])),
-        allFields: @json($allFields->map(fn($f) => $f->makeVisible(['id', 'name', 'location', 'price_per_hour', 'image', 'facilities', 'rating']))->toArray()),
-        availableTimes: @json($availableTimes),
+        selectedField: @json($selectedFieldJson),
+        allFields: @json($allFieldsJson),
+        
+        // Setup initial times with some mocked 'isFull' states to match the screenshot
+        availableTimes: @json($availableTimes).map((t, index) => ({
+            ...t,
+            isFull: [0].includes(index) // e.g. 07.00 is full (red)
+        })),
+        
+        // Mock subfields for the current venue
+        subFields: [
+            { id: 1, name: 'Lapangan A', isFull: true }, // Full (red)
+            { id: 2, name: 'Lapangan B', isFull: false }, // Selected
+            { id: 3, name: 'Lapangan C', isFull: false },
+            { id: 4, name: 'Lapangan D', isFull: false },
+            { id: 5, name: 'Lapangan E', isFull: false },
+            { id: 6, name: 'Lapangan F', isFull: false }
+        ],
+        selectedSubfield: { id: 2, name: 'Lapangan B', isFull: false },
+        
         selectedDate: '',
         selectedTime: '',
+        selectedTimeDisplay: '',
+        
+        showFasilitas: true, // Based on screenshot it's open by default
+        showTimeDropdown: false,
         showFieldDropdown: false,
-        bookingDuration: 1,
+        
         adminFee: 2000,
-
+        totalPrice: 0,
+        
+        checkSubfieldsAvailability() {
+            // When time changes, we randomly mock some subfields being full
+            // In a real app, this would be an API call fetching availability
+            this.subFields = this.subFields.map(sf => ({
+                ...sf,
+                isFull: Math.random() > 0.7 // 30% chance a field is full at a given time
+            }));
+            
+            // Unselect if current subfield became full
+            if (this.selectedSubfield && this.selectedSubfield.isFull) {
+                this.selectedSubfield = null;
+            }
+        },
+        
+        init() {
+            // Set initial selected time for the demo match screenshot
+            const t = this.availableTimes[1]; // 08.00
+            this.selectedTime = t.start;
+            this.selectedTimeDisplay = t.display;
+            
+            this.calculateTotal();
+            this.$nextTick(() => {
+                flatpickr(this.$refs.dateInput, {
+                    minDate: 'today',
+                    dateFormat: "d M Y",
+                    onChange: (selectedDates, dateStr) => {
+                        this.selectedDate = selectedDates[0].toISOString().split('T')[0];
+                        this.$refs.dateInput.value = dateStr;
+                    }
+                });
+            });
+            
+            // Close dropdowns on outside click
+            window.addEventListener('click', (e) => {
+                if(!e.target.closest('.bk-input-group')) {
+                    this.showTimeDropdown = false;
+                    this.showFieldDropdown = false;
+                }
+            });
+        },
+        
         get selectedFieldFacilities() {
             const facilities = this.selectedField.facilities || [];
             const facilityIcons = {
-                'Rumput Premium': '🌱',
+                'Rumput Premium': '🌿',
                 'Mushala': '🕌',
-                'Toilet Bersih': '🚽',
+                'Toilet Bersih': '🚻',
                 'Kursi': '🪑',
                 'Parkir Luas': '🅿️',
                 'LED Tuning': '💡',
@@ -304,51 +481,17 @@ function bookingApp() {
                 'AC': '❄️',
                 'WiFi': '📡',
             };
-            
             return facilities.map(f => ({ name: f, icon: facilityIcons[f] || '✓' }));
         },
-
-        get totalPrice() {
-            return (this.selectedField.price_per_hour * this.bookingDuration) + this.adminFee;
-        },
-
-        init() {
-            this.$nextTick(() => {
-                flatpickr(this.$refs.dateInput, {
-                    minDate: 'today',
-                    onChange: (selectedDates) => this.updateDate(selectedDates[0])
-                });
-            });
-        },
-
-        updateDate(date) {
-            if (date) {
-                this.selectedDate = date.toISOString().split('T')[0];
-            }
-        },
-
-        updateTime() {
-            if (this.selectedTime) {
-                const time = this.availableTimes.find(t => t.start === this.selectedTime);
-                if (time) {
-                    this.bookingDuration = 1;
-                }
-            }
-        },
-
-        selectField(field) {
-            this.selectedField = field;
-            this.showFieldDropdown = false;
-        },
-
-        toggleFieldDropdown() {
-            this.showFieldDropdown = !this.showFieldDropdown;
-        },
-
+        
         formatPrice(price) {
-            return 'Rp' + price.toLocaleString('id-ID');
+            return 'Rp' + parseInt(price).toLocaleString('id-ID');
         },
-
+        
+        calculateTotal() {
+            this.totalPrice = parseInt(this.selectedField.price_per_hour) + this.adminFee;
+        },
+        
         submitBooking() {
             if (!this.selectedDate || !this.selectedTime) {
                 alert('Pilih tanggal dan jam terlebih dahulu');
@@ -370,10 +513,8 @@ function bookingApp() {
             })
             .then(r => r.json())
             .then(data => {
-                if (data.success) {
-                    alert('Booking berhasil!');
-                    window.location.href = '{{ route("booking.index") }}';
-                }
+                alert('Booking berhasil!');
+                window.location.href = '{{ route("booking.index") }}';
             })
             .catch(e => alert('Error: ' + e));
         }
