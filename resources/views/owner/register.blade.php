@@ -45,12 +45,12 @@
                     </nav>
                 </header>
 
-                <h1 id="register-title" class="register-title">Daftar</h1>
+                <h1 id="register-title" class="register-title">Daftar Pemilik</h1>
 
-                <form method="POST" action="{{ route('register', ['role' => old('role', $role)]) }}" class="register-form">
+                <form method="POST" action="{{ route('register', ['role' => 'owner']) }}" class="register-form">
                     @csrf
 
-                    <input type="hidden" name="role" value="{{ old('role', $role) }}">
+                    <input type="hidden" name="role" value="owner">
 
                     <div class="register-grid">
                         <div class="register-field">

@@ -3,7 +3,7 @@
     $userName = $user?->name ?: 'Sport Enthusiast';
     $currentDate = \Carbon\Carbon::now()->locale('id')->translatedFormat('j F Y');
     $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
-    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile);
+    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile.'?v='.time());
     $reviewAvatar = asset('assets/images/characters/review.png');
     $heroCharacter = asset('assets/images/characters/hero.png');
 

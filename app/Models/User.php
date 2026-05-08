@@ -19,6 +19,7 @@ class User extends Authenticatable
         'role',
         'gender',
         'avatar_profile',
+        'cover_photo',
         'phone',
         'bio',
         'sport_preference',
