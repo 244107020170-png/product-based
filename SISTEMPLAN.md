@@ -1,9 +1,9 @@
-# 📌 PERANCANGAN SISTEM
+# PERANCANGAN SISTEM
 
-## ⚙️ Arsitektur Teknologi (Tech Stack)
+## Arsitektur Teknologi (Tech Stack)
 Dalam pengembangan sistem **Spies Sport – Platform Booking Lapangan dan Public Match**, digunakan teknologi yang dipilih berdasarkan pertimbangan kemudahan implementasi, efisiensi waktu pengembangan, serta kesesuaian dengan kebutuhan sistem berbasis web.
 
-### 🔧 Backend
+### Backend
 - Framework: **Laravel (PHP, MVC)**
 - Admin Panel: **Filament**
 - Fitur bawaan: Routing, Authentication, ORM (Eloquent)
@@ -105,7 +105,7 @@ Menggunakan satu tabel `users` dengan atribut `role` (`admin`, `owner`, `player`
 
 ## Pembagian Tugas Tim
 
-### 🔧 Backend Developer
+### Backend Developer
 - Fitur backend dengan Laravel  
 - Database (MySQL)  
 - Migration & model  
@@ -138,7 +138,7 @@ Menggunakan satu tabel `users` dengan atribut `role` (`admin`, `owner`, `player`
 ---
 
 ## Kolaborasi Tim
-- Backend ↔ Frontend terintegrasi via Blade Laravel  
+- Backend dan Frontend terintegrasi via Blade Laravel  
 - Dokumentasi sesuai hasil implementasi  
 - Diagram diperbarui sesuai perkembangan sistem  
 - Koordinasi berkala untuk sinkronisasi progress  

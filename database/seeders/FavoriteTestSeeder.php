@@ -38,7 +38,7 @@ class FavoriteTestSeeder extends Seeder
         }
 
         $count = Favorite::where('user_id', $user->id)->count();
-        $this->command->info("✅ {$count} favorit berhasil diinsert untuk {$user->email}");
+        $this->command->info("{$count} favorit berhasil diinsert untuk {$user->email}");
         $this->command->line("URL: /favorit");
     }
 }

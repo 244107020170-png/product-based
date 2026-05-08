@@ -12,7 +12,7 @@
         ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'),  'href' => null,                   'active' => false],
         ['label' => 'Histori',   'icon' => asset('assets/images/icons/histori.png'),    'href' => route('history.index'), 'active' => false],
         ['label' => 'Cari tim',  'icon' => asset('assets/images/icons/caritim.png'),   'href' => route('matches.index'), 'active' => false],
-        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => url('/fields'),         'active' => false],
+        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => route('booking.index'),         'active' => false],
         ['label' => 'Keahlianmu','icon' => asset('assets/images/icons/keahlian.png'),  'href' => route('skill.index'),   'active' => true],
         ['label' => 'Profil',    'icon' => asset('assets/images/icons/profil.png'),    'href' => route('profile.show'),  'active' => false],
     ];
@@ -272,6 +272,8 @@
     font-size: 1.8rem;
     line-height: 1;
 }
+.sk-badge__icon-wrap > span { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; }
+.sk-badge__icon-wrap > span svg { width: 100%; height: 100%; }
 .sk-badge.is-locked .sk-badge__icon-wrap { background: #6b7280; }
 
 .sk-badge__lock {
@@ -466,7 +468,7 @@
           @if($nextLevel)
             <p class="sk-pbar-hint">Butuh {{ $pointsToNext }} poin lagi nih untuk jadi {{ $nextLevel['name'] }}, Semangat!</p>
           @else
-            <p class="sk-pbar-hint">🎉 Kamu sudah mencapai level tertinggi, Pro!</p>
+            <p class="sk-pbar-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><path d="M8 21H16M12 17V21M7 4H17V11C17 14.314 14.761 17 12 17C9.239 17 7 14.314 7 11V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 6H4C4 6 3 10 6 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6H20C20 6 21 10 18 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Kamu sudah mencapai level tertinggi, Pro!</p>
           @endif
         </div>
       </div>
@@ -514,9 +516,14 @@
       @foreach($badges as $badge)
         <div class="sk-badge{{ !$badge['earned'] ? ' is-locked' : '' }}">
           <div class="sk-badge__icon-wrap">
-            <span>{{ $badge['icon'] }}</span>
+            <span>{!! $badge['icon'] !!}</span>
             @if(!$badge['earned'])
-              <div class="sk-badge__lock">🔒</div>
+              <div class="sk-badge__lock">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M8 11V8A4 4 0 0 1 16 8V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
             @endif
           </div>
           <p class="sk-badge__name">{{ $badge['name'] }}</p>

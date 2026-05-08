@@ -24,9 +24,9 @@ class HistoryTestSeeder extends Seeder
                 'created_at'        => now(),
                 'updated_at'        => now(),
             ]);
-            $this->command->info("✅ User dibuat: player@test.com / password");
+            $this->command->info("User dibuat: player@test.com / password");
         } else {
-            $this->command->info("ℹ️  User sudah ada (id={$userId})");
+            $this->command->info("User sudah ada (id={$userId})");
         }
 
         // ── 2. Buat / ambil owner ──────────────────────────────────────
@@ -82,7 +82,7 @@ class HistoryTestSeeder extends Seeder
             }
         }
 
-        $this->command->info("✅ " . count($fieldIds) . " lapangan siap");
+        $this->command->info(count($fieldIds) . " lapangan siap");
 
         // ── 4. Hapus booking lama untuk user ini agar tidak duplikat ──
         DB::table('bookings')->where('user_id', $userId)->delete();
@@ -167,7 +167,7 @@ class HistoryTestSeeder extends Seeder
 
         DB::table('bookings')->insert($bookings);
 
-        $this->command->info("✅ " . count($bookings) . " booking berhasil diinsert");
+        $this->command->info(count($bookings) . " booking berhasil diinsert");
         $this->command->newLine();
         $this->command->line("─────────────────────────────────────────");
         $this->command->line("  Login dengan:");

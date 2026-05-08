@@ -63,16 +63,16 @@ class Field extends Model
     public function getFacilitiesWithIcons(): array
     {
         $facilityIcons = [
-            'Rumput Premium' => '🌱',
-            'Mushala' => '🕌',
-            'Toilet Bersih' => '🚽',
-            'Kursi' => '🪑',
-            'Parkir Luas' => '🅿️',
-            'LED Tuning' => '💡',
-            'Kantin' => '🍜',
-            'Ruang Ganti' => '👕',
-            'AC' => '❄️',
-            'WiFi' => '📡',
+            'Rumput Premium' => '✓',
+            'Mushala' => '✓',
+            'Toilet Bersih' => '✓',
+            'Kursi' => '✓',
+            'Parkir Luas' => '✓',
+            'LED Tuning' => '✓',
+            'Kantin' => '✓',
+            'Ruang Ganti' => '✓',
+            'AC' => '✓',
+            'WiFi' => '✓',
         ];
 
         $facilities = $this->getFacilities();
@@ -88,4 +88,3 @@ class Field extends Model
         return $result;
     }
 }
-

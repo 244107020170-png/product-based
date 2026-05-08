@@ -13,7 +13,7 @@
         ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'),  'href' => null,                    'active' => false],
         ['label' => 'Histori',   'icon' => asset('assets/images/icons/histori.png'),    'href' => route('history.index'),  'active' => true],
         ['label' => 'Cari tim',  'icon' => asset('assets/images/icons/caritim.png'),   'href' => route('matches.index'),  'active' => false],
-        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => url('/fields'),          'active' => false],
+        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => route('booking.index'),          'active' => false],
         ['label' => 'Keahlianmu','icon' => asset('assets/images/icons/keahlian.png'),  'href' => null,                    'active' => false],
         ['label' => 'Profil',    'icon' => asset('assets/images/icons/profil.png'),    'href' => route('profile.show'),   'active' => false],
     ];
@@ -261,7 +261,14 @@
 
                     {{-- Total Pengeluaran --}}
                     <div class="history-total-card" aria-label="Total pengeluaran">
-                        <span class="history-total-card__icon">💰</span>
+                        <span class="history-total-card__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                                <path d="M9 10.5C9 9.1 10.2 8 11.8 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M9 13.5H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M9.5 16C10 16.7 10.9 17 12 17C13.5 17 14.7 16.1 14.9 14.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </span>
                         <div class="history-total-card__body">
                             <p class="history-total-card__label">Total Pengeluaran</p>
                             <p class="history-total-card__amount">
@@ -291,7 +298,8 @@
                         @endphp
 
                         <article class="history-card"
-                            data-booking-status="{{ $statusInfo['filter'] }}"
+                            data-booking-status="{{ $statusInfo['filter'] ?? 'unknown' }}"
+                            data-booking-id="{{ $booking->id }}"
                             id="booking-{{ $booking->id }}">
 
                             {{-- Image --}}
@@ -300,7 +308,11 @@
                                     <img src="{{ asset('storage/'.$field->image) }}" alt="{{ $field->name ?? 'Lapangan' }}">
                                 @else
                                     <div class="history-card__image-placeholder" aria-hidden="true">
-                                        🏟️
+                                        <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+                                            <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                            <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
+                                        </svg>
                                     </div>
                                 @endif
                             </div>
@@ -363,7 +375,12 @@
                     @empty
                         {{-- Tidak ada booking sama sekali di DB → tampil langsung --}}
                         <div class="history-empty">
-                            <span class="history-empty__icon">📋</span>
+                            <span class="history-empty__icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M8 7H16M8 11H16M8 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </span>
                             <p class="history-empty__text">Belum ada histori booking</p>
                             <p class="history-empty__sub">Mulai booking lapangan pertamamu sekarang!</p>
                             <a href="{{ url('/fields') }}" class="hbtn hbtn--primary">Booking Sekarang</a>
@@ -373,7 +390,12 @@
                     {{-- Empty state khusus JS: muncul hanya saat filter tab menghasilkan 0 kartu --}}
                     @if($bookings->count() > 0)
                     <div class="history-empty" data-history-empty hidden>
-                        <span class="history-empty__icon">🔍</span>
+                        <span class="history-empty__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                                <path d="M16.5 16.5L20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </span>
                         <p class="history-empty__text">Tidak ada booking di kategori ini</p>
                         <p class="history-empty__sub">Coba pilih kategori lain.</p>
                     </div>

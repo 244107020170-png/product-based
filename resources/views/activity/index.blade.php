@@ -12,7 +12,7 @@
         ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'),  'href' => route('favorite.index'),  'active' => false],
         ['label' => 'Histori',   'icon' => asset('assets/images/icons/histori.png'),    'href' => route('history.index'),   'active' => false],
         ['label' => 'Cari tim',  'icon' => asset('assets/images/icons/caritim.png'),   'href' => route('matches.index'),   'active' => false],
-        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => url('/fields'),           'active' => false],
+        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => route('booking.index'),           'active' => false],
         ['label' => 'Keahlianmu','icon' => asset('assets/images/icons/keahlian.png'),  'href' => route('skill.index'),     'active' => false],
         ['label' => 'Profil',    'icon' => asset('assets/images/icons/profil.png'),    'href' => route('profile.show'),    'active' => false],
     ];
@@ -424,7 +424,7 @@
           @if($nextLevel)
             <p class="act-pbar-hint">Butuh {{ $pointsToNext }} poin lagi nih untuk jadi {{ $nextLevel['name'] }}, Semangat!</p>
           @else
-            <p class="act-pbar-hint">🎉 Kamu sudah mencapai level tertinggi!</p>
+            <p class="act-pbar-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><path d="M8 21H16M12 17V21M7 4H17V11C17 14.314 14.761 17 12 17C9.239 17 7 14.314 7 11V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 6H4C4 6 3 10 6 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6H20C20 6 21 10 18 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Kamu sudah mencapai level tertinggi!</p>
           @endif
         </div>
       </div>

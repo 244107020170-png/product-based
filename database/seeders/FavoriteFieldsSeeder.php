@@ -94,7 +94,7 @@ class FavoriteFieldsSeeder extends Seeder
         }
 
         $total = Favorite::where('user_id', $user->id)->count();
-        $this->command->info("✅ {$total} favorit dari berbagai olahraga diinsert!");
+        $this->command->info("{$total} favorit dari berbagai olahraga diinsert!");
         $this->command->line("Akses: /favorit setelah login sebagai player@test.com");
     }
 }

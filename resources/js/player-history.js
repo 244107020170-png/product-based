@@ -43,7 +43,12 @@ ready(() => {
             if (match) visible++;
         });
 
-        if (emptyState) emptyState.hidden = visible > 0;
+        // Only show empty state if there are NO visible cards
+        // AND there are booking cards in total (meaning initial data existed)
+        if (emptyState) {
+            const shouldHide = visible > 0 || bookingCards.length === 0;
+            emptyState.hidden = shouldHide;
+        }
     };
 
     statCards.forEach(card => {
@@ -147,10 +152,7 @@ ready(() => {
     /* ── Initial active stat based on URL ── */
     const urlParams  = new URLSearchParams(window.location.search);
     const initStatus = urlParams.get('status') || 'semua';
-    const initCard   = document.querySelector(`[data-stat-filter="${initStatus}"]`);
-    if (initCard) {
-        applyStatFilter(initStatus);
-    } else {
-        applyStatFilter('semua');
-    }
+    
+    // Apply once on load so empty-state visibility is always in sync
+    applyStatFilter(initStatus);
 });

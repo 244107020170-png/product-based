@@ -154,11 +154,11 @@ resources/views/
 ---
 
 #### Status Saat Ini
-✅ Auth system berjalan (login, register, logout)  
-✅ Role system sudah disiapkan  
-✅ Routing dasar sesuai role  
-✅ Struktur frontend mulai terbentuk  
-✅ Tailwind sudah digunakan  
+Auth system berjalan (login, register, logout)  
+Role system sudah disiapkan  
+Routing dasar sesuai role  
+Struktur frontend mulai terbentuk  
+Tailwind sudah digunakan  
 
 ---
 

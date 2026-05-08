@@ -29,7 +29,7 @@
             </div>
 
             <img 
-                src="{{ asset('assets/images/characters/player.png') }}" {{-- 🔁 GANTI GAMBAR --}}
+                src="{{ asset('assets/images/characters/player.png') }}" {{-- GANTI GAMBAR --}}
                 alt="Pemain"
                 class="role-image"
             >
@@ -43,7 +43,7 @@
             </div>
 
             <img 
-                src="{{ asset('assets/images/characters/owner.png') }}" {{-- 🔁 GANTI GAMBAR --}}
+                src="{{ asset('assets/images/characters/owner.png') }}" {{-- GANTI GAMBAR --}}
                 alt="Pemilik"
                 class="role-image"
             >

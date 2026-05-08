@@ -14,7 +14,7 @@
         ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'), 'href' => route('favorite.index'), 'active' => false],
         ['label' => 'Histori', 'icon' => asset('assets/images/icons/histori.png'), 'href' => route('history.index'), 'active' => false],
         ['label' => 'Cari tim', 'icon' => asset('assets/images/icons/caritim.png'), 'href' => route('matches.index'), 'active' => true],
-        ['label' => 'Booking', 'icon' => asset('assets/images/icons/booking.png'), 'href' => url('/fields'), 'active' => false],
+        ['label' => 'Booking', 'icon' => asset('assets/images/icons/booking.png'), 'href' => route('booking.index'), 'active' => false],
         ['label' => 'Keahlianmu', 'icon' => asset('assets/images/icons/keahlian.png'), 'href' => route('skill.index'), 'active' => false],
         ['label' => 'Profil', 'icon' => asset('assets/images/icons/profil.png'), 'href' => route('profile.show'), 'active' => false],
     ];
@@ -36,6 +36,25 @@
         .team-title { margin-top: 14px; }
         .team-title h1 { margin: 0; font-size: clamp(1.35rem, 2.2vw, 1.65rem); font-weight: 900; color: #02025b; line-height: 1.1; letter-spacing: .01em; }
         .team-title p { margin: 4px 0 0; font-size: clamp(.88rem, 1.5vw, 1.02rem); font-weight: 600; color: #02025b; }
+
+        .btn-create-match {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 20px;
+            height: 40px;
+            background: #11114b;
+            color: #fff;
+            font-size: .95rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all .2s ease;
+            box-shadow: 0 4px 12px rgba(17,17,75,.15);
+        }
+        .btn-create-match:hover {
+            background: #0b0b36;
+            transform: translateY(-1px);
+        }
 
         .team-filter-wrap { margin-top: 16px; }
         .team-filter {
@@ -83,9 +102,15 @@
         .team-stage__ghost.g3 { left: calc(50% - 128px); transform: rotate(3.5deg); }
         .team-stage__ghost.g4 { left: calc(50% - 98px); transform: rotate(7deg); }
 
-        .swipe-card {
+        .swipe-stack {
             width: min(100%, 440px);
             margin: 0 auto;
+            position: relative;
+        }
+
+        .swipe-card {
+            width: 100%;
+            margin: 0;
             border-radius: 18px;
             background: rgba(255,255,255,.96);
             border: 1px solid rgba(0,0,77,.09);
@@ -94,15 +119,27 @@
             position: relative;
             z-index: 2;
             transform: translateX(0) rotate(0deg);
-            transition: transform .22s ease, opacity .22s ease;
+            transition: transform .32s cubic-bezier(.22,.61,.36,1), opacity .32s ease;
             touch-action: pan-y;
         }
-        .swipe-card.is-swiping-left { transform: translateX(-150%) rotate(-16deg); opacity: 0; }
-        .swipe-card.is-swiping-right { transform: translateX(150%) rotate(16deg); opacity: 0; }
+        .swipe-card.is-swiping-left { transform: translateX(calc(-100% - 140px)) rotate(-18deg) scale(.97); opacity: 0; }
+        .swipe-card.is-swiping-right { transform: translateX(calc(100% + 140px)) rotate(18deg) scale(.97); opacity: 0; }
+
+        .swipe-card--back {
+            position: absolute;
+            inset: 16px 0 auto 0;
+            z-index: 1;
+            transform: scale(.965);
+            opacity: .72;
+            filter: saturate(.9);
+            pointer-events: none;
+        }
+        .swipe-card--back .swipe-card__actions { display: none; }
 
         .swipe-card__photo { height: clamp(240px, 43vh, 330px); border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,77,.1); background: #d2dceb; }
         .swipe-card__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+        .swipe-card__title { margin: 0 0 4px 0; font-size: 1.15rem; color: #02025b; font-weight: 800; }
         .swipe-card__meta { margin-top: 10px; display: grid; gap: 6px; font-size: .82rem; color: #141414; font-weight: 600; }
         .swipe-card__row { display: inline-flex; align-items: center; gap: 7px; }
         .swipe-card__row svg { width: 15px; height: 15px; flex-shrink: 0; }
@@ -150,7 +187,8 @@
             .team-filter-wrap { margin-top: 10px; }
             .team-stage { min-height: 520px; padding: 20px 10px 14px; border-radius: 14px; }
             .team-stage__ghost { display: none; }
-            .swipe-card { width: min(100%, 380px); padding: 10px; border-radius: 14px; }
+            .swipe-stack { width: min(100%, 380px); }
+            .swipe-card { padding: 10px; border-radius: 14px; }
             .swipe-card__meta { font-size: .78rem; }
             .swipe-btn { font-size: .95rem; height: 34px; }
         }
@@ -246,13 +284,14 @@
                 <p>Temukan tim terbaikmu</p>
             </div>
 
-            <div class="team-filter-wrap">
+            <div class="team-filter-wrap" style="display: flex; gap: 12px; align-items: center;">
                 <select id="sport-filter" class="team-filter">
                     <option value="">Pilih Olahraga</option>
                     @foreach($sportOptions as $sport)
                         <option value="{{ $sport }}">{{ $sport }}</option>
                     @endforeach
                 </select>
+                <a href="{{ route('matches.create') }}" class="btn-create-match">Buat Match</a>
             </div>
 
             <section class="team-stage">
@@ -263,39 +302,59 @@
 
                 <div class="swipe-empty" data-swipe-empty>Tidak ada tim untuk filter ini.</div>
 
-                <article class="swipe-card" data-swipe-card>
-                    <div class="swipe-card__photo">
-                        <img data-card-image src="" alt="Tim olahraga">
-                    </div>
-                    <div class="swipe-card__meta">
-                        <div class="swipe-card__row">
-                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 18.5 14.5 18.5 9.75C18.5 6.3 15.7 3.5 12.25 3.5C8.8 3.5 6 6.3 6 9.75C6 14.5 12 21 12 21Z" fill="#EA1E1E"/><circle cx="12.2" cy="9.7" r="2.1" fill="white"/></svg>
-                            <span data-card-venue></span>
+                <div class="swipe-stack">
+                    <article class="swipe-card swipe-card--back" data-swipe-card-back hidden>
+                        <div class="swipe-card__photo">
+                            <img data-card-back-image src="" alt="Tim olahraga berikutnya">
                         </div>
-                        <div class="swipe-card__row">
-                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" fill="#F28B1D"/><path d="M3.8 12H20.2" stroke="#111" stroke-width="1.5"/></svg>
-                            <span data-card-sport></span>
+                        <div class="swipe-card__meta">
+                            <h3 class="swipe-card__title" data-card-back-title></h3>
+                            <div class="swipe-card__row">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 18.5 14.5 18.5 9.75C18.5 6.3 15.7 3.5 12.25 3.5C8.8 3.5 6 6.3 6 9.75C6 14.5 12 21 12 21Z" fill="#EA1E1E"/><circle cx="12.2" cy="9.7" r="2.1" fill="white"/></svg>
+                                <span data-card-back-venue></span>
+                            </div>
+                            <div class="swipe-card__row">
+                                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" fill="#F28B1D"/><path d="M3.8 12H20.2" stroke="#111" stroke-width="1.5"/></svg>
+                                <span data-card-back-sport></span>
+                            </div>
                         </div>
-                        <div class="swipe-card__row">
-                            <svg viewBox="0 0 24 24" fill="none"><path d="M7 10.5C7 8.57 8.57 7 10.5 7C11.96 7 13.22 7.9 13.75 9.17C14.2 8.88 14.74 8.7 15.33 8.7C16.95 8.7 18.27 10.02 18.27 11.64C18.27 13.26 16.95 14.58 15.33 14.58H8.7C7.21 14.58 6 13.37 6 11.88C6 11.27 6.2 10.72 6.53 10.27" stroke="#111" stroke-width="1.7" stroke-linecap="round"/></svg>
-                            <span data-card-needs></span>
+                    </article>
+
+                    <article class="swipe-card" data-swipe-card>
+                        <div class="swipe-card__photo">
+                            <img data-card-image src="" alt="Tim olahraga">
                         </div>
-                        <div class="swipe-card__row">
-                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#111" stroke-width="1.7"/><path d="M12 7.6V12.4L15.2 14.2" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span data-card-schedule></span>
+                        <div class="swipe-card__meta">
+                            <h3 class="swipe-card__title" data-card-title></h3>
+                            <div class="swipe-card__row">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 18.5 14.5 18.5 9.75C18.5 6.3 15.7 3.5 12.25 3.5C8.8 3.5 6 6.3 6 9.75C6 14.5 12 21 12 21Z" fill="#EA1E1E"/><circle cx="12.2" cy="9.7" r="2.1" fill="white"/></svg>
+                                <span data-card-venue></span>
+                            </div>
+                            <div class="swipe-card__row">
+                                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" fill="#F28B1D"/><path d="M3.8 12H20.2" stroke="#111" stroke-width="1.5"/></svg>
+                                <span data-card-sport></span>
+                            </div>
+                            <div class="swipe-card__row">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M7 10.5C7 8.57 8.57 7 10.5 7C11.96 7 13.22 7.9 13.75 9.17C14.2 8.88 14.74 8.7 15.33 8.7C16.95 8.7 18.27 10.02 18.27 11.64C18.27 13.26 16.95 14.58 15.33 14.58H8.7C7.21 14.58 6 13.37 6 11.88C6 11.27 6.2 10.72 6.53 10.27" stroke="#111" stroke-width="1.7" stroke-linecap="round"/></svg>
+                                <span data-card-needs></span>
+                            </div>
+                            <div class="swipe-card__row">
+                                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#111" stroke-width="1.7"/><path d="M12 7.6V12.4L15.2 14.2" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span data-card-schedule></span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="swipe-card__actions">
-                        <button type="button" class="swipe-btn swipe-btn--skip" data-swipe-skip>
-                            <svg viewBox="0 0 24 24" fill="none"><path d="M6.5 6.5L17.5 17.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M17.5 6.5L6.5 17.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-                            <span>Lewati</span>
-                        </button>
-                        <button type="button" class="swipe-btn swipe-btn--join" data-swipe-join>
-                            <svg viewBox="0 0 24 24" fill="none"><path d="M12.6 20.2C12.26 20.36 11.86 20.36 11.52 20.2C8.52 18.76 5 15.8 5 11.94C5 8.95 7.42 6.53 10.4 6.53C11.57 6.53 12.67 6.9 13.58 7.59C14.49 6.9 15.59 6.53 16.76 6.53C19.74 6.53 22.16 8.95 22.16 11.94C22.16 15.8 18.64 18.76 15.64 20.2" fill="currentColor"/></svg>
-                            <span>Join Tim</span>
-                        </button>
-                    </div>
-                </article>
+                        <div class="swipe-card__actions">
+                            <button type="button" class="swipe-btn swipe-btn--skip" data-swipe-skip>
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M6.5 6.5L17.5 17.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M17.5 6.5L6.5 17.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+                                <span>Lewati</span>
+                            </button>
+                            <button type="button" class="swipe-btn swipe-btn--join" data-swipe-join>
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M12.6 20.2C12.26 20.36 11.86 20.36 11.52 20.2C8.52 18.76 5 15.8 5 11.94C5 8.95 7.42 6.53 10.4 6.53C11.57 6.53 12.67 6.9 13.58 7.59C14.49 6.9 15.59 6.53 16.76 6.53C19.74 6.53 22.16 8.95 22.16 11.94C22.16 15.8 18.64 18.76 15.64 20.2" fill="currentColor"/></svg>
+                                <span>Join Tim</span>
+                            </button>
+                        </div>
+                    </article>
+                </div>
             </section>
         </section>
     </main>
@@ -303,65 +362,125 @@
 
 <script>
 (() => {
-    const allCards = @json($cards);
+    const allCardsRaw = @json($cards);
     const sportFilter = document.getElementById('sport-filter');
     const cardEl = document.querySelector('[data-swipe-card]');
+    const backCardEl = document.querySelector('[data-swipe-card-back]');
     const emptyEl = document.querySelector('[data-swipe-empty]');
     const skipBtn = document.querySelector('[data-swipe-skip]');
     const joinBtn = document.querySelector('[data-swipe-join]');
+    const titleEl = document.querySelector('[data-card-title]');
+    const backTitleEl = document.querySelector('[data-card-back-title]');
     const imageEl = document.querySelector('[data-card-image]');
+    const backImageEl = document.querySelector('[data-card-back-image]');
     const venueEl = document.querySelector('[data-card-venue]');
+    const backVenueEl = document.querySelector('[data-card-back-venue]');
     const sportEl = document.querySelector('[data-card-sport]');
+    const backSportEl = document.querySelector('[data-card-back-sport]');
     const needsEl = document.querySelector('[data-card-needs]');
     const scheduleEl = document.querySelector('[data-card-schedule]');
 
-    let deck = [...allCards];
+    if (!cardEl || !emptyEl || !skipBtn || !joinBtn || !imageEl || !venueEl || !sportEl || !needsEl || !scheduleEl) {
+        return;
+    }
+
+    const allCards = (Array.isArray(allCardsRaw) ? allCardsRaw : Object.values(allCardsRaw || {}))
+        .filter((item) => item && typeof item === 'object')
+        .map((item, index) => ({
+            ...item,
+            _swipeKey: String(item.id ?? `idx-${index}`),
+        }));
+
+    let deck = [];
+    const swipedKeys = new Set();
     let pointerStartX = null;
     let dragShiftX = 0;
+    let isAnimating = false;
 
     const buildDeck = () => {
         const selectedSport = sportFilter?.value || '';
-        deck = selectedSport ? allCards.filter((item) => item.sport === selectedSport) : [...allCards];
+        const pool = allCards.filter((item) => !selectedSport || item.sport === selectedSport);
+        let available = pool.filter((item) => !swipedKeys.has(item._swipeKey));
+
+        // Auto-loop for simulation: if pool exists but all cards swiped, recycle pool
+        if (!available.length && pool.length) {
+            pool.forEach((item) => swipedKeys.delete(item._swipeKey));
+            available = [...pool];
+        }
+
+        deck = available.filter((item) => {
+            const matchesSport = !selectedSport || item.sport === selectedSport;
+            const notSwiped = !swipedKeys.has(item._swipeKey);
+            return matchesSport && notSwiped;
+        });
         renderCard();
+    };
+
+    const resetCardTransform = () => {
+        cardEl.classList.remove('is-swiping-left', 'is-swiping-right');
+        cardEl.style.transition = '';
+        cardEl.style.transform = '';
     };
 
     const renderCard = () => {
         if (!deck.length) {
             cardEl.style.display = 'none';
+            if (backCardEl) backCardEl.hidden = true;
             emptyEl.classList.add('is-visible');
             skipBtn.disabled = true;
             joinBtn.disabled = true;
+            isAnimating = false;
             return;
         }
 
         const current = deck[0];
         cardEl.style.display = 'block';
+        resetCardTransform();
         emptyEl.classList.remove('is-visible');
         skipBtn.disabled = false;
         joinBtn.disabled = false;
         imageEl.src = current.image;
         imageEl.alt = `Tim ${current.sport}`;
+        if (titleEl) titleEl.textContent = current.title;
         venueEl.textContent = current.venue;
         sportEl.textContent = current.sport;
         needsEl.textContent = `Butuh ${current.neededPlayers} pemain`;
         scheduleEl.textContent = current.schedule;
-    };
 
-    const rotateDeck = () => {
-        const first = deck.shift();
-        if (first) deck.push(first);
-        renderCard();
+        if (backCardEl && backImageEl && backVenueEl && backSportEl) {
+            const next = deck[1];
+            if (next) {
+                backCardEl.hidden = false;
+                backImageEl.src = next.image;
+                backImageEl.alt = `Tim ${next.sport}`;
+                if (backTitleEl) backTitleEl.textContent = next.title;
+                backVenueEl.textContent = next.venue;
+                backSportEl.textContent = next.sport;
+            } else {
+                backCardEl.hidden = true;
+            }
+        }
     };
 
     const swipe = (direction) => {
-        if (!deck.length) return;
-        cardEl.classList.remove('is-swiping-left', 'is-swiping-right');
+        if (!deck.length || isAnimating) return;
+        isAnimating = true;
+        resetCardTransform();
         cardEl.classList.add(direction === 'left' ? 'is-swiping-left' : 'is-swiping-right');
+
+        const current = deck[0];
+        if (current) {
+            swipedKeys.add(current._swipeKey);
+        }
+
         setTimeout(() => {
-            cardEl.classList.remove('is-swiping-left', 'is-swiping-right');
-            cardEl.style.transform = '';
-            rotateDeck();
-        }, 210);
+            isAnimating = false;
+            if (direction === 'right' && current) {
+                window.location.href = `/cari-tim/${current.id}`;
+            } else {
+                buildDeck();
+            }
+        }, 300);
     };
 
     skipBtn?.addEventListener('click', () => swipe('left'));
@@ -369,11 +488,10 @@
     sportFilter?.addEventListener('change', buildDeck);
 
     cardEl?.addEventListener('pointerdown', (event) => {
-        if (!deck.length) return;
+        if (!deck.length || isAnimating) return;
         pointerStartX = event.clientX;
         dragShiftX = 0;
         cardEl.style.transition = 'none';
-        cardEl.setPointerCapture(event.pointerId);
     });
     cardEl?.addEventListener('pointermove', (event) => {
         if (pointerStartX === null) return;

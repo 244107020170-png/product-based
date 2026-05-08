@@ -27,7 +27,14 @@ Route::get('/dashboard', function () {
         return redirect('/admin/dashboard');
     } else {
         $fields = \App\Models\Field::with('owner')->get();
-        return view('fields.index', compact('fields')); // player dashboard now shows available fields
+        $upcomingMatch = $user->joinedMatches()->where('date', '>=', now()->toDateString())->orderBy('date')->orderBy('time')->first();
+        if(!$upcomingMatch) $upcomingMatch = $user->createdMatches()->where('date', '>=', now()->toDateString())->orderBy('date')->orderBy('time')->first();
+        
+        $recommendedMatches = \App\Models\Matchs::with('field')->where('date', '>=', now()->toDateString())->inRandomOrder()->limit(3)->get();
+        $pesanLagiFields = \App\Models\Field::inRandomOrder()->limit(3)->get();
+        $favoriteFields = \App\Models\Favorite::with('field')->where('user_id', $user->id)->limit(3)->get();
+        
+        return view('fields.index', compact('fields', 'upcomingMatch', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields')); // player dashboard now shows available fields
     }
 })->middleware(['auth'])->name('dashboard');
 
@@ -67,9 +74,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking/{field}', [BookingController::class, 'show'])->name('booking.show');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/bookings', [BookingController::class, 'index'])->name('booking.index');
+    Route::get('/bookings/{booking}', [BookingController::class, 'detail'])->name('booking.detail');
 
     Route::get('/matches', [ActivityController::class, 'index'])->name('activity.index');
     Route::get('/cari-tim', [MatchController::class, 'index'])->name('matches.index');
+    Route::get('/buat-match', [MatchController::class, 'create'])->name('matches.create');
+    Route::post('/buat-match', [MatchController::class, 'store'])->name('matches.store');
+    Route::get('/cari-tim/{match}', [MatchController::class, 'show'])->name('matches.show');
+    Route::post('/cari-tim/{match}/join', [MatchController::class, 'join'])->name('matches.join');
 
     /* FAVORIT */
     Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorite.index');

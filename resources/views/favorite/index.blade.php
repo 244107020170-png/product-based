@@ -12,7 +12,7 @@
         ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'),  'href' => route('favorite.index'),   'active' => true],
         ['label' => 'Histori',   'icon' => asset('assets/images/icons/histori.png'),    'href' => route('history.index'),    'active' => false],
         ['label' => 'Cari tim',  'icon' => asset('assets/images/icons/caritim.png'),   'href' => route('matches.index'),    'active' => false],
-        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => url('/fields'),            'active' => false],
+        ['label' => 'Booking',   'icon' => asset('assets/images/icons/booking.png'),   'href' => route('booking.index'),            'active' => false],
         ['label' => 'Keahlianmu','icon' => asset('assets/images/icons/keahlian.png'),  'href' => route('skill.index'),      'active' => false],
         ['label' => 'Profil',    'icon' => asset('assets/images/icons/profil.png'),    'href' => route('profile.show'),     'active' => false],
     ];
@@ -125,6 +125,11 @@
     justify-content: center;
     font-size: 2.8rem;
 }
+.fav-card__img-placeholder svg {
+    width: 56px;
+    height: 56px;
+    color: rgba(255, 255, 255, .95);
+}
 
 /* remove (x) button */
 .fav-card__remove {
@@ -189,7 +194,15 @@
     border-radius: 24px;
     box-shadow: 0 16px 38px rgba(0,0,77,.07);
 }
-.fav-empty__icon { font-size: 4rem; opacity: .35; }
+.fav-empty__icon {
+    width: 64px;
+    height: 64px;
+    opacity: .35;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.fav-empty__icon svg { width: 100%; height: 100%; }
 .fav-empty__title { font-size: 1.1rem; font-weight: 800; color: #00004d; margin: 0; }
 .fav-empty__sub   { font-size: .85rem; color: rgba(0,0,77,.52); font-weight: 600; margin: 0; }
 .fav-empty__btn {
@@ -329,7 +342,11 @@
     @if(empty($grouped))
       {{-- Empty state --}}
       <div class="fav-empty">
-        <span class="fav-empty__icon">⭐</span>
+        <span class="fav-empty__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M6 4.5H18C18.6 4.5 19 4.9 19 5.5V21L12 17L5 21V5.5C5 4.9 5.4 4.5 6 4.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </span>
         <p class="fav-empty__title">Belum ada lapangan favorit</p>
         <p class="fav-empty__sub">Tandai lapangan favoritmu saat booking untuk memunculkannya di sini.</p>
         <a href="{{ url('/fields') }}" class="fav-empty__btn">Jelajahi Lapangan</a>
@@ -341,13 +358,13 @@
         @php
           $gradient = $sportGradients[$sport] ?? $sportGradients['Lainnya'];
           $sportEmoji = match($sport) {
-              'Futsal'    => '⚽',
-              'Voli'      => '🏐',
-              'Badminton' => '🏸',
-              'Basket'    => '🏀',
-              'Renang'    => '🏊',
-              'Tennis'    => '🎾',
-              default     => '🏟️',
+              'Futsal'    => '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 3V21M3 12H21M6.5 6.5L17.5 17.5M17.5 6.5L6.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+              'Voli'      => '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 3C15.2 5.5 17 8.6 17 12.2M7 12.2C7 8.6 8.8 5.5 12 3M4.5 15.5C8.2 14.2 11.8 14.2 15.5 15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+              'Badminton' => '<svg viewBox="0 0 24 24" fill="none"><path d="M9 5L19 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="5" y="13" width="3" height="7" rx="1" transform="rotate(-45 5 13)" stroke="currentColor" stroke-width="2"/><path d="M14 4L20 10M12 6L18 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+              'Basket'    => '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 3V21M3 12H21M6 6C8.8 8 8.8 16 6 18M18 6C15.2 8 15.2 16 18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+              'Renang'    => '<svg viewBox="0 0 24 24" fill="none"><path d="M3 16C4.5 17.2 6 17.2 7.5 16C9 14.8 10.5 14.8 12 16C13.5 17.2 15 17.2 16.5 16C18 14.8 19.5 14.8 21 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 10L10 7L13 10M16 10V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+              'Tennis'    => '<svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="2"/><path d="M5.5 5.5C7.5 7 10.5 11 12.5 12.5M18.5 18.5L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="14" y="14" width="7" height="3" rx="1.5" transform="rotate(45 14 14)" stroke="currentColor" stroke-width="2"/></svg>',
+              default     => '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/></svg>',
           };
         @endphp
         <div class="fav-section" data-sport-section="{{ $sport }}">
@@ -371,9 +388,9 @@
                        alt="{{ $field->name }}"
                        class="fav-card__img"
                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                  <div class="fav-card__img-placeholder" style="background:{{ $gradient }};display:none">{{ $sportEmoji }}</div>
+                  <div class="fav-card__img-placeholder" style="background:{{ $gradient }};display:none">{!! $sportEmoji !!}</div>
                 @else
-                  <div class="fav-card__img-placeholder" style="background:{{ $gradient }}">{{ $sportEmoji }}</div>
+                  <div class="fav-card__img-placeholder" style="background:{{ $gradient }}">{!! $sportEmoji !!}</div>
                 @endif
 
                 {{-- Meta --}}

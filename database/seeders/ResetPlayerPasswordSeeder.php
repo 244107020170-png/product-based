@@ -18,9 +18,9 @@ class ResetPlayerPasswordSeeder extends Seeder
             ]);
 
         if ($updated) {
-            $this->command->info('✅ Password player@test.com berhasil direset ke: password');
+            $this->command->info('Password player@test.com berhasil direset ke: password');
         } else {
-            $this->command->error('❌ User tidak ditemukan!');
+            $this->command->error('User tidak ditemukan!');
         }
     }
 }

@@ -59,6 +59,8 @@
         .bk-info h1 { font-size: 24px; font-weight: 800; color: #000; margin: 0 0 12px 0; }
         .bk-meta { display: flex; align-items: center; gap: 16px; font-size: 14px; color: #333; font-weight: 600; }
         .bk-meta-item { display: flex; align-items: center; gap: 6px; }
+        .bk-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; }
+        .bk-icon svg { width: 18px; height: 18px; }
         
         /* Fasilitas Toggle */
         .bk-fasilitas-wrapper { background: #fffdf5; border-radius: 0 0 20px 20px; margin-top: -10px; padding: 24px 20px 20px; border-top: 1px dashed #eee; display: none; }
@@ -226,15 +228,31 @@
                     <h1 x-text="selectedField.name"></h1>
                     <div class="bk-meta">
                         <div class="bk-meta-item">
-                            <span style="color: #ff4d4d; font-size: 18px;">📍</span>
+                            <span class="bk-icon" style="color: #ff4d4d;">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                    <circle cx="12" cy="10.5" r="2.4" fill="currentColor"/>
+                                </svg>
+                            </span>
                             <span x-text="selectedField.location"></span>
                         </div>
                         <div class="bk-meta-item">
-                            <span style="color: #fbbf24; font-size: 18px;">⭐</span>
+                            <span class="bk-icon" style="color: #fbbf24;">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 3L14.9 8.7L21 9.6L16.5 14L17.6 20L12 17.1L6.4 20L7.5 14L3 9.6L9.1 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
                             <span x-text="selectedField.rating || '4.8'"></span>
                         </div>
                         <div class="bk-meta-item">
-                            <span style="color: #b45309; font-size: 18px;">💰</span>
+                            <span class="bk-icon" style="color: #b45309;">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M9 10.5C9 9.1 10.2 8 11.8 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M9 13.5H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M9.5 16C10 16.7 10.9 17 12 17C13.5 17 14.7 16.1 14.9 14.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </span>
                             <span x-text="formatPrice(selectedField.price_per_hour) + ' / jam'"></span>
                         </div>
                     </div>
@@ -250,12 +268,17 @@
             {{-- Fasilitas (Collapsible) --}}
             <div class="bk-fasilitas-wrapper" :class="{ 'open': showFasilitas }">
                 <div class="bk-fasilitas-title">
-                    <span style="color: #fbbf24;">⭐</span> Fasilitas
+                    <span class="bk-icon" style="color: #fbbf24;">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 3L14.9 8.7L21 9.6L16.5 14L17.6 20L12 17.1L6.4 20L7.5 14L3 9.6L9.1 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    Fasilitas
                 </div>
                 <div class="bk-fasilitas-grid">
                     <template x-for="f in selectedFieldFacilities" :key="f.name">
                         <div class="bk-f-item">
-                            <span x-text="f.icon" style="font-size: 16px;"></span>
+                            <span x-html="f.icon" class="bk-icon" style="color:#0f766e;"></span>
                             <span x-text="f.name"></span>
                         </div>
                     </template>
@@ -353,7 +376,12 @@
                     <div class="bk-summary-title">Ringkasan Pesanan</div>
                     
                     <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-                        <span style="color: #ff4d4d; font-size: 18px; margin-top: 2px;">📍</span>
+                        <span class="bk-icon" style="color: #ff4d4d; margin-top: 2px;">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                <circle cx="12" cy="10.5" r="2.4" fill="currentColor"/>
+                            </svg>
+                        </span>
                         <div>
                             <div style="font-weight: 700; color: #000; font-size: 14px;" x-text="selectedField.name"></div>
                             <div style="font-size: 12px; color: #666; margin-top: 2px;" x-text="selectedField.location"></div>
@@ -469,19 +497,20 @@ function bookingApp() {
         
         get selectedFieldFacilities() {
             const facilities = this.selectedField.facilities || [];
+            const checkIcon = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle><path d="M8 12.5L10.8 15.2L16 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
             const facilityIcons = {
-                'Rumput Premium': '🌿',
-                'Mushala': '🕌',
-                'Toilet Bersih': '🚻',
-                'Kursi': '🪑',
-                'Parkir Luas': '🅿️',
-                'LED Tuning': '💡',
-                'Kantin': '🍜',
-                'Ruang Ganti': '👕',
-                'AC': '❄️',
-                'WiFi': '📡',
+                'Rumput Premium': checkIcon,
+                'Mushala': checkIcon,
+                'Toilet Bersih': checkIcon,
+                'Kursi': checkIcon,
+                'Parkir Luas': checkIcon,
+                'LED Tuning': checkIcon,
+                'Kantin': checkIcon,
+                'Ruang Ganti': checkIcon,
+                'AC': checkIcon,
+                'WiFi': checkIcon,
             };
-            return facilities.map(f => ({ name: f, icon: facilityIcons[f] || '✓' }));
+            return facilities.map(f => ({ name: f, icon: facilityIcons[f] || checkIcon }));
         },
         
         formatPrice(price) {

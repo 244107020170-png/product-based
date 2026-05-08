@@ -31,6 +31,10 @@ class TeamSwipeSeeder extends Seeder
             ['name' => 'Rafi', 'email' => 'rafi.swipe@example.com'],
             ['name' => 'Anya', 'email' => 'anya.swipe@example.com'],
             ['name' => 'Bimo', 'email' => 'bimo.swipe@example.com'],
+            ['name' => 'Sasa', 'email' => 'sasa.swipe@example.com'],
+            ['name' => 'Tyo', 'email' => 'tyo.swipe@example.com'],
+            ['name' => 'Lina', 'email' => 'lina.swipe@example.com'],
+            ['name' => 'Damar', 'email' => 'damar.swipe@example.com'],
         ])->map(function ($player) {
             return User::firstOrCreate(
                 ['email' => $player['email']],
@@ -61,18 +65,29 @@ class TeamSwipeSeeder extends Seeder
             );
         })->keyBy('name');
 
-        $matchRows = [
-            ['title' => 'Basket Sabtu Night', 'field' => 'GOR Bimasakti Malang', 'dayOffset' => 2, 'time' => '20:00:00', 'max' => 10],
-            ['title' => 'Basket Fun Match', 'field' => 'GOR Bimasakti Malang', 'dayOffset' => 4, 'time' => '19:00:00', 'max' => 10],
-            ['title' => 'Futsal Sparring', 'field' => 'Champion Futsal Malang', 'dayOffset' => 1, 'time' => '21:00:00', 'max' => 12],
-            ['title' => 'Futsal Friendly', 'field' => 'Champion Futsal Malang', 'dayOffset' => 5, 'time' => '20:30:00', 'max' => 12],
-            ['title' => 'Badminton Double Mix', 'field' => 'GOR Bulu Tangkis Tidar', 'dayOffset' => 3, 'time' => '18:00:00', 'max' => 8],
-            ['title' => 'Badminton Latihan', 'field' => 'GOR Bulu Tangkis Tidar', 'dayOffset' => 6, 'time' => '19:30:00', 'max' => 8],
-            ['title' => 'Voli Sore Seru', 'field' => 'Lapangan Voli Veteran', 'dayOffset' => 2, 'time' => '17:00:00', 'max' => 12],
-            ['title' => 'Voli Weekend', 'field' => 'Lapangan Voli Veteran', 'dayOffset' => 7, 'time' => '16:30:00', 'max' => 12],
-            ['title' => 'Tennis Rally Session', 'field' => 'Tennis Court Soekarno', 'dayOffset' => 1, 'time' => '18:30:00', 'max' => 6],
-            ['title' => 'Tennis Match Up', 'field' => 'Tennis Court Soekarno', 'dayOffset' => 5, 'time' => '08:00:00', 'max' => 6],
+        $baseTitles = [
+            'GOR Bimasakti Malang' => ['Basket Fun Match', 'Basket Sparring', 'Basket 3x3', 'Basket Pagi', 'Basket Malam'],
+            'Champion Futsal Malang' => ['Futsal Mabar', 'Futsal Sparring', 'Mini Soccer Fun', 'Futsal Malam', 'Futsal Kantor'],
+            'GOR Bulu Tangkis Tidar' => ['Badminton Double Mix', 'Badminton Latihan', 'Tepok Bulu', 'Badminton Pagi', 'Badminton Santai'],
+            'Lapangan Voli Veteran' => ['Voli Sore', 'Voli Pagi', 'Voli Sparring', 'Voli Santai', 'Voli Weekend'],
+            'Tennis Court Soekarno' => ['Tennis Rally', 'Tennis Match Up', 'Tennis Pagi', 'Tennis Santai', 'Tennis Sore'],
         ];
+
+        $matchRows = [];
+        for ($i = 0; $i < 150; $i++) {
+            $field = $fieldRows[array_rand($fieldRows)];
+            $titles = $baseTitles[$field['name']];
+            $title = $titles[array_rand($titles)] . ' Part ' . rand(1, 100);
+            $max = in_array('Futsal', explode(' ', $title)) ? rand(10, 14) : (in_array('Basket', explode(' ', $title)) ? rand(6, 10) : rand(4, 12));
+
+            $matchRows[] = [
+                'title' => $title,
+                'field' => $field['name'],
+                'dayOffset' => rand(1, 60),
+                'time' => str_pad(rand(6, 22), 2, '0', STR_PAD_LEFT) . ':' . (rand(0, 1) ? '30' : '00') . ':00',
+                'max' => $max,
+            ];
+        }
 
         foreach ($matchRows as $index => $row) {
             $match = Matchs::updateOrCreate(
@@ -90,13 +105,15 @@ class TeamSwipeSeeder extends Seeder
 
             MatchPlayer::where('match_id', $match->id)->delete();
 
-            $joinedCount = min($row['max'] - 1, 3 + ($index % 4));
-            $players->take($joinedCount)->each(function ($player) use ($match) {
-                MatchPlayer::create([
-                    'match_id' => $match->id,
-                    'user_id' => $player->id,
-                ]);
-            });
+            $joinedCount = rand(0, $row['max'] - 1);
+            if ($joinedCount > 0) {
+                $players->shuffle()->take($joinedCount)->each(function ($player) use ($match) {
+                    MatchPlayer::create([
+                        'match_id' => $match->id,
+                        'user_id' => $player->id,
+                    ]);
+                });
+            }
         }
     }
 }

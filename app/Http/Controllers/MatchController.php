@@ -21,6 +21,7 @@ class MatchController extends Controller
 
             return [
                 'id' => $match->id,
+                'title' => $match->title,
                 'sport' => $sport,
                 'venue' => $fieldName,
                 'neededPlayers' => $neededPlayers,
@@ -30,6 +31,56 @@ class MatchController extends Controller
         })->values();
 
         return view('matches.index', compact('cards'));
+    }
+
+    public function create()
+    {
+        $fields = \App\Models\Field::all();
+        return view('matches.create', compact('fields'));
+    }
+
+    public function store(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'field_id' => 'required|exists:fields,id',
+            'date' => 'required|date',
+            'time' => 'required',
+            'max_player' => 'required|integer|min:1',
+        ]);
+
+        $validated['created_by'] = auth()->id();
+
+        Matchs::create($validated);
+
+        return redirect()->route('matches.index')->with('success', 'Match berhasil dibuat!');
+    }
+
+    public function show(Matchs $match)
+    {
+        $match->load(['field', 'creator', 'players']);
+        $sport = $this->detectSport($match->title . ' ' . ($match->field?->name ?? ''));
+        $image = $this->sportImage($sport);
+        
+        $hasJoined = $match->players->contains(auth()->id());
+        $isCreator = $match->created_by === auth()->id();
+        
+        return view('matches.show', compact('match', 'sport', 'image', 'hasJoined', 'isCreator'));
+    }
+
+    public function join(Matchs $match)
+    {
+        if ($match->players->contains(auth()->id())) {
+            return back()->with('error', 'Kamu sudah bergabung dalam tim ini!');
+        }
+
+        if ($match->players->count() >= $match->max_player) {
+            return back()->with('error', 'Tim sudah penuh!');
+        }
+
+        $match->players()->attach(auth()->id());
+
+        return back()->with('success', 'Berhasil bergabung dengan tim!');
     }
 
     private function detectSport(string $value): string

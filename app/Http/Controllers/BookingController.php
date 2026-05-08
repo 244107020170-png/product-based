@@ -77,4 +77,18 @@ class BookingController extends Controller
         $bookings = auth()->user()->bookings()->with('field')->get();
         return view('booking.index', ['bookings' => $bookings]);
     }
+
+    /**
+     * Show booking details
+     */
+    public function detail(Booking $booking)
+    {
+        // Check if the booking belongs to the current user
+        if ($booking->user_id !== auth()->id()) {
+            abort(403);
+        }
+        
+        $booking->load('field');
+        return view('booking.detail', compact('booking'));
+    }
 }

@@ -120,43 +120,80 @@
 
         @if(session('success'))
         <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
-            ✅ {{ session('success') }}
+            <span style="display:inline-flex;vertical-align:-3px;margin-right:6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M8 12.5L10.8 15.2L16 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <span>{{ session('success') }}</span>
         </div>
         @endif
 
         @if($bookings->isEmpty())
         <div style="text-align: center; padding: 60px 20px;">
-            <h2 style="font-size: 24px; font-weight: bold; color: #001a4d; margin-bottom: 10px;">📚 Belum Ada Booking</h2>
+            <h2 style="font-size: 24px; font-weight: bold; color: #02025b; margin-bottom: 10px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M8 7H16M8 11H16M8 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Belum Ada Booking
+            </h2>
             <p style="color: #666; margin-bottom: 30px;">Mulai booking lapangan favorit kamu sekarang juga!</p>
-            <a href="{{ route('dashboard') }}" style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            <a href="{{ route('dashboard') }}" style="display: inline-block; padding: 12px 30px; background: #43a680; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
                 Cari Lapangan
             </a>
         </div>
         @else
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
             @foreach($bookings as $booking)
-            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <div style="background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); color: white; padding: 16px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold;">{{ $booking->field->name }}</h3>
-                    <p style="margin: 0; font-size: 14px; opacity: 0.9;">📍 {{ $booking->field->location }}</p>
+            <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,77,.08); border: 1px solid rgba(0,0,77,.06); display: flex; flex-direction: column; height: 100%;">
+                <div style="background: linear-gradient(135deg, #02025b 0%, #11114b 100%); color: white; padding: 16px;">
+                    <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 800; letter-spacing: .02em;">{{ $booking->field->name }}</h3>
+                    <p style="margin: 0; font-size: 14px; opacity: 0.9; display:flex; align-items:center; gap:6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            <circle cx="12" cy="10.5" r="2.4" fill="currentColor"/>
+                        </svg>
+                        <span>{{ $booking->field->location }}</span>
+                    </p>
                 </div>
-                <div style="padding: 16px;">
+                <div style="padding: 16px; display: flex; flex-direction: column; flex: 1;">
                     <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
-                            <span style="color: #666;">📅 Tanggal:</span>
-                            <span style="font-weight: 600; color: #001a4d;">{{ $booking->date->format('d M Y') }}</span>
+                            <span style="color: #666; display:flex; align-items:center; gap:6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                    <rect x="3.5" y="5.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                                <span>Tanggal:</span>
+                            </span>
+                            <span style="font-weight: 700; color: #02025b;">{{ $booking->date->format('d M Y') }}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; font-size: 14px;">
-                            <span style="color: #666;">⏰ Jam:</span>
-                            <span style="font-weight: 600; color: #001a4d;">{{ $booking->start_time }} - {{ $booking->end_time }}</span>
+                            <span style="color: #666; display:flex; align-items:center; gap:6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/>
+                                    <path d="M12 7.5V12.5L15 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Jam:</span>
+                            </span>
+                            <span style="font-weight: 700; color: #02025b;">{{ $booking->start_time }} - {{ $booking->end_time }}</span>
                         </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 14px; color: #666;">Total: <span style="font-weight: 700; color: #001a4d;">Rp{{ number_format($booking->total_price, 0, ',', '.') }}</span></span>
+                        <span style="font-size: 14px; color: #666;">Total: <span style="font-weight: 800; color: #02025b;">Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</span></span>
                         <span style="display: inline-block; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 600;
                             {{ $booking->status === 'confirmed' ? 'background: #d4edda; color: #155724;' : 'background: #fff3cd; color: #856404;' }}">
                             {{ ucfirst($booking->status) }}
                         </span>
+                    </div>
+                    
+                    <div style="margin-top: auto; border-top: 1px dashed rgba(0,0,77,.1); padding-top: 16px;">
+                        <a href="{{ route('booking.detail', $booking->id) }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 0; background: #f5f7fa; color: #02025b; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: .95rem; border: 1px solid rgba(0,0,77,.1); transition: all .2s ease;" onmouseover="this.style.background='#ebeef4';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f5f7fa';this.style.transform='none'">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Lihat Detail Booking
+                        </a>
                     </div>
                 </div>
             </div>
@@ -168,7 +205,6 @@
 </main>
 </div>
 
-document.addEventListener('DOMContentLoaded', function() {
 <script src="{{ asset('js/player-dashboard.js') }}"></script>
 </body>
 </html>
