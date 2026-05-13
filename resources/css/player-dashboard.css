@@ -674,7 +674,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    border-radius: 0;
+    border-radius: 12px;
     background: transparent;
 }
 

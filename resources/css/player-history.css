@@ -1,0 +1,553 @@
+/* ============================================================
+   PLAYER HISTORY PAGE — player-history.css
+   Inherits variables from player-dashboard.css
+   ============================================================ */
+
+/* ── Page wrapper ── */
+.history-page {
+    padding: 8px 0 40px;
+}
+
+/* ── Page title ── */
+.history-page__title {
+    margin: 0 0 24px;
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    font-weight: 800;
+    color: var(--pd-primary);
+    padding-left: 20px;
+}
+
+/* ── Stats row ── */
+.history-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    padding: 0 20px;
+    margin-bottom: 22px;
+}
+
+.history-stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid rgba(0,0,77,0.07);
+    border-radius: 18px;
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.92);
+    box-shadow: var(--pd-shadow-soft);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.history-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--pd-shadow);
+}
+
+.history-stat-card.is-active {
+    background: rgba(255,246,215,0.98);
+    box-shadow: var(--pd-shadow);
+}
+
+.history-stat-card__number {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--pd-primary);
+}
+
+.history-stat-card__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(0,0,77,0.62);
+}
+
+.history-stat-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.history-stat-dot--semua     { background: #00004d; }
+.history-stat-dot--selesai   { background: #1e8f67; }
+.history-stat-dot--akan      { background: #f59e0b; }
+.history-stat-dot--dibatal   { background: #ef4444; }
+
+/* ── Toolbar (filters + total) ── */
+.history-toolbar {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 0 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.history-filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ── Dropdown filter ── */
+.hfilter {
+    position: relative;
+}
+
+.hfilter__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(0,0,77,0.1);
+    border-radius: 16px;
+    padding: 7px 13px 7px 13px;
+    background: rgba(255,255,255,0.92);
+    box-shadow: var(--pd-shadow-soft);
+    color: var(--pd-primary);
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.hfilter__btn:hover {
+    background: rgba(255,246,215,0.92);
+}
+
+.hfilter__chevron {
+    display: inline-flex;
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-1px);
+    transition: transform 0.2s ease;
+    margin-left: 2px;
+}
+
+.hfilter.is-open .hfilter__chevron {
+    transform: rotate(-135deg) translateX(-1px);
+}
+
+.hfilter__tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.hfilter__tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 3px 11px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 1.5px solid rgba(0,0,77,0.13);
+    background: transparent;
+    color: rgba(0,0,77,0.55);
+    cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.hfilter__tag:hover {
+    background: rgba(255,246,215,0.9);
+    color: var(--pd-primary);
+}
+
+.hfilter__tag.is-active {
+    background: var(--pd-accent);
+    border-color: var(--pd-accent);
+    color: #fff;
+}
+
+.hfilter__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 160px;
+    border: 1px solid var(--pd-border);
+    border-radius: 16px;
+    padding: 8px;
+    background: rgba(255,255,255,0.97);
+    box-shadow: var(--pd-shadow-soft);
+    z-index: 40;
+}
+
+.hfilter__option {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    padding: 9px 12px;
+    color: var(--pd-primary);
+    font-weight: 700;
+    font-size: 0.86rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hfilter__option:hover,
+.hfilter__option.is-active {
+    background: rgba(255,246,215,0.96);
+    color: var(--pd-accent);
+}
+
+/* ── Total pengeluaran card ── */
+.history-total-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(0,0,77,0.07);
+    border-radius: 18px;
+    padding: 14px 18px 14px 16px;
+    background: rgba(255,255,255,0.92);
+    box-shadow: var(--pd-shadow-soft);
+    backdrop-filter: blur(10px);
+    margin-left: auto;
+    min-width: 240px;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.history-total-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--pd-shadow);
+}
+
+.history-total-card__icon {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.history-total-card__icon svg { width: 100%; height: 100%; }
+
+.history-total-card__body {
+    flex: 1;
+}
+
+.history-total-card__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(0,0,77,0.56);
+    margin: 0;
+}
+
+.history-total-card__amount {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+    margin: 0;
+}
+
+.history-total-card__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-right: 2px solid rgba(0,0,77,0.3);
+    border-top: 2px solid rgba(0,0,77,0.3);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+}
+
+/* ── Booking list ── */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 20px;
+}
+
+/* Empty state */
+.history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 14px;
+    text-align: center;
+    color: rgba(0,0,77,0.45);
+}
+
+/* hidden attribute must win over component display styles */
+.history-empty[hidden],
+.history-card[hidden] {
+    display: none !important;
+}
+
+.history-empty__icon {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.4;
+}
+.history-empty__icon svg { width: 100%; height: 100%; }
+
+.history-empty__text {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.history-empty__sub {
+    font-size: 0.84rem;
+    margin: 0;
+}
+
+/* ── Booking card ── */
+.history-card {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border: 1px solid rgba(0,0,77,0.07);
+    border-radius: 20px;
+    background: rgba(255,255,255,0.94);
+    box-shadow: var(--pd-shadow-soft);
+    overflow: hidden;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    animation: historyCardIn 0.32s ease both;
+}
+
+@keyframes historyCardIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.history-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--pd-shadow);
+}
+
+.history-card__image {
+    position: relative;
+    width: 130px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.history-card__image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.history-card__image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 110px;
+    background: linear-gradient(135deg, #e8f4fd, #dde8f8);
+    font-size: 2rem;
+    color: rgba(0,0,77,0.25);
+}
+
+.history-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    min-width: 0;
+}
+
+.history-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.history-card__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-card__pin {
+    color: #ef4444;
+    font-size: 1rem;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.history-card__name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.history-card__location {
+    font-size: 0.78rem;
+    color: rgba(0,0,77,0.52);
+    margin: 0;
+    padding-left: 20px;
+}
+
+.history-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.history-card__meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    color: rgba(0,0,77,0.58);
+    font-weight: 600;
+}
+
+.history-card__meta-item svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.history-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.history-card__price {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+}
+
+.history-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Status badge ── */
+.history-status {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 13px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.history-status--selesai {
+    background: #1e8f67;
+    color: #fff;
+}
+
+.history-status--akan {
+    background: #f59e0b;
+    color: #fff;
+}
+
+.history-status--dibatal {
+    background: #ef4444;
+    color: #fff;
+}
+
+/* ── Action buttons ── */
+.hbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 7px 15px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+    white-space: nowrap;
+    border: 0;
+}
+
+.hbtn:hover {
+    transform: translateY(-1px);
+}
+
+.hbtn--outline {
+    background: transparent;
+    border: 1.5px solid rgba(0,0,77,0.16);
+    color: var(--pd-primary);
+}
+
+.hbtn--outline:hover {
+    background: rgba(0,0,77,0.05);
+}
+
+.hbtn--primary {
+    background: var(--pd-accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(235,84,54,0.2);
+}
+
+.hbtn--primary:hover {
+    box-shadow: 0 8px 20px rgba(235,84,54,0.3);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .history-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .history-toolbar {
+        flex-wrap: wrap;
+    }
+
+    .history-total-card {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .history-stats {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 12px;
+    }
+
+    .history-list,
+    .history-toolbar {
+        padding: 0 12px;
+    }
+
+    .history-card__image {
+        width: 90px;
+    }
+
+    .history-card__actions {
+        flex-direction: column;
+        align-items: flex-end;
+    }
+}

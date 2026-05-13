@@ -1,0 +1,522 @@
+/* ===================================================
+   PLAYER PROFILE VIEW – Styles
+   =================================================== */
+
+/* ---- Topbar: bell only, no search ---- */
+.profview-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    width: 100%;
+    max-width: 1380px;
+    margin: 0 auto;
+    padding-bottom: 4px;
+}
+
+.profview-topbar__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+    font-weight: 800;
+    color: var(--pd-primary);
+    line-height: 1;
+    letter-spacing: -0.3px;
+}
+
+.profview-topbar__right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ---- Main content area ---- */
+.profview-content {
+    width: 100%;
+    max-width: 1380px;
+    margin: 22px auto 0;
+}
+
+/* ---- Cover Banner ---- */
+.profview-cover {
+    position: relative;
+    width: 100%;
+    height: 210px;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #4a90c4 0%, #7ec8e3 40%, #f9e07a 70%, #e8c5a5 100%);
+}
+
+.profview-cover__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ---- Profile Body Card ---- */
+.profview-card {
+    position: relative;
+    border: 1px solid rgba(0, 0, 77, 0.07);
+    border-radius: 0 0 24px 24px;
+    padding: 0 32px 32px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--pd-shadow);
+    backdrop-filter: blur(14px);
+
+    /* decorative pattern bg */
+    background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Ccircle cx='60' cy='60' r='55' stroke='%2300004d' stroke-opacity='.04' stroke-width='2'/%3E%3Ccircle cx='60' cy='60' r='38' stroke='%2300004d' stroke-opacity='.04' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 120px 120px;
+    background-color: rgba(255, 250, 236, 0.98);
+}
+
+/* ---- Avatar ---- */
+.profview-avatar-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-top: 0;
+    margin-bottom: 16px;
+}
+
+.profview-avatar-wrap {
+    position: relative;
+    margin-top: -58px;
+    flex-shrink: 0;
+}
+
+.profview-avatar-wrap__img {
+    width: 118px;
+    height: 118px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 4px solid #fff;
+    box-shadow: 0 6px 18px rgba(0, 0, 77, 0.16);
+    display: block;
+    background: #fff6d7;
+}
+
+/* ---- Edit Profil Button ---- */
+.profview-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 26px;
+    border: 1.5px solid rgba(0, 0, 77, 0.15);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--pd-primary);
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: var(--pd-shadow-soft);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    align-self: flex-end;
+    margin-bottom: 8px;
+}
+
+.profview-edit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 0, 77, 0.12);
+    border-color: rgba(0, 0, 77, 0.28);
+}
+
+/* ---- Name / Badge row ---- */
+.profview-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.profview-name {
+    margin: 0;
+    font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+    font-weight: 800;
+    color: var(--pd-primary);
+    line-height: 1.1;
+}
+
+.profview-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px solid rgba(30, 100, 200, 0.25);
+    border-radius: 999px;
+    padding: 5px 13px 5px 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 8px rgba(0, 0, 77, 0.07);
+}
+
+.profview-badge-pill__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #1d6fcf;
+    flex-shrink: 0;
+}
+
+.profview-badge-pill__icon svg {
+    width: 12px;
+    height: 12px;
+    color: #fff;
+}
+
+.profview-badge-pill__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--pd-primary);
+}
+
+/* ---- Username ---- */
+.profview-username {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(0, 0, 77, 0.52);
+    margin-bottom: 14px;
+}
+
+/* ---- Bio ---- */
+.profview-bio {
+    font-size: 0.93rem;
+    line-height: 1.65;
+    color: rgba(0, 0, 77, 0.78);
+    margin: 0 0 18px;
+    max-width: 600px;
+}
+
+/* ---- Sport Tags ---- */
+.profview-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.profview-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgba(0, 0, 77, 0.15);
+    border-radius: 999px;
+    padding: 7px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--pd-primary);
+    box-shadow: 0 2px 6px rgba(0, 0, 77, 0.06);
+}
+
+/* ---- Tabs ---- */
+.profview-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    border-bottom: 2px solid rgba(0, 0, 77, 0.09);
+    margin-bottom: 24px;
+}
+
+.profview-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 30px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: rgba(0, 0, 77, 0.52);
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    position: relative;
+    bottom: -2px;
+    transition: color 0.18s ease, border-color 0.18s ease;
+    text-decoration: none;
+}
+
+.profview-tab:hover {
+    color: var(--pd-primary);
+}
+
+.profview-tab.is-active {
+    color: var(--pd-primary);
+    border-bottom-color: var(--pd-accent);
+}
+
+/* ---- Tab panel container ---- */
+.profview-panel {
+    display: none;
+}
+
+.profview-panel.is-active {
+    display: block;
+}
+
+/* ---- Match History List ---- */
+.profview-match-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+.profview-match-list::-webkit-scrollbar {
+    width: 5px;
+}
+.profview-match-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 77, 0.05);
+    border-radius: 999px;
+}
+.profview-match-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 77, 0.18);
+    border-radius: 999px;
+}
+
+/* ---- Match Card ---- */
+.profview-match-card {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 0;
+    border: 1px solid rgba(0, 0, 77, 0.08);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 14px rgba(0, 0, 77, 0.06);
+    overflow: hidden;
+    align-items: stretch;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.profview-match-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(0, 0, 77, 0.10);
+}
+
+.profview-match-card__img {
+    width: 100%;
+    height: 100%;
+    min-height: 140px;
+    object-fit: cover;
+    display: block;
+}
+
+.profview-match-card__img-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 140px;
+    background: linear-gradient(135deg, #7ec8e3, #4a90c4, #f9d94e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.profview-match-card__body {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.profview-match-card__type {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: rgba(0, 0, 77, 0.7);
+    margin: 0 0 2px;
+    letter-spacing: 0.02em;
+}
+
+.profview-match-card__title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.profview-match-card__details {
+    display: grid;
+    grid-template-columns: auto 14px 1fr;
+    gap: 3px 6px;
+    align-items: baseline;
+}
+
+.profview-match-card__details dt {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: rgba(0, 0, 77, 0.65);
+    white-space: nowrap;
+}
+
+.profview-match-card__details .sep {
+    font-size: 0.84rem;
+    color: rgba(0, 0, 77, 0.4);
+    text-align: center;
+}
+
+.profview-match-card__details dd {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--pd-primary);
+    margin: 0;
+}
+
+/* ---- Scroll arrows ---- */
+.profview-match-card__arrows {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 14px;
+    gap: 8px;
+    flex-shrink: 0;
+    border-left: 1px solid rgba(0, 0, 77, 0.06);
+}
+
+.profview-scroll-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1.5px solid rgba(0, 0, 77, 0.14);
+    border-radius: 8px;
+    background: rgba(255, 250, 236, 0.9);
+    cursor: pointer;
+    color: var(--pd-primary);
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.profview-scroll-btn:hover {
+    background: rgba(235, 84, 54, 0.1);
+    border-color: rgba(235, 84, 54, 0.3);
+    color: var(--pd-accent);
+    transform: scale(1.08);
+}
+
+.profview-scroll-btn svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+/* ---- Empty state dengan karakter ---- */
+.profview-empty-char {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    gap: 12px;
+    padding: 24px 16px;
+}
+
+.profview-empty-char__img {
+    width: auto;
+    height: 140px;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 77, 0.10));
+}
+
+.profview-empty-char__text {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(0, 0, 77, 0.48);
+    text-align: center;
+    max-width: 280px;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+/* ---- Match card image wrapper ---- */
+.profview-match-card__img-wrap {
+    flex-shrink: 0;
+    overflow: hidden;
+    width: 180px;
+    min-height: 140px;
+}
+
+/* ---- Empty state (legacy, keep for safety) ---- */
+.profview-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    gap: 10px;
+    color: rgba(0, 0, 77, 0.42);
+    font-size: 0.92rem;
+    font-weight: 700;
+    border: 1.5px dashed rgba(0, 0, 77, 0.14);
+    border-radius: 18px;
+    background: rgba(255, 250, 236, 0.5);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+    .profview-card {
+        padding: 0 18px 24px;
+    }
+
+    .profview-cover {
+        height: 165px;
+    }
+
+    .profview-tabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .profview-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .profview-tab {
+        padding: 11px 18px;
+        white-space: nowrap;
+    }
+
+    .profview-match-card {
+        grid-template-columns: 130px 1fr auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .profview-topbar {
+        flex-wrap: wrap;
+    }
+
+    .profview-match-card {
+        grid-template-columns: 1fr;
+    }
+
+    .profview-match-card__img,
+    .profview-match-card__img-placeholder {
+        min-height: 120px;
+    }
+
+    .profview-match-card__arrows {
+        flex-direction: row;
+        justify-content: center;
+        border-left: none;
+        border-top: 1px solid rgba(0, 0, 77, 0.06);
+        padding: 10px 14px;
+    }
+}

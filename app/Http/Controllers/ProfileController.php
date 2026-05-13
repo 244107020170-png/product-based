@@ -3,17 +3,56 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Matchs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
+    /* ================================================================
+       SHOW – Halaman profil publik player
+    ================================================================ */
+    public function show(Request $request): View
+    {
+        $user = $request->user();
+
+        try {
+            // Histori Tim: match yang dibuat ATAU diikuti user
+            $historiTim = Matchs::with(['field', 'creator', 'players'])
+                ->where(function ($q) use ($user) {
+                    $q->where('created_by', $user->id)
+                      ->orWhereHas('players', fn ($q2) => $q2->where('users.id', $user->id));
+                })
+                ->latest()
+                ->get();
+
+            // Private Match: match yang dibuat user sendiri
+            $privateMatch = Matchs::with(['field', 'creator', 'players'])
+                ->where('created_by', $user->id)
+                ->latest()
+                ->get();
+
+        } catch (\Exception $e) {
+            // Fallback jika match_players belum punya kolom yang benar
+            // (migrate dulu: php artisan migrate)
+            $historiTim   = Matchs::with(['field', 'creator'])
+                ->where('created_by', $user->id)
+                ->latest()
+                ->get();
+
+            $privateMatch = $historiTim;
+        }
+
+        return view('profile.show', compact('user', 'historiTim', 'privateMatch'));
+    }
+
+    /* ================================================================
+       EDIT – Form edit profil
+    ================================================================ */
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -21,25 +60,44 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
+    /* ================================================================
+       UPDATE – Simpan perubahan profil
+    ================================================================ */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user      = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // --- Upload avatar jika ada ---
+        if ($request->hasFile('avatar')) {
+            // Hapus avatar lama jika tersimpan di storage
+            if ($user->avatar_profile && str_starts_with($user->avatar_profile, 'avatars/')) {
+                Storage::disk('public')->delete($user->avatar_profile);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar_profile'] = $path;
         }
 
-        $request->user()->save();
+        // Hapus key 'avatar' dari validated (bukan kolom DB)
+        unset($validated['avatar']);
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $user->fill($validated);
+
+        // Reset verifikasi email jika email berubah
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return Redirect::route('profile.show')
+            ->with('status', 'profile-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    /* ================================================================
+       DESTROY – Hapus akun
+    ================================================================ */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -49,7 +107,6 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-
         $user->delete();
 
         $request->session()->invalidate();

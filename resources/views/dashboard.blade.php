@@ -3,19 +3,19 @@
     $userName = $user?->name ?: 'Sport Enthusiast';
     $currentDate = \Carbon\Carbon::now()->locale('id')->translatedFormat('j F Y');
     $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
-    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile);
+    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile.'?v='.time());
     $reviewAvatar = asset('assets/images/characters/review.png');
     $heroCharacter = asset('assets/images/characters/hero.png');
 
     $sidebarItems = [
         ['label' => 'Dashboard', 'icon' => asset('assets/images/icons/dashboard.png'), 'href' => route('dashboard'), 'active' => true],
         ['label' => 'Aktivitas', 'icon' => asset('assets/images/icons/aktivitas.png'), 'href' => url('/matches'), 'active' => false],
-        ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'), 'href' => null, 'active' => false],
-        ['label' => 'Histori', 'icon' => asset('assets/images/icons/histori.png'), 'href' => null, 'active' => false],
-        ['label' => 'Cari tim', 'icon' => asset('assets/images/icons/caritim.png'), 'href' => url('/matches'), 'active' => false],
+        ['label' => 'Favoritmu', 'icon' => asset('assets/images/icons/favoritmu.png'), 'href' => route('favorite.index'), 'active' => false],
+        ['label' => 'Histori', 'icon' => asset('assets/images/icons/histori.png'), 'href' => route('history.index'), 'active' => false],
+        ['label' => 'Cari tim', 'icon' => asset('assets/images/icons/caritim.png'), 'href' => route('matches.index'), 'active' => false],
         ['label' => 'Booking', 'icon' => asset('assets/images/icons/booking.png'), 'href' => url('/fields'), 'active' => false],
-        ['label' => 'Keahlianmu', 'icon' => asset('assets/images/icons/keahlian.png'), 'href' => null, 'active' => false],
-        ['label' => 'Profil', 'icon' => asset('assets/images/icons/profil.png'), 'href' => route('profile.edit'), 'active' => false],
+        ['label' => 'Keahlianmu', 'icon' => asset('assets/images/icons/keahlian.png'), 'href' => route('skill.index'), 'active' => false],
+        ['label' => 'Profil', 'icon' => asset('assets/images/icons/profil.png'), 'href' => route('profile.show'), 'active' => false],
     ];
 
     $sidebarUtilities = [

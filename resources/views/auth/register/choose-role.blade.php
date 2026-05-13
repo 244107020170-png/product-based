@@ -29,21 +29,21 @@
             </div>
 
             <img 
-                src="{{ asset('assets/images/characters/player.png') }}" {{-- 🔁 GANTI GAMBAR --}}
+                src="{{ asset('assets/images/characters/player.png') }}" {{-- GANTI GAMBAR --}}
                 alt="Pemain"
                 class="role-image"
             >
         </a>
 
         <!-- OWNER -->
-        <a href="{{ route('owner.register') }}" class="role-card">
+        <a href="{{ route('register', ['role' => 'owner']) }}" class="role-card">
             
             <div class="role-box">
                 Pemilik
             </div>
 
             <img 
-                src="{{ asset('assets/images/characters/owner.png') }}" {{-- 🔁 GANTI GAMBAR --}}
+                src="{{ asset('assets/images/characters/owner.png') }}" {{-- GANTI GAMBAR --}}
                 alt="Pemilik"
                 class="role-image"
             >
