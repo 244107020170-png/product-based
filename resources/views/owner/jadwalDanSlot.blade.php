@@ -57,105 +57,37 @@
                 <p>Atur jadwal operasional dan ketersediaan slot lapangan.</p>
             </div>
 
-            <a href="{{ route('owner.tambahLapangan') }}" class="add-btn">
+            <a class="add-btn" href="javascript:void(0)">
                 <i class="fa-solid fa-plus"></i>
                 Tambah Slot
             </a>
         </div>
 
+        {{-- FILTER --}}
         <div class="card-panel" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; gap: 1rem; flex: 1; max-width: 800px;">
-                <select style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;">
-                    <option>Lapangan A</option>
-                </select>
-                <select style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;">
-                    <option>Jenis Olahraga</option>
-                </select>
-                <input type="date" value="2026-05-24" style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;">
+                <select id="filter-field" style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;"></select>
+                <select id="filter-sport" style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;"></select>
+                <input type="date" id="filter-date" style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;">
             </div>
-            <button style="color: #e52d2d; border: 1px solid #fca5a5; background: none; padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; margin-left: 1rem;">
+            <button id="reset-filter" style="color: #e52d2d; border: 1px solid #fca5a5; background: none; padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; margin-left: 1rem;">
                 <i class="fa-solid fa-rotate-right"></i> Reset Filter
             </button>
         </div>
 
+        {{-- TABLE CONTAINER --}}
         <div class="card-panel" style="padding: 0; overflow: hidden;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #f3f4f6;">
+            <div id="table-header-nav" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #f3f4f6;">
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem;"><i class="fa-solid fa-chevron-left"></i></button>
-                    <span style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500;">Lapangan A</span>
-                    <button style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem;"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button id="prev-week" style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; cursor: pointer;"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span id="week-label" style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500;"></span>
+                    <button id="next-week" style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; cursor: pointer;"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-                <span style="font-weight: 600; color: #4b5563; font-size: 0.875rem;">24 - 30 Mei 2026</span>
+                <span id="field-name-header" style="font-weight: 600; color: #4b5563; font-size: 0.875rem;"></span>
             </div>
 
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.75rem;">
-                    <thead>
-                        <tr style="background-color: #f9fafb; border-bottom: 1px solid #f3f4f6; color: #6b7280;">
-                            <th style="padding: 0.75rem 1rem; width: 100px;">WAKTU</th>
-                            @for($d = 24; $d <= 30; $d++)
-                                <th style="padding: 0.75rem 1rem; border-left: 1px solid #f3f4f6;">Min, {{ $d }} Mei</th>
-                            @endfor
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="height: 70px; border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">08.00</td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-tersedia">
-                                    <div><strong>08.00 - 09.00</strong><br>Tersedia</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            @for($i=1; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px; border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">09.00</td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-dibooking">
-                                    <div><strong>09.00 - 10.00</strong><br>Telah dibooking</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            @for($i=2; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px; border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">10.00</td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-perbaikan">
-                                    <div><strong>10.00 - 11.00</strong><br>Perbaikan</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            @for($i=2; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">11.00</td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-tutup">
-                                    <div><strong>11.00 - 12.00</strong><br>Tutup</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6;" rowspan="2">
-                                <div class="locked-day">
-                                    <i class="fa-solid fa-lock" style="font-size: 1.25rem; margin-bottom: 0.25rem;"></i>
-                                    <span style="font-size: 0.65rem;">Tutup (Tanggal Merah)</span>
-                                </div>
-                            </td>
-                            @for($i=4; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">12.00</td>
-                            @for($i=0; $i<=2; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                            @for($i=4; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                    </tbody>
-                </table>
+                <div id="table-container"></div>
             </div>
         </div>
 
@@ -163,150 +95,184 @@
 
 </div>
 
+<script>
+    const fields = [
+        { id: 1, name: 'Lapangan A', type: 'Futsal' },
+        { id: 2, name: 'Lapangan B', type: 'Basket' },
+        { id: 3, name: 'Lapangan C', type: 'Badminton' },
+        { id: 4, name: 'Lapangan D', type: 'Futsal' },
+    ];
+
+    const sportTypes = ['Semua Olahraga', 'Futsal', 'Basket', 'Badminton'];
+    const statusClasses = ['status-tersedia', 'status-dibooking', 'status-perbaikan', 'status-tutup'];
+    const statusLabels = ['Tersedia', 'Dibooking', 'Perbaikan', 'Tutup'];
+
+    let holidayDates = [];
+    let currentDate = new Date();
+
+    function toDateStr(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + d;
+    }
+
+    function getWeekDates(baseDate) {
+        const d = new Date(baseDate);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        d.setDate(diff);
+        const dates = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(d);
+            date.setDate(d.getDate() + i);
+            dates.push(date);
+        }
+        return dates;
+    }
+
+    function getDayName(date) {
+        const names = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        return names[date.getDay()];
+    }
+
+    function getMonthName(date) {
+        const names = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        return names[date.getMonth()];
+    }
+
+    function initFilters() {
+        const fieldSelect = document.getElementById('filter-field');
+        fieldSelect.innerHTML = fields.map(f =>
+            '<option value="' + f.id + '">' + f.name + '</option>'
+        ).join('');
+
+        const sportSelect = document.getElementById('filter-sport');
+        sportSelect.innerHTML = sportTypes.map(t =>
+            '<option value="' + t + '">' + t + '</option>'
+        ).join('');
+
+        document.getElementById('filter-date').value = toDateStr(currentDate);
+    }
+
+    function renderTable() {
+        const weekDates = getWeekDates(currentDate);
+        const fieldId = parseInt(document.getElementById('filter-field').value) || fields[0].id;
+        const field = fields.find(f => f.id === fieldId);
+        const selectedField = field || fields[0];
+
+        const start = weekDates[0];
+        const end = weekDates[6];
+        document.getElementById('week-label').textContent =
+            start.getDate() + ' - ' + end.getDate() + ' ' + getMonthName(start) + ' ' + start.getFullYear();
+        document.getElementById('field-name-header').textContent = selectedField.name;
+
+        const hours = [];
+        for (let h = 8; h <= 22; h++) hours.push(h);
+
+        let html = '<table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.75rem;">';
+
+        html += '<thead><tr style="background-color: #f9fafb; border-bottom: 1px solid #f3f4f6; color: #6b7280;">';
+        html += '<th style="padding: 0.75rem 1rem; width: 100px; min-width: 100px;">WAKTU</th>';
+        for (let i = 0; i < weekDates.length; i++) {
+            const date = weekDates[i];
+            const dateStr = toDateStr(date);
+            const isHoliday = holidayDates.indexOf(dateStr) !== -1;
+            const bg = isHoliday ? 'background-color: #fef2f2;' : '';
+            html += '<th style="padding: 0.75rem 1rem; border-left: 1px solid #f3f4f6; min-width: 130px; ' + bg + '">';
+            html += '<div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">';
+            html += '<span>' + getDayName(date) + ', ' + date.getDate() + ' ' + getMonthName(date) + '</span>';
+            html += '<button class="toggle-holiday ' + (isHoliday ? 'is-holiday' : '') + '" onclick="toggleHoliday(\'' + dateStr + '\')" title="' + (isHoliday ? 'Hapus libur' : 'Tandai libur') + '">';
+            html += '<i class="fa-solid ' + (isHoliday ? 'fa-lock' : 'fa-unlock') + '"></i> ';
+            html += isHoliday ? 'Libur' : 'Tandai Libur';
+            html += '</button>';
+            html += '</div></th>';
+        }
+        html += '</tr></thead>';
+
+        html += '<tbody>';
+        for (let r = 0; r < hours.length; r++) {
+            const hour = hours[r];
+            html += '<tr style="height: 70px; ' + (r < hours.length - 1 ? 'border-bottom: 1px solid #f3f4f6;' : '') + '">';
+            html += '<td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">' +
+                String(hour).padStart(2, '0') + '.00</td>';
+
+            for (let c = 0; c < weekDates.length; c++) {
+                const dateStr = toDateStr(weekDates[c]);
+                const isHoliday = holidayDates.indexOf(dateStr) !== -1;
+
+                if (isHoliday && r === 0) {
+                    html += '<td rowspan="' + hours.length + '" style="padding: 0; border-left: 1px solid #f3f4f6; vertical-align: middle; background-color: #fef2f2;">';
+                    html += '<div class="locked-day" style="height: 100%; min-height: 200px;">';
+                    html += '<i class="fa-solid fa-lock" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #dc2626;"></i>';
+                    html += '<span style="font-size: 0.8rem; font-weight: 600; color: #dc2626;">Tutup</span>';
+                    html += '<span style="font-size: 0.65rem; color: #9ca3af;">Tanggal Merah</span>';
+                    html += '</div></td>';
+                } else if (!isHoliday) {
+                    const randomIdx = Math.floor(Math.random() * statusClasses.length);
+                    html += '<td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">';
+                    html += '<div class="slot-status ' + statusClasses[randomIdx] + '">';
+                    html += '<div><strong>' + String(hour).padStart(2, '0') + '.00 - ' + String(hour + 1).padStart(2, '0') + '.00</strong><br>' + statusLabels[randomIdx] + '</div>';
+                    html += '<i class="fa-solid fa-ellipsis"></i>';
+                    html += '</div></td>';
+                }
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+
+        document.getElementById('table-container').innerHTML = html;
+    }
+
+    function toggleHoliday(dateStr) {
+        const idx = holidayDates.indexOf(dateStr);
+        if (idx === -1) {
+            holidayDates.push(dateStr);
+        } else {
+            holidayDates.splice(idx, 1);
+        }
+        renderTable();
+    }
+
+    function applyFilters() {
+        const dateVal = document.getElementById('filter-date').value;
+        if (dateVal) currentDate = new Date(dateVal + 'T00:00:00');
+        renderTable();
+    }
+
+    function prevWeek() {
+        currentDate.setDate(currentDate.getDate() - 7);
+        document.getElementById('filter-date').value = toDateStr(currentDate);
+        renderTable();
+    }
+
+    function nextWeek() {
+        currentDate.setDate(currentDate.getDate() + 7);
+        document.getElementById('filter-date').value = toDateStr(currentDate);
+        renderTable();
+    }
+
+    function resetFilter() {
+        holidayDates = [];
+        currentDate = new Date();
+        document.getElementById('filter-date').value = toDateStr(currentDate);
+        document.getElementById('filter-field').value = fields[0].id;
+        document.getElementById('filter-sport').value = 'Semua Olahraga';
+        renderTable();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initFilters();
+        renderTable();
+
+        document.getElementById('filter-field').addEventListener('change', applyFilters);
+        document.getElementById('filter-sport').addEventListener('change', applyFilters);
+        document.getElementById('filter-date').addEventListener('change', applyFilters);
+        document.getElementById('prev-week').addEventListener('click', prevWeek);
+        document.getElementById('next-week').addEventListener('click', nextWeek);
+        document.getElementById('reset-filter').addEventListener('click', resetFilter);
+    });
+</script>
+
 </body>
 </html>
-
-{{-- <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal & Slot - SpieSport</title>
-    
-    @vite(['resources/css/owner-jadwal-slot.css'])
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="dashboard-container">
-
-    @include('owner.navbar')
-
-    <div class="main-content">
-        
-        <header class="topbar">
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
-                <input type="text" placeholder="Search bookings, customers....">
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <i class="fa-regular fa-bell" style="font-size: 1.25rem; color: #4b5563; cursor: pointer;"></i>
-                <i class="fa-regular fa-circle-question" style="font-size: 1.25rem; color: #4b5563; cursor: pointer;"></i>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="text-align: right;">
-                        <span style="display: block; font-size: 0.875rem; font-weight: 600;">Namtan</span>
-                        <span style="display: block; font-size: 0.75rem; color: #9ca3af;">Owner Profile</span>
-                    </div>
-                    <img src="https://ui-avatars.com/api/?name=Namtan&background=fca5a5&color=fff" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
-                </div>
-            </div>
-        </header>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <div>
-                <h1 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0;">Jadwal & Slot</h1>
-                <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Atur jadwal operasional dan ketersediaan slot lapangan.</p>
-            </div>
-            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Tambah Slot</button>
-        </div>
-
-        <div class="card-panel" style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; gap: 1rem; flex: 1; max-width: 800px;">
-                <select style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;">
-                    <option>Lapangan A</option>
-                </select>
-                <select style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;">
-                    <option>Jenis Olahraga</option>
-                </select>
-                <input type="date" value="2026-05-24" style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;">
-            </div>
-            <button style="color: #e52d2d; border: 1px solid #fca5a5; background: none; padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; margin-left: 1rem;">
-                <i class="fa-solid fa-rotate-right"></i> Reset Filter
-            </button>
-        </div>
-
-        <div class="card-panel" style="padding: 0; overflow: hidden;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #f3f4f6;">
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem;"><i class="fa-solid fa-chevron-left"></i></button>
-                    <span style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500;">Lapangan A</span>
-                    <button style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem;"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-                <span style="font-weight: 600; color: #4b5563; font-size: 0.875rem;">24 - 30 Mei 2026</span>
-            </div>
-
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.75rem;">
-                    <thead>
-                        <tr style="background-color: #f9fafb; border-bottom: 1px solid #f3f4f6; color: #6b7280;">
-                            <th style="padding: 0.75rem 1rem; width: 100px;">WAKTU</th>
-                            @for($d = 24; $d <= 30; $d++)
-                                <th style="padding: 0.75rem 1rem; border-left: 1px solid #f3f4f6;">Min, {{ $d }} Mei</th>
-                            @endfor
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="height: 70px; border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">08.00</td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-tersedia">
-                                    <div><strong>08.00 - 09.00</strong><br>Tersedia</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            @for($i=1; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px; border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">09.00</td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-dibooking">
-                                    <div><strong>09.00 - 10.00</strong><br>Telah dibooking</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            @for($i=2; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px; border-bottom: 1px solid #f3f4f6;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">10.00</td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-perbaikan">
-                                    <div><strong>10.00 - 11.00</strong><br>Perbaikan</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            @for($i=2; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">11.00</td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="border-left: 1px solid #f3f4f6;"></td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">
-                                <div class="slot-status status-tutup">
-                                    <div><strong>11.00 - 12.00</strong><br>Tutup</div>
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </div>
-                            </td>
-                            <td style="padding: 0.5rem; border-left: 1px solid #f3f4f6;" rowspan="2">
-                                <div class="locked-day">
-                                    <i class="fa-solid fa-lock" style="font-size: 1.25rem; margin-bottom: 0.25rem;"></i>
-                                    <span style="font-size: 0.65rem;">Tutup (Tanggal Merah)</span>
-                                </div>
-                            </td>
-                            @for($i=4; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                        <tr style="height: 70px;">
-                            <td style="padding: 1rem; font-weight: 600; color: #9ca3af; background-color: #f9fafb;">12.00</td>
-                            @for($i=0; $i<=2; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                            @for($i=4; $i<=6; $i++) <td style="border-left: 1px solid #f3f4f6;"></td> @endfor
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </div>
-</body>
-</html> --}}

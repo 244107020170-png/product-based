@@ -297,3 +297,42 @@ body {
     color: #9ca3af;
     text-align: center;
 }
+
+/* Toggle Holiday Button */
+.toggle-holiday {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+}
+
+.toggle-holiday:hover {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.toggle-holiday.is-holiday {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.toggle-holiday.is-holiday:hover {
+    background: #f9fafb;
+    color: #6b7280;
+    border-color: #e5e7eb;
+}
