@@ -46,6 +46,7 @@ Route::get('/preview-help', function () {
     return view('pages.help');
 })->name('preview.help');
 
+
 Route::middleware('auth')->group(function () {
 
     /* OWNER */
@@ -53,14 +54,30 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/dashboard', function () {
             return view('owner.dashboard');
-        })->name('owner.dashboard');
-
-        Route::get('/fields', function () {
-            return view('owner.fields');
         });
 
-        Route::get('/bookings', function () {
-            return view('owner.bookings');
+        Route::get('/kelolaLapangan', function () {
+            return view('owner.kelolaLapangan');
+        });
+
+        Route::get('/tambahLapangan', function () {
+            return view('owner.tambahLapangan');
+        });
+
+        Route::get('/jadwalDanSlot', function () {
+            return view('owner.jadwalDanSlot');
+        });
+
+        Route::get('/kelolaBooking', function () {
+            return view('owner.kelolaBooking');
+        });
+
+        Route::get('/promosiDiskon', function () {
+            return view('owner.promosiDiskon');
+        });
+
+        Route::get('/pemeliharaanKontrol', function () {
+            return view('owner.pemeliharaanKontrol');
         });
 
     });
