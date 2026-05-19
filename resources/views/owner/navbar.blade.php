@@ -53,7 +53,10 @@
             <span>Pengaturan</span>
         </a>
 
-        <a href="#" class="menu-item logout">
+        <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
+            @csrf
+        </form>
+        <a href="#" class="menu-item logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Log Out</span>
         </a>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard Owner</title>
 
     @vite(['resources/css/owner-dashboard.css', 'resources/css/owner-bookings.css'])
 
@@ -42,7 +42,7 @@
 
                 <div class="profile-box">
                     <div>
-                        <h5>Namfan</h5>
+                        <h5>{{ auth()->user()->name }}</h5>
                         <p>Owner Profile</p>
                     </div>
 
@@ -50,6 +50,92 @@
                 </div>
             </div>
         </div>
+
+        {{-- WELCOME SECTION --}}
+        <div class="welcome-section">
+            <div>
+                <h1>Selamat datang kembali, {{ auth()->user()->name }}!</h1>
+                <p>Kelola lapangan dan booking Anda dengan mudah.</p>
+            </div>
+
+            <a href="{{ route('owner.tambahLapangan') }}" class="add-btn">
+                <i class="fa-solid fa-plus"></i>
+                Tambah Lapangan
+            </a>
+        </div>
+
+        {{-- STATISTIC CARDS --}}
+        <div class="stats-grid">
+
+            <div class="stats-card">
+                <div>
+                    <p>Total Lapangan</p>
+                    <h2 class="blue-text">{{ $fieldCount ?? 0 }}</h2>
+                </div>
+
+                <div class="stats-icon blue">
+                    <i class="fa-regular fa-futbol"></i>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div>
+                    <p>Total Booking</p>
+                    <h2 class="green-text">{{ $bookingCount ?? 0 }}</h2>
+                </div>
+
+                <div class="stats-icon green">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div>
+                    <p>Booking Hari Ini</p>
+                    <h2 class="yellow-text">{{ $todayBooking ?? 0 }}</h2>
+                </div>
+
+                <div class="stats-icon yellow">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div>
+                    <p>Pendapatan Bulan Ini</p>
+                    <h2 class="red-text">Rp {{ number_format($monthlyRevenue ?? 0, 0, ',', '.') }}</h2>
+                </div>
+
+                <div class="stats-icon red">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- QUICK ACTIONS --}}
+        <div class="quick-actions">
+            <h3>Akses Cepat</h3>
+            <div class="actions-grid">
+                <a href="{{ route('owner.kelolaLapangan') }}" class="action-card">
+                    <i class="fa-solid fa-list"></i>
+                    <span>Kelola Lapangan</span>
+                </a>
+                <a href="{{ route('owner.kelolaBooking') }}" class="action-card">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Kelola Booking</span>
+                </a>
+                <a href="{{ route('owner.jadwalDanSlot') }}" class="action-card">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Jadwal & Slot</span>
+                </a>
+                <a href="{{ route('owner.promosiDiskon') }}" class="action-card">
+                    <i class="fa-solid fa-tag"></i>
+                    <span>Promo & Diskon</span>
+                </a>
+            </div>
+        </div>
+
     </main>
 
 </div>

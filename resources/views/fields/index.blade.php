@@ -120,24 +120,55 @@
 
     <section style="padding: 20px; max-width: 1400px; margin: 0 auto;">
 
+        <style>
+            .hero-section {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 24px;
+                margin-bottom: 24px;
+            }
+            .dashboard-header-flex {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+            @media (max-width: 1024px) {
+                .hero-section {
+                    grid-template-columns: 1fr;
+                }
+            }
+            @media (max-width: 768px) {
+                .dashboard-header-flex {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .hero-content-inner {
+                    max-width: 100% !important;
+                }
+            }
+        </style>
+
         <!-- NEW DASHBOARD HEADER -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div class="dashboard-header-flex">
             <h1 style="font-size: 28px; font-weight: 800; color: #02025b; margin: 0;">Dashboard</h1>
-            <div style="display: flex; gap: 12px;">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <select style="padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(0,0,77,.1); outline: none; font-weight: 600; color: #02025b; background: white;">
                     <option>By Day</option>
                 </select>
-                <a href="{{ route('matches.create') }}" style="background: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background .2s;">
+                <a href="{{ route('matches.create') }}" style="background: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background .2s; text-align: center;">
                     Buat Pertandingan Baru
                 </a>
             </div>
         </div>
 
         <!-- HERO SECTION -->
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div class="hero-section">
             <!-- Hero Banner -->
             <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); position: relative; overflow: hidden; min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
-                <div style="position: relative; z-index: 2; max-width: 60%;">
+                <div class="hero-content-inner" style="position: relative; z-index: 2; max-width: 60%;">
                     <h2 style="font-size: 32px; font-weight: 900; color: #02025b; margin: 0 0 20px 0;">Hi, {{ Auth::user()->name ?? 'Sport Enthusiast' }}!</h2>
                     
                     <div style="background: rgba(255,255,255,.9); padding: 16px; border-radius: 12px; display: flex; gap: 16px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); max-width: 320px;">
@@ -155,7 +186,16 @@
                         </div>
                     </div>
                 </div>
-                <img src="{{ asset('assets/images/characters/hero.png') }}" style="position: absolute; right: 0; bottom: 0; height: 130%; z-index: 1; object-fit: contain;">
+                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 0; bottom: 0; height: 130%; z-index: 1; object-fit: contain;">
+                <style>
+                    @media (max-width: 768px) {
+                        .hero-char-img {
+                            opacity: 0.2;
+                            height: 100% !important;
+                            right: -20px !important;
+                        }
+                    }
+                </style>
             </div>
 
             <!-- Notifikasi -->

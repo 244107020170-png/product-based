@@ -1015,6 +1015,13 @@
     padding: 14px;
 }
 
+.player-badge-card__hero {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
 .player-badge-card__copy {
     display: flex;
     flex-direction: column;
@@ -1250,6 +1257,16 @@
         grid-template-columns: 1fr;
     }
 
+    .player-badge-card__hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .player-badge-card__copy {
+        width: 100%;
+    }
+
     .player-list-card {
         grid-template-columns: 1fr;
         justify-items: start;
@@ -1257,5 +1274,11 @@
 
     .player-list-card__side--end {
         justify-self: end;
+    }
+}
+
+@media (max-width: 768px) {
+    .player-badge-card__steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

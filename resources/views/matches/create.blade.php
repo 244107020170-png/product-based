@@ -246,6 +246,15 @@
                         <input type="number" name="max_player" class="form-control" placeholder="Contoh: 10" min="1" required>
                     </div>
 
+                    <div class="form-group form-group--full">
+                        <label class="form-label">Tipe Pertandingan</label>
+                        <select name="type" class="form-control" required>
+                            <option value="">Pilih Tipe Pertandingan</option>
+                            <option value="public">Public - Cari Pemain (Muncul di Cari Tim)</option>
+                            <option value="private">Private - Booking Sendiri (Hanya untuk Anda)</option>
+                        </select>
+                    </div>
+
                     <div class="form-group form-group--full" style="margin-top: 8px;">
                         <button type="submit" class="btn-submit">Buat Match Sekarang</button>
                     </div>

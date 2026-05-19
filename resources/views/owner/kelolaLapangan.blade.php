@@ -42,7 +42,7 @@
 
                 <div class="profile-box">
                     <div>
-                        <h5>Namtan</h5>
+                        <h5>{{ auth()->user()->name }}</h5>
                         <p>Owner Profile</p>
                     </div>
 
@@ -55,10 +55,10 @@
         {{-- WELCOME SECTION --}}
         <div class="welcome-section">
             <div>
-                <h1>Selamat datang kembali, Owner Arena Sport!</h1>
+                <h1>Selamat datang kembali, {{ auth()->user()->name }}!</h1>
             </div>
 
-            <a href="/owner/tambahLapangan" class="add-btn">
+            <a href="{{ route('owner.tambahLapangan') }}" class="add-btn">
                 <i class="fa-solid fa-plus"></i>
                 Tambah Lapangan
             </a>
@@ -71,7 +71,7 @@
             <div class="stats-card">
                 <div>
                     <p>Total Lapangan</p>
-                    <h2 class="blue-text">12</h2>
+                    <h2 class="blue-text">{{ count($fields) }}</h2>
                 </div>
 
                 <div class="stats-icon blue">
@@ -82,7 +82,7 @@
             <div class="stats-card">
                 <div>
                     <p>Tersedia</p>
-                    <h2 class="green-text">2</h2>
+                    <h2 class="green-text">{{ count($fields) }}</h2>
                 </div>
 
                 <div class="stats-icon green">
@@ -134,23 +134,23 @@
         {{-- FIELD CARD --}}
         <div class="field-grid">
 
-            @for ($i = 0; $i < 10; $i++)
+            @forelse ($fields as $field)
             <div class="field-card">
 
                 <div class="field-image">
-                    <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop" alt="Lapangan">
+                    <img src="{{ $field->cover_photo ?? 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop' }}" alt="{{ $field->name }}">
 
-                    <span class="badge">Futsal</span>
+                    <span class="badge">{{ $field->sport_type ?? 'Olahraga' }}</span>
                 </div>
 
                 <div class="field-content">
                     <div class="field-top">
                         <div>
-                            <h3>Lapangan A</h3>
-                            <p>Futsal</p>
+                            <h3>{{ $field->name }}</h3>
+                            <p>{{ $field->sport_type ?? 'Olahraga' }}</p>
                         </div>
 
-                        <h4>Rp120.000</h4>
+                        <h4>Rp{{ number_format($field->price_per_hour ?? 0, 0, ',', '.') }}</h4>
                     </div>
 
                     <div class="facility-icons">
@@ -163,11 +163,11 @@
                     <div class="field-info">
                         <span>
                             <i class="fa-regular fa-clock"></i>
-                            08.00 - 22.00
+                            {{ $field->opening_time ?? '08:00' }} - {{ $field->closing_time ?? '22:00' }}
                         </span>
 
                         <span>
-                            ⭐ 4.8
+                            ⭐ {{ $field->rating ?? '4.8' }}
                         </span>
                     </div>
 
@@ -181,7 +181,16 @@
                     </div>
                 </div>
             </div>
-            @endfor
+            @empty
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fa-solid fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 16px; display: block;"></i>
+                <h3 style="color: #888; font-size: 18px; margin-bottom: 8px;">Belum ada lapangan</h3>
+                <p style="color: #aaa; margin-bottom: 20px;">Mulai tambahkan lapangan untuk memulai bisnis Anda</p>
+                <a href="{{ route('owner.tambahLapangan') }}" style="display: inline-block; background: linear-gradient(135deg, #ff4d4d, #ff2e63); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    <i class="fa-solid fa-plus"></i> Tambah Lapangan
+                </a>
+            </div>
+            @endforelse
 
         </div>
 

@@ -89,7 +89,8 @@
         </div>
         <div class="ppts-bar-track">
             <div class="ppts-bar-fill"
-                 style="width:{{ $progress }}%;background:linear-gradient(90deg,{{ $tierColor }},{{ $tierColor }}bb);">
+                 data-target-width="{{ $progress }}"
+                 style="width: 0%; background:linear-gradient(90deg,{{ $tierColor }},{{ $tierColor }}bb);">
             </div>
         </div>
         <p class="ppts-motivation">
@@ -367,3 +368,17 @@
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const bars = document.querySelectorAll('.ppts-bar-fill');
+        bars.forEach(function(bar) {
+            const targetWidth = bar.getAttribute('data-target-width');
+            if (targetWidth) {
+                bar.style.width = targetWidth + '%';
+            }
+        });
+    }, 150); // slight delay to allow rendering before transitioning
+});
+</script>

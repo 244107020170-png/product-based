@@ -53,33 +53,50 @@ Route::middleware('auth')->group(function () {
     Route::prefix('owner')->group(function () {
 
         Route::get('/dashboard', function () {
-            return view('owner.dashboard');
-        });
+            $user = auth()->user();
+            $fieldCount = \App\Models\Field::where('owner_id', $user->id)->count();
+            $bookingCount = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->count();
+            $todayBooking = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->whereDate('date', \Carbon\Carbon::today())->count();
+            $monthlyRevenue = 0; // This would need to be calculated from booking data
+
+            return view('owner.dashboard', compact('fieldCount', 'bookingCount', 'todayBooking', 'monthlyRevenue'));
+        })->name('owner.dashboard');
 
         Route::get('/kelolaLapangan', function () {
-            return view('owner.kelolaLapangan');
-        });
+            $user = auth()->user();
+            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
+            return view('owner.kelolaLapangan', compact('fields'));
+        })->name('owner.kelolaLapangan');
 
         Route::get('/tambahLapangan', function () {
             return view('owner.tambahLapangan');
-        });
+        })->name('owner.tambahLapangan');
 
         Route::get('/jadwalDanSlot', function () {
-            return view('owner.jadwalDanSlot');
-        });
+            $user = auth()->user();
+            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
+            return view('owner.jadwalDanSlot', compact('fields'));
+        })->name('owner.jadwalDanSlot');
 
         Route::get('/kelolaBooking', function () {
-            return view('owner.kelolaBooking');
-        });
+            $user = auth()->user();
+            $bookings = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->with(['field', 'user'])->orderBy('date', 'desc')->orderBy('time', 'desc')->get();
+            return view('owner.kelolaBooking', compact('bookings'));
+        })->name('owner.kelolaBooking');
 
         Route::get('/promosiDiskon', function () {
             return view('owner.promosiDiskon');
-        });
+        })->name('owner.promosiDiskon');
 
         Route::get('/pemeliharaanKontrol', function () {
             return view('owner.pemeliharaanKontrol');
-        });
-
+        })->name('owner.pemeliharaanKontrol');
     });
 
     /* PLAYER */

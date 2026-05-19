@@ -8,7 +8,9 @@ class MatchController extends Controller
 {
     public function index()
     {
+        // Only show public matches in "Cari tim" page
         $matches = Matchs::with(['field', 'players'])
+            ->where('type', 'public')
             ->orderBy('date')
             ->orderBy('time')
             ->get();
@@ -41,12 +43,20 @@ class MatchController extends Controller
 
     public function store(\Illuminate\Http\Request $request)
     {
+        // Check if user has phone number
+        $user = auth()->user();
+        if (!$user->phone) {
+            return redirect()->route('profile.edit')
+                ->with('error', 'Mohon isi nomor WhatsApp di profil terlebih dahulu sebelum membuat pertandingan.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'field_id' => 'required|exists:fields,id',
             'date' => 'required|date',
             'time' => 'required',
             'max_player' => 'required|integer|min:1',
+            'type' => 'required|in:public,private',
         ]);
 
         $validated['created_by'] = auth()->id();
