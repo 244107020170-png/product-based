@@ -39,7 +39,7 @@
                 <button class="notif-btn question"><i class="fa-solid fa-circle-question"></i></button>
                 <div class="profile-box">
                     <div>
-                        <h5>Namtan</h5>
+                        <h5>{{ auth()->user()->name }}</h5>
                         <p>Owner Profile</p>
                     </div>
                     <img src="https://i.pravatar.cc/100" alt="Profile">

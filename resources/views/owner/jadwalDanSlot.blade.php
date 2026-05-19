@@ -42,7 +42,7 @@
 
                 <div class="profile-box">
                     <div>
-                        <h5>Namfan</h5>
+                        <h5>{{ auth()->user()->name }}</h5>
                         <p>Owner Profile</p>
                     </div>
 
