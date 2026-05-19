@@ -1,0 +1,299 @@
+.sidebar{
+    width: 260px;
+    height: 100vh;
+    background: #fff;
+
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 999;
+
+    border-right: 1px solid #ececec;
+
+    padding: 28px 18px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+}
+
+.main-content{
+    margin-left: 260px;
+    padding: 30px;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f7f2f2;
+}
+
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* SIDEBAR */
+.sidebar {
+    width: 260px;
+    background: #ffffff;
+    border-right: 1px solid #ececec;
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sidebar-logo {
+    margin-bottom: 35px;
+}
+
+.sidebar-logo img {
+    width: 140px;
+}
+
+.sidebar-logo p {
+    font-size: 13px;
+    color: #999;
+    margin-top: 5px;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.menu-item {
+    text-decoration: none;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 14px;
+    transition: 0.3s ease;
+}
+
+.menu-item:hover {
+    background: #fff1f1;
+    color: #ff4d4d;
+}
+
+.sidebar-menu .menu-item.active {
+    color: #dc3545; /* Warna merah teks & ikon */
+    font-weight: 600;
+    background-color: rgba(220, 53, 69, 0.15);
+}
+
+.sidebar-menu .menu-item.active i {
+    color: #dc3545;
+}
+
+.logout {
+    color: #ff4d4d;
+}
+
+.sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.welcome-section {
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.welcome-section h1 {
+    font-size: 30px;
+    color: #222;
+}
+
+.welcome-section p {
+    font-size: 14px;
+    color: #888;
+    margin-top: 6px;
+    margin-bottom: 9px;
+}
+
+.add-btn {
+    border: none;
+    text-decoration: none;
+    background: linear-gradient(135deg, #ff4d4d, #ff2e63);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
+}
+
+/* Layout & Base General */
+.dashboard-container {
+    display: flex;
+    background-color: #fcf8f8;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* --- HEADER / TOPBAR --- */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-box {
+    background: white;
+    width: 420px;
+    border-radius: 40px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.notif-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    color: #d63b3b;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.profile-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-box h5 {
+    font-size: 14px;
+}
+
+.profile-box p {
+    font-size: 12px;
+    color: #888;
+}
+
+.profile-box img {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* --- CARDS & TABLES --- */
+.card-panel {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    border: 1px solid #f3f4f6;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.btn-primary {
+    background-color: #e52d2d;
+    color: #ffffff;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #c82323;
+}
+
+/* --- BADGE STATUS SLOT (PADA GRID & RINGKASAN) --- */
+.slot-status {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.625rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.status-tersedia {
+    background-color: #ecfdf5;
+    border: 1px solid #d1fae5;
+    color: #065f46;
+}
+
+.status-dibooking {
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #991b1b;
+}
+
+.status-perbaikan {
+    background-color: #fffbe6;
+    border: 1px solid #fff3cd;
+    color: #856404;
+}
+
+.status-tutup {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+/* Khusus Tanggal Merah Terkunci */
+.locked-day {
+    background-color: #f3f4f6;
+    border: 1px dashed #d1d5db;
+    border-radius: 0.75rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #9ca3af;
+    text-align: center;
+}
