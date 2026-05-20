@@ -43,26 +43,48 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->merge([
-            'username' => Str::lower(trim((string) $request->input('username'))),
-        ]);
+        $role = $request->input('role');
+
+        // Generate username for players from email, otherwise use provided username
+        if ($role === 'player') {
+            $emailPrefix = explode('@', $request->input('email'))[0];
+            $baseUsername = Str::lower(trim($emailPrefix));
+            $username = $baseUsername;
+            $counter = 1;
+            
+            // Ensure uniqueness
+            while (User::where('username', $username)->exists()) {
+                $username = $baseUsername . $counter;
+                $counter++;
+            }
+            
+            $request->merge(['username' => $username]);
+        } else {
+            $request->merge([
+                'username' => Str::lower(trim((string) $request->input('username'))),
+            ]);
+        }
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9_]+$/', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'role' => ['required', 'in:player,owner'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
 
+        // Username is required only for owner role
+        if ($role === 'owner') {
+            $rules['username'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9_]+$/', 'unique:'.User::class];
+        }
+
         // Add gender validation only for player role
-        if ($request->role === 'player') {
+        if ($role === 'player') {
             $rules['gender'] = ['required', 'in:laki-laki,perempuan'];
         }
 
         $request->validate($rules);
 
-        $avatarProfile = $request->gender === 'perempuan'
+        $avatarProfile = $request->role === 'player' && $request->gender === 'perempuan'
             ? 'profil2.png'
             : 'profil1.png';
 

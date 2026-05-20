@@ -9,6 +9,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\MatchController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 Route::get('/', function () {
     return view('welcome');
@@ -60,7 +61,7 @@ Route::middleware('auth')->group(function () {
             })->count();
             $todayBooking = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
                 $q->where('owner_id', $user->id);
-            })->whereDate('date', \Carbon\Carbon::today())->count();
+            })->whereDate('date', Carbon::today())->count();
             $monthlyRevenue = 0; // This would need to be calculated from booking data
 
             return view('owner.dashboard', compact('fieldCount', 'bookingCount', 'todayBooking', 'monthlyRevenue'));
@@ -86,7 +87,7 @@ Route::middleware('auth')->group(function () {
             $user = auth()->user();
             $bookings = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
                 $q->where('owner_id', $user->id);
-            })->with(['field', 'user'])->orderBy('date', 'desc')->orderBy('time', 'desc')->get();
+            })->with(['field', 'user'])->orderBy('date', 'desc')->orderBy('start_time', 'desc')->get();
             return view('owner.kelolaBooking', compact('bookings'));
         })->name('owner.kelolaBooking');
 

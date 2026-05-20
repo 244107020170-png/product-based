@@ -71,6 +71,23 @@
                             @enderror
                         </div>
 
+                        <div class="register-field">
+                            <label for="gender" class="sr-only">Jenis Kelamin</label>
+                            <select
+                                id="gender"
+                                name="gender"
+                                class="register-input register-input--select"
+                                required
+                            >
+                                <option value="" disabled selected>Jenis Kelamin</option>
+                                <option value="laki-laki" {{ old('gender') === 'laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="perempuan" {{ old('gender') === 'perempuan' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                            @error('gender')
+                                <span class="register-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
                         <div class="register-field register-field--password">
                             <label for="password" class="sr-only">Password</label>
                             <input
@@ -105,24 +122,41 @@
                             @enderror
                         </div>
 
-                        <div class="register-field">
-                            <label for="username" class="sr-only">Username</label>
+                        <div class="register-field register-field--password">
+                            <label for="password_confirmation" class="sr-only">Konfirmasi Password</label>
                             <input
-                                id="username"
-                                type="text"
-                                name="username"
-                                value="{{ old('username') }}"
-                                placeholder="Username"
-                                class="register-input"
+                                id="password_confirmation"
+                                type="password"
+                                name="password_confirmation"
+                                placeholder="Konfirmasi Password"
+                                class="register-input register-input--password"
                                 required
-                                autocomplete="username"
+                                autocomplete="new-password"
                             >
-                            @error('username')
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-target="password_confirmation"
+                                aria-label="Tampilkan konfirmasi password"
+                                aria-pressed="false"
+                            >
+                                <svg class="password-toggle__icon password-toggle__icon--hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M3 3l18 18"></path>
+                                    <path d="M10.6 10.7a3 3 0 0 0 4.1 4.1"></path>
+                                    <path d="M9.4 5.2A10.4 10.4 0 0 1 12 5c5.5 0 9.6 4.7 10 5-.6.5-2.2 2.4-4.6 3.8"></path>
+                                    <path d="M6.2 6.3C3.8 7.8 2.4 9.5 2 10c.7.6 2.7 3 5.8 4.3"></path>
+                                </svg>
+                                <svg class="password-toggle__icon password-toggle__icon--visible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                            @error('password_confirmation')
                                 <span class="register-error">{{ $message }}</span>
                             @enderror
                         </div>
 
-                        <div class="register-field">
+                        <div class="register-field register-field--full">
                             <label for="email" class="sr-only">Email</label>
                             <input
                                 id="email"

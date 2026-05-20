@@ -16,11 +16,16 @@ class Field extends Model
         'facilities',
         'rating',
         'review_count',
+        'verification_status',
+        'verification_notes',
+        'verified_at',
+        'verified_by',
     ];
 
     protected $casts = [
         'facilities' => 'array',
         'rating' => 'float',
+        'verified_at' => 'datetime',
     ];
 
     public function owner()
@@ -31,6 +36,11 @@ class Field extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 
     /**
