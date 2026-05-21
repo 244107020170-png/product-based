@@ -1,57 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemeliharaan Kontrol</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pemeliharaan Kontrol</title>
 
-    @vite(['resources/css/owner-dashboard.css', 'resources/css/owner-bookings.css', 'resources/css/pemeliharaanDanKontrol.css'])
+  <link rel="stylesheet" href="pemeliharaanDanKontrol.css"/>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <!-- ICON -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
 </head>
+
 <body>
 
-<div class="dashboard-layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
 
-    {{-- SIDEBAR --}}
-    @include('owner.navbar')
+    <div class="logo">
+      <h2>SPIES SPORT</h2>
+      <p>Owner Panel</p>
+    </div>
 
-    {{-- MAIN CONTENT --}}
-    <main class="main-content">
+    <ul class="menu">
+      <li><i class="fa-solid fa-table-columns"></i> Dashboard</li>
+      <li><i class="fa-solid fa-futbol"></i> Kelola Lapangan</li>
+      <li><i class="fa-regular fa-calendar"></i> Jadwal dan Slot</li>
+      <li><i class="fa-solid fa-ticket"></i> Pengelolaan Booking</li>
+      <li><i class="fa-solid fa-tags"></i> Promosi dan Diskon</li>
 
-        {{-- TOPBAR --}}
-        <div class="topbar">
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search bookings, customers...">
-            </div>
+      <li class="active">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+        Pemeliharaan Kontrol
+      </li>
+    </ul>
 
-            <div class="topbar-right">
-                <button class="notif-btn">
-                    <i class="fa-solid fa-bell"></i>
-                </button>
+    <div class="bottom-menu">
+      <li><i class="fa-solid fa-gear"></i> Pengaturan</li>
+      <li><i class="fa-solid fa-right-from-bracket"></i> Log Out</li>
+    </div>
 
-                <button class="notif-btn question">
-                    <i class="fa-solid fa-circle-question"></i>
-                </button>
+  </div>
 
-                <div class="profile-box">
-                    <div>
-                        <h5>{{ auth()->user()->name }}</h5>
-                        <p>Owner Profile</p>
-                    </div>
+  <!-- MAIN -->
+  <div class="main">
 
-                    <img src="https://i.pravatar.cc/100" alt="Profile">
-                </div>
-            </div>
+    <!-- TOPBAR -->
+    <div class="topbar">
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search bookings, customers, lapangan...">
+      </div>
+
+      <div class="top-right">
+        <i class="fa-solid fa-bell"></i>
+
+        <div class="profile">
+          <img src="https://i.pravatar.cc/40" alt="">
+          <div>
+            <h4>Namtan</h4>
+            <p>Owner Profile</p>
+          </div>
         </div>
+      </div>
 
-         <div class="cards">
+    </div>
+
+    <!-- TITLE -->
+    <div class="header">
+      <div>
+        <h1>Pemeliharaan Kontrol</h1>
+        <p>Pantau dan kelola semua aktivitas pemeliharaan fasilitas lapangan.</p>
+      </div>
+
+      <button class="add-btn">
+        <i class="fa-solid fa-plus"></i>
+        Tambah Pemeliharaan
+      </button>
+    </div>
+
+    <!-- CARDS -->
+    <div class="cards">
 
       <div class="card">
         <div class="icon red">
@@ -185,31 +217,9 @@
       </table>
 
     </div>
-    </main>
 
-</div>
-<script>
-    const rows = document.querySelectorAll("#taskTable tr");
+  </div>
 
-    rows.forEach((row) => {
-      row.addEventListener("click", () => {
-    
-        rows.forEach((r) => {
-          r.style.background = "white";
-        });
-    
-        row.style.background = "#fff5f5";
-    
-        alert("Detail tugas dibuka!");
-      });
-    });
-    
-    const addButton = document.querySelector(".add-btn");
-    
-    addButton.addEventListener("click", () => {
-      alert("Tambah Pemeliharaan clicked!");
-    });
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
