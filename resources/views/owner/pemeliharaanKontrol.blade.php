@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pemeliharaan Kontrol</title>
 
-    @vite(['resources/css/owner-dashboard.css', 'resources/css/owner-bookings.css', 'resources/css/pemeliharaanDanKontrol.css'])
+    @vite(['resources/css/pemeliharaanDanKontrol.css'])
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,6 +138,9 @@
 
         <thead>
           <tr>
+            <td>
+                <input type="checkbox">
+            </td>
             <th>Tugas</th>
             <th>Lapangan</th>
             <th>Jenis</th>
@@ -145,12 +148,16 @@
             <th>Prioritas</th>
             <th>Penanggung Jawab</th>
             <th>Status</th>
+            <th>Aksi</th>
           </tr>
         </thead>
 
         <tbody id="taskTable">
 
           <tr>
+            <td>
+                <input type="checkbox">
+            </td>
             <td>Perbaikan Lampu Lapangan A</td>
             <td>Lapangan A</td>
             <td>Elektrikal</td>
@@ -158,9 +165,17 @@
             <td><span class="badge high">Tinggi</span></td>
             <td>Budi Setiawan</td>
             <td><span class="badge waiting">Menunggu</span></td>
+            <td>
+                <button class="action-btn">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+            </td>
           </tr>
 
           <tr>
+            <td>
+                <input type="checkbox">
+            </td>
             <td>Pengecekan Rumput Sintetis</td>
             <td>Lapangan B</td>
             <td>Lapangan</td>
@@ -168,9 +183,17 @@
             <td><span class="badge medium">Sedang</span></td>
             <td>Andi Permana</td>
             <td><span class="badge progress">Dikerjakan</span></td>
+            <td>
+                <button class="action-btn">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+            </td>
           </tr>
 
           <tr>
+            <td>
+                <input type="checkbox">
+            </td>
             <td>Kalibrasi Scoreboard</td>
             <td>Lapangan C</td>
             <td>Elektrikal</td>
@@ -178,6 +201,11 @@
             <td><span class="badge low">Rendah</span></td>
             <td>Rizky</td>
             <td><span class="badge done">Selesai</span></td>
+            <td>
+                <button class="action-btn">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+            </td>
           </tr>
 
         </tbody>
@@ -193,19 +221,19 @@
 
     rows.forEach((row) => {
       row.addEventListener("click", () => {
-    
+
         rows.forEach((r) => {
           r.style.background = "white";
         });
-    
+
         row.style.background = "#fff5f5";
-    
+
         alert("Detail tugas dibuka!");
       });
     });
-    
+
     const addButton = document.querySelector(".add-btn");
-    
+
     addButton.addEventListener("click", () => {
       alert("Tambah Pemeliharaan clicked!");
     });
