@@ -113,14 +113,14 @@
                             <span class="time-picker-label">Buka</span>
                             <div class="time-dropdown">
                                 <button type="button" class="time-trigger" data-target="open_time">
-                                    <span class="time-trigger-text">{{ substr($open, 0, 5) }}</span>
+                                    <span class="time-trigger-text">{{ sprintf('%02d.00', (int)substr($open, 0, 2)) }}</span>
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </button>
                                 <div class="time-grid" data-target="open_time">
-                                    @for ($h = 0; $h <= 23; $h++)
+                                    @for ($h = 05; $h <= 23; $h++)
                                         @php $val = sprintf('%02d:00', $h); @endphp
                                         <div class="time-option {{ $open == $val ? 'active' : '' }}" data-value="{{ $val }}">
-                                            {{ sprintf('%02d', $h) }}
+                                            {{ sprintf('%02d:00', $h) }}
                                         </div>
                                     @endfor
                                 </div>
@@ -140,10 +140,10 @@
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </button>
                                 <div class="time-grid" data-target="close_time">
-                                    @for ($h = 0; $h <= 23; $h++)
+                                    @for ($h = 05; $h <= 23; $h++)
                                         @php $val = sprintf('%02d:00', $h); @endphp
                                         <div class="time-option {{ $close == $val ? 'active' : '' }}" data-value="{{ $val }}">
-                                            {{ sprintf('%02d', $h) }}
+                                            {{ sprintf('%02d:00', $h) }}
                                         </div>
                                     @endfor
                                 </div>
