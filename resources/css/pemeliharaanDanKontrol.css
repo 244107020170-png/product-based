@@ -436,3 +436,177 @@ td{
   background:#dcfce7;
   color:#16a34a;
 }
+
+/* =========================
+   MAINTENANCE LAYOUT
+========================= */
+
+.maintenance-layout{
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.content-main{
+  flex: 1;
+  min-width: 0;
+}
+
+/* =========================
+   DETAIL PANEL
+========================= */
+
+.detail-panel{
+  display: none;
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.detail-panel.show{
+  display: block;
+}
+
+.detail-card{
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  position: sticky;
+  top: 16px;
+}
+
+.detail-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.detail-header h3{
+  font-size: 18px;
+}
+
+.detail-header button{
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #999;
+  font-size: 18px;
+}
+
+.task-id{
+  margin-top: 10px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #888;
+}
+
+.detail-section{
+  margin-bottom: 14px;
+}
+
+.detail-section h4{
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.detail-info{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-info div{
+  display: flex;
+  justify-content: space-between;
+}
+
+.detail-info span{
+  color: #888;
+  font-size: 12px;
+}
+
+.detail-info strong{
+  font-size: 12px;
+}
+
+.detail-profile{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-profile img{
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+}
+
+.detail-profile h4{
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.detail-profile p{
+  font-size: 11px;
+  color: #888;
+}
+
+.history-list{
+  padding-left: 16px;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.edit-actions{
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn,
+.save-btn,
+.cancel-btn{
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.edit-btn{
+  background: #f4f4f4;
+}
+
+.save-btn{
+  background: #e8f8ef;
+  color: #1b9d59;
+}
+
+.cancel-btn{
+  background: #fff0f0;
+  color: #dc3d3d;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width: 1200px){
+  .maintenance-layout{
+    flex-direction: column;
+  }
+
+  .detail-panel{
+    width: 100%;
+  }
+}

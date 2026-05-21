@@ -110,132 +110,317 @@
 
     </div>
 
-    <!-- FILTER -->
-    <div class="filter-box">
+    <div class="maintenance-layout">
 
-      <input type="text" placeholder="Cari tugas, lapangan, teknisi...">
+      <div class="content-main">
 
-      <select>
-        <option>Semua Lapangan</option>
-      </select>
+        <!-- FILTER -->
+        <div class="filter-box">
 
-      <select>
-        <option>Semua Jenis</option>
-      </select>
+          <input type="text" placeholder="Cari tugas, lapangan, teknisi...">
 
-      <select>
-        <option>Semua Status</option>
-      </select>
+          <select>
+            <option>Semua Lapangan</option>
+          </select>
 
-      <button class="reset-btn">Reset Filter</button>
+          <select>
+            <option>Semua Jenis</option>
+          </select>
 
-    </div>
+          <select>
+            <option>Semua Status</option>
+          </select>
 
-    <!-- TABLE -->
-    <div class="table-container">
+          <button class="reset-btn">Reset Filter</button>
 
-      <table>
+        </div>
 
-        <thead>
-          <tr>
-            <td>
-                <input type="checkbox">
-            </td>
-            <th>Tugas</th>
-            <th>Lapangan</th>
-            <th>Jenis</th>
-            <th>Jadwal</th>
-            <th>Prioritas</th>
-            <th>Penanggung Jawab</th>
-            <th>Status</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
+        <!-- TABLE -->
+        <div class="table-container">
 
-        <tbody id="taskTable">
+          <table>
 
-          <tr>
-            <td>
-                <input type="checkbox">
-            </td>
-            <td>Perbaikan Lampu Lapangan A</td>
-            <td>Lapangan A</td>
-            <td>Elektrikal</td>
-            <td>20 Mei 2025</td>
-            <td><span class="badge high">Tinggi</span></td>
-            <td>Budi Setiawan</td>
-            <td><span class="badge waiting">Menunggu</span></td>
-            <td>
-                <button class="action-btn">
-                    <i class="fa-solid fa-ellipsis"></i>
-                </button>
-            </td>
-          </tr>
+            <thead>
+              <tr>
+                <td>
+                    <input type="checkbox">
+                </td>
+                <th>Tugas</th>
+                <th>Lapangan</th>
+                <th>Jenis</th>
+                <th>Jadwal</th>
+                <th>Prioritas</th>
+                <th>Penanggung Jawab</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
 
-          <tr>
-            <td>
-                <input type="checkbox">
-            </td>
-            <td>Pengecekan Rumput Sintetis</td>
-            <td>Lapangan B</td>
-            <td>Lapangan</td>
-            <td>21 Mei 2025</td>
-            <td><span class="badge medium">Sedang</span></td>
-            <td>Andi Permana</td>
-            <td><span class="badge progress">Dikerjakan</span></td>
-            <td>
-                <button class="action-btn">
-                    <i class="fa-solid fa-ellipsis"></i>
-                </button>
-            </td>
-          </tr>
+            <tbody id="taskTable">
 
-          <tr>
-            <td>
-                <input type="checkbox">
-            </td>
-            <td>Kalibrasi Scoreboard</td>
-            <td>Lapangan C</td>
-            <td>Elektrikal</td>
-            <td>23 Mei 2025</td>
-            <td><span class="badge low">Rendah</span></td>
-            <td>Rizky</td>
-            <td><span class="badge done">Selesai</span></td>
-            <td>
-                <button class="action-btn">
-                    <i class="fa-solid fa-ellipsis"></i>
-                </button>
-            </td>
-          </tr>
+              <tr>
+                <td>
+                    <input type="checkbox">
+                </td>
+                <td data-label="tugas">Perbaikan Lampu Lapangan A</td>
+                <td data-label="lapangan">Lapangan A</td>
+                <td data-label="jenis">Elektrikal</td>
+                <td data-label="jadwal">20 Mei 2025</td>
+                <td data-label="prioritas"><span class="badge high">Tinggi</span></td>
+                <td data-label="pj">Budi Setiawan</td>
+                <td data-label="status"><span class="badge waiting">Menunggu</span></td>
+                <td>
+                    <button class="action-btn">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                </td>
+              </tr>
 
-        </tbody>
+              <tr>
+                <td>
+                    <input type="checkbox">
+                </td>
+                <td data-label="tugas">Pengecekan Rumput Sintetis</td>
+                <td data-label="lapangan">Lapangan B</td>
+                <td data-label="jenis">Lapangan</td>
+                <td data-label="jadwal">21 Mei 2025</td>
+                <td data-label="prioritas"><span class="badge medium">Sedang</span></td>
+                <td data-label="pj">Andi Permana</td>
+                <td data-label="status"><span class="badge progress">Dikerjakan</span></td>
+                <td>
+                    <button class="action-btn">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                </td>
+              </tr>
 
-      </table>
+              <tr>
+                <td>
+                    <input type="checkbox">
+                </td>
+                <td data-label="tugas">Kalibrasi Scoreboard</td>
+                <td data-label="lapangan">Lapangan C</td>
+                <td data-label="jenis">Elektrikal</td>
+                <td data-label="jadwal">23 Mei 2025</td>
+                <td data-label="prioritas"><span class="badge low">Rendah</span></td>
+                <td data-label="pj">Rizky</td>
+                <td data-label="status"><span class="badge done">Selesai</span></td>
+                <td>
+                    <button class="action-btn">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+      {{-- DETAIL PANEL --}}
+      <div class="detail-panel">
+
+        <div class="detail-card">
+
+          <div class="detail-header">
+
+            <h3>Detail Pemeliharaan</h3>
+
+            <button class="detail-close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+          </div>
+
+          <div class="status-badge waiting">Menunggu</div>
+
+          <div class="task-id">Tugas #MT-001</div>
+
+          {{-- TUGAS INFO --}}
+          <div class="detail-section">
+
+            <h4>Informasi Tugas</h4>
+
+            <div class="detail-info">
+
+              <div>
+                <span>Tugas</span>
+                <strong data-field="tugas">Perbaikan Lampu Lapangan A</strong>
+              </div>
+
+              <div>
+                <span>Lapangan</span>
+                <strong data-field="lapangan">Lapangan A</strong>
+              </div>
+
+              <div>
+                <span>Jenis</span>
+                <strong data-field="jenis">Elektrikal</strong>
+              </div>
+
+              <div>
+                <span>Jadwal</span>
+                <strong data-field="jadwal">20 Mei 2025</strong>
+              </div>
+
+              <div>
+                <span>Prioritas</span>
+                <strong data-field="prioritas">Tinggi</strong>
+              </div>
+
+            </div>
+
+          </div>
+
+          {{-- PENANGGUNG JAWAB --}}
+          <div class="detail-section">
+
+            <h4>Penanggung Jawab</h4>
+
+            <div class="detail-profile">
+
+              <img src="https://i.pravatar.cc/100" alt="">
+
+              <div>
+                <h4 class="pj-name">Budi Setiawan</h4>
+                <p>Teknisi Lapangan</p>
+                <p>budi@arenasport.com</p>
+              </div>
+
+            </div>
+
+          </div>
+
+          {{-- HISTORY --}}
+          <div class="detail-section">
+
+            <h4>Riwayat Tugas</h4>
+
+            <ul class="history-list">
+
+              <li style="color: black">Tugas dibuat</li>
+              <li style="color: #F29E10">Menunggu dikerjakan</li>
+
+            </ul>
+
+          </div>
+
+          {{-- BUTTONS --}}
+          <div class="edit-actions">
+            <button class="edit-btn">
+              <i class="fa-solid fa-pen"></i>
+              Edit
+            </button>
+
+            <button class="save-btn" style="display:none;">
+              <i class="fa-solid fa-check"></i>
+              Simpan
+            </button>
+
+            <button class="cancel-btn" style="display:none;">
+              <i class="fa-solid fa-xmark"></i>
+              Batal
+            </button>
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
     </main>
 
 </div>
 <script>
-    const rows = document.querySelectorAll("#taskTable tr");
+    document.addEventListener('DOMContentLoaded', function () {
 
-    rows.forEach((row) => {
-      row.addEventListener("click", () => {
+        const detailPanel = document.querySelector('.detail-panel');
+        const closeBtn = detailPanel?.querySelector('.detail-close');
+        const rows = document.querySelectorAll('#taskTable tr');
 
-        rows.forEach((r) => {
-          r.style.background = "white";
+        const statusMap = {
+            'Menunggu': { label: 'Menunggu', badgeClass: 'waiting', history: [
+                { label: 'Tugas dibuat', color: 'black' },
+                { label: 'Menunggu dikerjakan', color: '#F29E10' },
+            ]},
+            'Dikerjakan': { label: 'Dikerjakan', badgeClass: 'progress', history: [
+                { label: 'Tugas dibuat', color: 'black' },
+                { label: 'Menunggu dikerjakan', color: 'black' },
+                { label: 'Sedang dikerjakan', color: '#2563eb' },
+            ]},
+            'Selesai': { label: 'Selesai', badgeClass: 'done', history: [
+                { label: 'Tugas dibuat', color: 'black' },
+                { label: 'Menunggu dikerjakan', color: 'black' },
+                { label: 'Sedang dikerjakan', color: 'black' },
+                { label: 'Selesai', color: '#16a34a' },
+            ]},
+        };
+
+        const prioritasMap = {
+            'Tinggi': 'high',
+            'Sedang': 'medium',
+            'Rendah': 'low',
+        };
+
+        function populateDetail(row) {
+            const cells = row.querySelectorAll('td');
+
+            const tugas = cells[1]?.textContent.trim() || '';
+            const lapangan = cells[2]?.textContent.trim() || '';
+            const jenis = cells[3]?.textContent.trim() || '';
+            const jadwal = cells[4]?.textContent.trim() || '';
+            const prioritas = cells[5]?.querySelector('.badge')?.textContent.trim() || '';
+            const pj = cells[6]?.textContent.trim() || '';
+            const status = cells[7]?.querySelector('.badge')?.textContent.trim() || '';
+            const statusData = statusMap[status] || statusMap['Menunggu'];
+
+            const badge = detailPanel.querySelector('.status-badge');
+            badge.textContent = status;
+            badge.className = 'status-badge ' + statusData.badgeClass;
+
+            detailPanel.querySelector('.task-id').textContent = 'Tugas #MT-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+            detailPanel.querySelector('[data-field="tugas"]').textContent = tugas;
+            detailPanel.querySelector('[data-field="lapangan"]').textContent = lapangan;
+            detailPanel.querySelector('[data-field="jenis"]').textContent = jenis;
+            detailPanel.querySelector('[data-field="jadwal"]').textContent = jadwal;
+            detailPanel.querySelector('[data-field="prioritas"]').textContent = prioritas;
+            detailPanel.querySelector('.pj-name').textContent = pj;
+
+            const historyList = detailPanel.querySelector('.history-list');
+            historyList.innerHTML = '';
+            (statusData.history || []).forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s.label;
+                li.style.color = s.color;
+                historyList.appendChild(li);
+            });
+        }
+
+        rows.forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('.action-btn') || e.target.closest('input[type="checkbox"]')) return;
+
+                rows.forEach(r => r.style.background = 'white');
+                row.style.background = '#fff5f5';
+            });
+
+            const actionBtn = row.querySelector('.action-btn');
+            if (actionBtn) {
+                actionBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    populateDetail(row);
+                    detailPanel?.classList.toggle('show');
+                });
+            }
         });
 
-        row.style.background = "#fff5f5";
+        closeBtn?.addEventListener('click', () => {
+            detailPanel?.classList.remove('show');
+        });
 
-        alert("Detail tugas dibuka!");
-      });
-    });
-
-    const addButton = document.querySelector(".add-btn");
-
-    addButton.addEventListener("click", () => {
-      alert("Tambah Pemeliharaan clicked!");
     });
 </script>
 
