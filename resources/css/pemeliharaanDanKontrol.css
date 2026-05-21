@@ -445,11 +445,13 @@ td{
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  margin-top: 25px;
 }
 
 .content-main{
   flex: 1;
   min-width: 0;
+  max-width: calc(100% - 296px);
 }
 
 /* =========================
@@ -458,7 +460,7 @@ td{
 
 .detail-panel{
   display: none;
-  width: 320px;
+  width: 280px;
   flex-shrink: 0;
 }
 
