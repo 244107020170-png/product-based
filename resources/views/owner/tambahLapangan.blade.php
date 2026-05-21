@@ -106,16 +106,24 @@
                 <div class="time-picker-section">
                     <label class="section-label">Jam Operasional</label>
                     <div class="time-picker-row">
+                        @php $open = isset($field) ? $field->open_time : '08:00'; @endphp
+                        @php $close = isset($field) ? $field->close_time : '22:00'; @endphp
+
                         <div class="time-picker-group">
                             <span class="time-picker-label">Buka</span>
-                            <div class="time-grid" data-target="open_time">
-                                @php $open = isset($field) ? $field->open_time : '08:00'; @endphp
-                                @for ($h = 0; $h <= 23; $h++)
-                                    @php $val = sprintf('%02d:00', $h); @endphp
-                                    <div class="time-option {{ $open == $val ? 'active' : '' }}" data-value="{{ $val }}">
-                                        {{ sprintf('%02d', $h) }}
-                                    </div>
-                                @endfor
+                            <div class="time-dropdown">
+                                <button type="button" class="time-trigger" data-target="open_time">
+                                    <span class="time-trigger-text">{{ substr($open, 0, 5) }}</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div class="time-grid" data-target="open_time">
+                                    @for ($h = 0; $h <= 23; $h++)
+                                        @php $val = sprintf('%02d:00', $h); @endphp
+                                        <div class="time-option {{ $open == $val ? 'active' : '' }}" data-value="{{ $val }}">
+                                            {{ sprintf('%02d', $h) }}
+                                        </div>
+                                    @endfor
+                                </div>
                             </div>
                             <input type="hidden" name="open_time" value="{{ $open }}">
                         </div>
@@ -126,14 +134,19 @@
 
                         <div class="time-picker-group">
                             <span class="time-picker-label">Tutup</span>
-                            <div class="time-grid" data-target="close_time">
-                                @php $close = isset($field) ? $field->close_time : '22:00'; @endphp
-                                @for ($h = 0; $h <= 23; $h++)
-                                    @php $val = sprintf('%02d:00', $h); @endphp
-                                    <div class="time-option {{ $close == $val ? 'active' : '' }}" data-value="{{ $val }}">
-                                        {{ sprintf('%02d', $h) }}
-                                    </div>
-                                @endfor
+                            <div class="time-dropdown">
+                                <button type="button" class="time-trigger" data-target="close_time">
+                                    <span class="time-trigger-text">{{ substr($close, 0, 5) }}</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div class="time-grid" data-target="close_time">
+                                    @for ($h = 0; $h <= 23; $h++)
+                                        @php $val = sprintf('%02d:00', $h); @endphp
+                                        <div class="time-option {{ $close == $val ? 'active' : '' }}" data-value="{{ $val }}">
+                                            {{ sprintf('%02d', $h) }}
+                                        </div>
+                                    @endfor
+                                </div>
                             </div>
                             <input type="hidden" name="close_time" value="{{ $close }}">
                         </div>
@@ -179,18 +192,42 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+        document.querySelectorAll('.time-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const dropdown = this.closest('.time-dropdown');
+                const wasOpen = dropdown.classList.contains('open');
+
+                document.querySelectorAll('.time-dropdown.open').forEach(d => d.classList.remove('open'));
+
+                if (!wasOpen) dropdown.classList.add('open');
+            });
+        });
+
         document.querySelectorAll('.time-grid').forEach(grid => {
             const target = grid.dataset.target;
             const input = document.querySelector('input[name="' + target + '"]');
+            const triggerText = document.querySelector('.time-trigger[data-target="' + target + '"] .time-trigger-text');
 
             grid.querySelectorAll('.time-option').forEach(opt => {
                 opt.addEventListener('click', function () {
                     grid.querySelectorAll('.time-option').forEach(o => o.classList.remove('active'));
                     this.classList.add('active');
                     input.value = this.dataset.value;
+
+                    const h = this.dataset.value.substring(0, 2);
+                    triggerText.textContent = h + '.00';
+
+                    this.closest('.time-dropdown').classList.remove('open');
                 });
             });
         });
+
+        document.addEventListener('click', function () {
+            document.querySelectorAll('.time-dropdown.open').forEach(d => d.classList.remove('open'));
+        });
+
     });
 </script>
 

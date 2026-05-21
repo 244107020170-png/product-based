@@ -123,14 +123,60 @@ input[type="file"].form-control {
     font-size: 18px;
 }
 
+/* DROPDOWN */
+
+.time-dropdown{
+    position: relative;
+}
+
+.time-trigger{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    color: #333;
+    transition: 0.15s ease;
+}
+
+.time-trigger:hover{
+    border-color: #ff4d4d;
+}
+
+.time-trigger i{
+    font-size: 12px;
+    color: #999;
+    transition: 0.2s ease;
+}
+
+.time-dropdown.open .time-trigger i{
+    transform: rotate(180deg);
+}
+
 .time-grid{
-    display: grid;
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 280px;
     grid-template-columns: repeat(6, 1fr);
     gap: 6px;
-    background: #f9f9f9;
+    background: #fff;
     border: 1px solid #eee;
     border-radius: 12px;
     padding: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    z-index: 20;
+}
+
+.time-dropdown.open .time-grid{
+    display: grid;
 }
 
 .time-option{
@@ -139,8 +185,8 @@ input[type="file"].form-control {
     font-size: 12px;
     font-weight: 500;
     color: #666;
-    background: #fff;
-    border: 1px solid #e8e8e8;
+    background: #f9f9f9;
+    border: 1px solid #eee;
     border-radius: 8px;
     cursor: pointer;
     transition: 0.15s ease;
@@ -149,6 +195,7 @@ input[type="file"].form-control {
 .time-option:hover{
     border-color: #ff4d4d;
     color: #ff4d4d;
+    background: #fff;
 }
 
 .time-option.active{
