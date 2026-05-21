@@ -103,15 +103,40 @@
                 </div>
 
                 {{-- Baris 3: Jam Operasional --}}
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Jam Buka</label>
-                        <input type="time" name="open_time" class="form-control" value="{{ isset($field) ? $field->open_time : '08:00' }}" required>
-                    </div>
+                <div class="time-picker-section">
+                    <label class="section-label">Jam Operasional</label>
+                    <div class="time-picker-row">
+                        <div class="time-picker-group">
+                            <span class="time-picker-label">Buka</span>
+                            <div class="time-grid" data-target="open_time">
+                                @php $open = isset($field) ? $field->open_time : '08:00'; @endphp
+                                @for ($h = 0; $h <= 23; $h++)
+                                    @php $val = sprintf('%02d:00', $h); @endphp
+                                    <div class="time-option {{ $open == $val ? 'active' : '' }}" data-value="{{ $val }}">
+                                        {{ sprintf('%02d', $h) }}
+                                    </div>
+                                @endfor
+                            </div>
+                            <input type="hidden" name="open_time" value="{{ $open }}">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Jam Tutup</label>
-                        <input type="time" name="close_time" class="form-control" value="{{ isset($field) ? $field->close_time : '22:00' }}" required>
+                        <div class="time-picker-sep">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+
+                        <div class="time-picker-group">
+                            <span class="time-picker-label">Tutup</span>
+                            <div class="time-grid" data-target="close_time">
+                                @php $close = isset($field) ? $field->close_time : '22:00'; @endphp
+                                @for ($h = 0; $h <= 23; $h++)
+                                    @php $val = sprintf('%02d:00', $h); @endphp
+                                    <div class="time-option {{ $close == $val ? 'active' : '' }}" data-value="{{ $val }}">
+                                        {{ sprintf('%02d', $h) }}
+                                    </div>
+                                @endfor
+                            </div>
+                            <input type="hidden" name="close_time" value="{{ $close }}">
+                        </div>
                     </div>
                 </div>
 
@@ -151,6 +176,23 @@
 
     </main>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.time-grid').forEach(grid => {
+            const target = grid.dataset.target;
+            const input = document.querySelector('input[name="' + target + '"]');
+
+            grid.querySelectorAll('.time-option').forEach(opt => {
+                opt.addEventListener('click', function () {
+                    grid.querySelectorAll('.time-option').forEach(o => o.classList.remove('active'));
+                    this.classList.add('active');
+                    input.value = this.dataset.value;
+                });
+            });
+        });
+    });
+</script>
 
 </body>
 </html>

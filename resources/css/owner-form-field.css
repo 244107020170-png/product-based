@@ -88,6 +88,75 @@ input[type="file"].form-control {
     accent-color: #dc3545; /* Mengubah warna checkbox bawaan menjadi merah */
 }
 
+/* =========================
+   TIME PICKER
+========================= */
+
+.time-picker-section{
+    margin-bottom: 25px;
+}
+
+.time-picker-row{
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.time-picker-group{
+    flex: 1;
+}
+
+.time-picker-label{
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.time-picker-sep{
+    display: flex;
+    align-items: center;
+    padding-top: 24px;
+    color: #ccc;
+    font-size: 18px;
+}
+
+.time-grid{
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.time-option{
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.time-option:hover{
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+}
+
+.time-option.active{
+    background: #ff4d4d;
+    color: #fff;
+    border-color: #ff4d4d;
+}
+
 /* Area Tombol Aksi di Bawah */
 .form-actions {
     display: flex;
