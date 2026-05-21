@@ -85,14 +85,9 @@
                     <div>
                         <h1>Selamat datang kembali, Owner Arena Sport!</h1>
                     </div>
-
-                    <button class="add-btn">
-
-                        <i class="fa-solid fa-plus"></i>
-
-                        Tambah Lapangan
-
-                    </button>
+                    <a href="{{ route('owner.tambahLapangan') }}" style="display: inline-block; background: linear-gradient(135deg, #ff4d4d, #ff2e63); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                        <i class="fa-solid fa-plus"></i> Tambah Lapangan
+                    </a>
 
                 </div>
 
