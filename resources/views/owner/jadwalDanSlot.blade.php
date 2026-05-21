@@ -202,9 +202,6 @@
 
             </div>
 
-            <div style="overflow-x: auto;">
-                <div id="table-container"></div>
-            </div>
         </div>
 
     </main>
@@ -222,6 +219,8 @@
     const sportTypes = ['Semua Olahraga', 'Futsal', 'Basket', 'Badminton'];
     const statusClasses = ['status-tersedia', 'status-dibooking', 'status-perbaikan', 'status-tutup'];
     const statusLabels = ['Tersedia', 'Dibooking', 'Perbaikan', 'Tutup'];
+
+    let slotData = {};
 
     let holidayDates = [];
     let currentDate = new Date();
@@ -325,12 +324,21 @@
                     html += '<span style="font-size: 0.65rem; color: #9ca3af;">Tanggal Merah</span>';
                     html += '</div></td>';
                 } else if (!isHoliday) {
-                    const randomIdx = Math.floor(Math.random() * statusClasses.length);
+                    const key = fieldId + '-' + dateStr + '-' + hour;
+                    if (!slotData[key]) slotData[key] = 'tersedia';
+                    const st = slotData[key];
+                    const stClass = 'status-' + st;
+                    const stLabel = st.charAt(0).toUpperCase() + st.slice(1);
                     html += '<td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">';
-                    html += '<div class="slot-status ' + statusClasses[randomIdx] + '">';
-                    html += '<div><strong>' + String(hour).padStart(2, '0') + '.00 - ' + String(hour + 1).padStart(2, '0') + '.00</strong><br>' + statusLabels[randomIdx] + '</div>';
-                    html += '<i class="fa-solid fa-ellipsis"></i>';
-                    html += '</div></td>';
+                    html += '<div class="slot-status ' + stClass + '" data-slot-key="' + key + '" data-slot-status="' + st + '">';
+                    html += '<div><strong>' + String(hour).padStart(2, '0') + '.00 - ' + String(hour + 1).padStart(2, '0') + '.00</strong><br>' + stLabel + '</div>';
+                    html += '<div class="slot-actions">';
+                    html += '<i class="fa-solid fa-ellipsis slot-toggle"></i>';
+                    html += '<div class="slot-menu">';
+                    html += '<span data-action="tersedia" class="slot-menu-item">Tersedia</span>';
+                    html += '<span data-action="perbaikan" class="slot-menu-item">Perbaikan</span>';
+                    html += '<span data-action="tutup" class="slot-menu-item">Tutup</span>';
+                    html += '</div></div></div></td>';
                 }
             }
             html += '</tr>';
@@ -387,6 +395,32 @@
         document.getElementById('prev-week').addEventListener('click', prevWeek);
         document.getElementById('next-week').addEventListener('click', nextWeek);
         document.getElementById('reset-filter').addEventListener('click', resetFilter);
+
+        document.addEventListener('click', function (e) {
+            const toggle = e.target.closest('.slot-toggle');
+            if (toggle) {
+                e.stopPropagation();
+                const container = toggle.closest('.slot-actions');
+                const wasOpen = container.classList.contains('open');
+                document.querySelectorAll('.slot-actions.open').forEach(el => el.classList.remove('open'));
+                if (!wasOpen) container.classList.add('open');
+                return;
+            }
+
+            const item = e.target.closest('.slot-menu-item');
+            if (item) {
+                e.stopPropagation();
+                const key = item.closest('.slot-status').dataset.slotKey;
+                const action = item.dataset.action;
+                if (key && action) {
+                    slotData[key] = action;
+                    renderTable();
+                }
+                return;
+            }
+
+            document.querySelectorAll('.slot-actions.open').forEach(el => el.classList.remove('open'));
+        });
     });
 </script>
 

@@ -608,7 +608,7 @@ body{
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
 
     transition: 0.2s ease;
 }
@@ -627,6 +627,59 @@ body{
 
     font-size: 11px;
     font-weight: 500;
+}
+
+/* SLOT ACTIONS */
+
+.slot-actions{
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.slot-toggle{
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0.6;
+    transition: 0.15s ease;
+}
+
+.slot-toggle:hover{
+    opacity: 1;
+    background: rgba(0,0,0,0.05);
+}
+
+.slot-menu{
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 140px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    padding: 6px;
+    z-index: 20;
+}
+
+.slot-actions.open .slot-menu{
+    display: flex;
+    flex-direction: column;
+}
+
+.slot-menu-item{
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.slot-menu-item:hover{
+    background: #f5f5f5;
 }
 
 /* TERSEDIA */
