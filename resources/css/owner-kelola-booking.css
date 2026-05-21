@@ -282,8 +282,13 @@ body{
 /* RIGHT */
 
 .booking-detail{
+    display: none;
     width: 280px;
     flex-shrink: 0;
+}
+
+.booking-detail.show{
+    display: block;
 }
 
 /* =========================
@@ -307,6 +312,7 @@ body{
 /* BUTTON */
 
 .add-btn{
+    border: none;
     text-decoration: none;
 
     display: flex;
@@ -419,6 +425,12 @@ body{
     box-shadow: 0 4px 14px rgba(0,0,0,0.04);
 }
 
+/* FILTER DROPDOWN */
+
+.filter-dropdown{
+    position: relative;
+}
+
 /* FILTER BUTTON */
 
 .filter-btn{
@@ -437,6 +449,42 @@ body{
     cursor: pointer;
 
     font-size: 13px;
+}
+
+.filter-menu{
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 200px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    padding: 6px;
+    z-index: 10;
+}
+
+.filter-menu.show{
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-option{
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.filter-option:hover{
+    background: #f5f5f5;
+}
+
+.filter-option.active{
+    background: #fff0f0;
+    color: #dc3d3d;
+    font-weight: 600;
 }
 
 /* RESET */
@@ -554,6 +602,22 @@ body{
 .status-badge.success{
     background: #e8f8ef;
     color: #1b9d59;
+}
+
+.status-badge.warning{
+    background: #fff6df;
+    color: #e09a00;
+}
+
+.status-badge.danger{
+    background: #fff0f0;
+    color: #dc3d3d;
+}
+
+/* ACTIVE ROW */
+
+.booking-table tbody tr.active-row{
+    background: #fff5f5;
 }
 
 /* ACTION */
@@ -693,28 +757,88 @@ body{
     font-size: 12px;
 }
 
-/* EDIT */
+/* EDIT ACTIONS */
 
-.edit-btn{
-    width: 100%;
+.edit-actions{
+    display: flex;
+    gap: 8px;
+}
 
+.edit-btn,
+.save-btn,
+.cancel-btn{
+    flex: 1;
     border: none;
-
-    background: #f4f4f4;
-
     padding: 10px;
-
     border-radius: 12px;
-
     font-weight: 600;
     font-size: 13px;
-
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-
     cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.edit-btn{
+    background: #f4f4f4;
+}
+
+.save-btn{
+    background: #e8f8ef;
+    color: #1b9d59;
+}
+
+.cancel-btn{
+    background: #fff0f0;
+    color: #dc3d3d;
+}
+
+.edit-btn:hover{
+    background: #e8e8e8;
+}
+
+.save-btn:hover{
+    background: #d0f0dd;
+}
+
+.cancel-btn:hover{
+    background: #ffe0e0;
+}
+
+/* EDIT MODE */
+
+.detail-info .edit-input{
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    width: 140px;
+    text-align: right;
+    outline: none;
+}
+
+.detail-info .edit-input:focus{
+    border-color: #ff4d4d;
+}
+
+.edit-select{
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    width: 140px;
+    text-align: right;
+    outline: none;
+    background: #fff;
+    cursor: pointer;
+}
+
+.edit-select:focus{
+    border-color: #ff4d4d;
 }
 
 /* =========================

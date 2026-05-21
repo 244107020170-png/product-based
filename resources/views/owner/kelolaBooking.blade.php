@@ -162,15 +162,24 @@
 
                             <div class="filter-left">
 
-                                <button class="filter-btn">
+                                <div class="filter-dropdown">
+                                    <button class="filter-btn">
 
-                                    <i class="fa-solid fa-sliders"></i>
+                                        <i class="fa-solid fa-sliders"></i>
 
-                                    Filter
+                                        Filter
 
-                                    <i class="fa-solid fa-chevron-down"></i>
+                                        <i class="fa-solid fa-chevron-down"></i>
 
-                                </button>
+                                    </button>
+
+                                    <div class="filter-menu">
+                                        <span data-status="all" class="filter-option active">Semua</span>
+                                        <span data-status="Menunggu Konfirmasi" class="filter-option">Menunggu Konfirmasi</span>
+                                        <span data-status="Selesai" class="filter-option">Selesai</span>
+                                        <span data-status="Dibatalkan" class="filter-option">Dibatalkan</span>
+                                    </div>
+                                </div>
 
                             </div>
 
@@ -283,6 +292,290 @@
 
                                 </tr>
 
+                                <tr>
+
+                                    <td>
+                                        <input type="checkbox">
+                                    </td>
+
+                                    <td>
+
+                                        <div class="customer-cell">
+
+                                            <img src="https://i.pravatar.cc/100"
+                                                 alt="">
+
+                                            <div>
+                                                <h5>Rizky P.</h5>
+                                                <p>085712345678</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="field-cell">
+
+                                            <i class="fa-regular fa-futbol"></i>
+
+                                            <div>
+                                                <h5>Lapangan B</h5>
+                                                <p>Futsal Outdoor</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+                                        23 Mei 2026
+                                    </td>
+
+                                    <td>
+                                        10.00 - 11.00
+                                    </td>
+
+                                    <td>
+                                        1 Jam
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge success">
+                                            Telah Dikonfirmasi
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        Rp150.000
+                                    </td>
+
+                                    <td>
+
+                                        <button class="action-btn">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <input type="checkbox">
+                                    </td>
+
+                                    <td>
+
+                                        <div class="customer-cell">
+
+                                            <img src="https://i.pravatar.cc/100"
+                                                 alt="">
+
+                                            <div>
+                                                <h5>Siti N.</h5>
+                                                <p>081234567890</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="field-cell">
+
+                                            <i class="fa-regular fa-futbol"></i>
+
+                                            <div>
+                                                <h5>Lapangan A</h5>
+                                                <p>Futsal Indoor</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+                                        24 Mei 2026
+                                    </td>
+
+                                    <td>
+                                        14.00 - 15.30
+                                    </td>
+
+                                    <td>
+                                        1.5 Jam
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge warning">
+                                            Menunggu Konfirmasi
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        Rp180.000
+                                    </td>
+
+                                    <td>
+
+                                        <button class="action-btn">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <input type="checkbox">
+                                    </td>
+
+                                    <td>
+
+                                        <div class="customer-cell">
+
+                                            <img src="https://i.pravatar.cc/100"
+                                                 alt="">
+
+                                            <div>
+                                                <h5>Budi S.</h5>
+                                                <p>087812345678</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="field-cell">
+
+                                            <i class="fa-regular fa-futbol"></i>
+
+                                            <div>
+                                                <h5>Lapangan C</h5>
+                                                <p>Basket Indoor</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+                                        20 Mei 2026
+                                    </td>
+
+                                    <td>
+                                        16.00 - 18.00
+                                    </td>
+
+                                    <td>
+                                        2 Jam
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge success">
+                                            Selesai
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        Rp250.000
+                                    </td>
+
+                                    <td>
+
+                                        <button class="action-btn">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>
+                                        <input type="checkbox">
+                                    </td>
+
+                                    <td>
+
+                                        <div class="customer-cell">
+
+                                            <img src="https://i.pravatar.cc/100"
+                                                 alt="">
+
+                                            <div>
+                                                <h5>Dewi K.</h5>
+                                                <p>082198765432</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="field-cell">
+
+                                            <i class="fa-regular fa-futbol"></i>
+
+                                            <div>
+                                                <h5>Lapangan B</h5>
+                                                <p>Futsal Outdoor</p>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+                                        19 Mei 2026
+                                    </td>
+
+                                    <td>
+                                        09.00 - 10.00
+                                    </td>
+
+                                    <td>
+                                        1 Jam
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge danger">
+                                            Dibatalkan
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        Rp150.000
+                                    </td>
+
+                                    <td>
+
+                                        <button class="action-btn">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
                                 </tbody>
 
                             </table>
@@ -306,7 +599,7 @@
 
                             </div>
 
-                            <div class="status-badge success">
+                            <div class="status-badge success" data-field="status">
                                 Telah Dikonfirmasi
                             </div>
 
@@ -341,22 +634,22 @@
 
                                     <div>
                                         <span>Lapangan</span>
-                                        <strong>Lapangan A</strong>
+                                        <strong data-field="lapangan">Lapangan A</strong>
                                     </div>
 
                                     <div>
                                         <span>Tanggal</span>
-                                        <strong>22 Mei 2026</strong>
+                                        <strong data-field="tanggal">22 Mei 2026</strong>
                                     </div>
 
                                     <div>
                                         <span>Waktu</span>
-                                        <strong>08.00 - 09.00</strong>
+                                        <strong data-field="waktu">08.00 - 09.00</strong>
                                     </div>
 
                                     <div>
                                         <span>Harga / jam</span>
-                                        <strong>Rp120.000</strong>
+                                        <strong data-field="harga">Rp120.000</strong>
                                     </div>
 
                                 </div>
@@ -370,22 +663,40 @@
 
                                 <ul class="history-list">
 
-                                    <li>Booking dibuat</li>
-                                    <li>Menunggu konfirmasi</li>
-                                    <li>Booking selesai</li>
+                                    <li style="color: black">Booking dibuat</li>
+                                    <li style="color: #F29E10">Menunggu konfirmasi</li>
+                                    <li style="color: #1b9d59">Booking selesai</li>
 
                                 </ul>
 
                             </div>
 
-                            {{-- BUTTON --}}
-                            <button class="edit-btn">
+                            {{-- BUTTONS --}}
+                            <div class="edit-actions">
+                                <button class="edit-btn">
 
-                                <i class="fa-solid fa-pen"></i>
+                                    <i class="fa-solid fa-pen"></i>
 
-                                Edit
+                                    Edit
 
-                            </button>
+                                </button>
+
+                                <button class="save-btn" style="display:none;">
+
+                                    <i class="fa-solid fa-check"></i>
+
+                                    Simpan
+
+                                </button>
+
+                                <button class="cancel-btn" style="display:none;">
+
+                                    <i class="fa-solid fa-xmark"></i>
+
+                                    Batal
+
+                                </button>
+                            </div>
 
                         </div>
 
