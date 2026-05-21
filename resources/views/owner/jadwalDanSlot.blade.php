@@ -57,14 +57,23 @@
                 <p>Atur jadwal operasional dan ketersediaan slot lapangan.</p>
             </div>
 
-            <a class="add-btn" href="javascript:void(0)">
+            {{-- <a class="add-btn" href="javascript:void(0)">
                 <i class="fa-solid fa-plus"></i>
                 Tambah Slot
+            </a> --}}
+
+            <a href="javascript:void(0)"
+               class="add-btn">
+
+                <i class="fa-solid fa-plus"></i>
+
+                Tambah Slot
+
             </a>
         </div>
 
         {{-- FILTER --}}
-        <div class="card-panel" style="display: flex; justify-content: space-between; align-items: center;">
+        {{-- <div class="card-panel" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; gap: 1rem; flex: 1; max-width: 800px;">
                 <select id="filter-field" style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;"></select>
                 <select id="filter-sport" style="flex: 1; padding: 0.625rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background-color: #f9fafb;"></select>
@@ -73,17 +82,124 @@
             <button id="reset-filter" style="color: #e52d2d; border: 1px solid #fca5a5; background: none; padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; margin-left: 1rem;">
                 <i class="fa-solid fa-rotate-right"></i> Reset Filter
             </button>
-        </div>
+        </div> --}}
+
+        <div class="schedule-wrapper">
+
+            {{-- FILTER CARD --}}
+            <div class="schedule-filter-card">
+
+                <div class="filter-left">
+
+                    {{-- FILTER LAPANGAN --}}
+                    <div class="filter-input">
+
+                        <i class="fa-solid fa-sliders"></i>
+
+                        <select id="filter-field">
+                            <option value="">
+                                Filter Lapangan
+                            </option>
+                        </select>
+
+                    </div>
+
+                    {{-- FILTER OLAHRAGA --}}
+                    <div class="filter-input">
+
+                        <i class="fa-solid fa-basketball"></i>
+
+                        <select id="filter-sport">
+                            <option value="">
+                                Jenis Olahraga
+                            </option>
+                        </select>
+
+                    </div>
+
+                    {{-- FILTER DATE --}}
+                    <div class="filter-input">
+
+                        <i class="fa-regular fa-calendar"></i>
+
+                        <input type="date"
+                               id="filter-date">
+
+                    </div>
+
+                </div>
+
+                {{-- RESET --}}
+                <button id="reset-filter"
+                        class="reset-btn">
+
+                    <i class="fa-solid fa-rotate-right"></i>
+
+                    Reset Filter
+
+                </button>
+
+            </div>
+
+            {{-- =========================
+                WEEK NAVIGATION
+            ========================== --}}
+            <div class="schedule-nav-card">
+
+                <div class="week-navigation">
+
+                    <button id="prev-week"
+                            class="nav-week-btn">
+
+                        <i class="fa-solid fa-chevron-left"></i>
+
+                    </button>
+
+                    <div id="week-label"
+                         class="week-label">
+                    </div>
+
+                    <button id="next-week"
+                            class="nav-week-btn">
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </button>
+
+                </div>
+
+                {{-- FIELD NAME --}}
+                <div class="field-title">
+
+                    <i class="fa-solid fa-location-dot"></i>
+
+                    <span id="field-name-header">
+                    </span>
+
+                </div>
+
+            </div>
+
 
         {{-- TABLE CONTAINER --}}
-        <div class="card-panel" style="padding: 0; overflow: hidden;">
-            <div id="table-header-nav" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #f3f4f6;">
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
+        {{-- <div class="card-panel" style="padding: 0; overflow: hidden;">
+            <div id="table-header-nav" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #f3f4f6;"> --}}
+                {{-- <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <button id="prev-week" style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; cursor: pointer;"><i class="fa-solid fa-chevron-left"></i></button>
                     <span id="week-label" style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500;"></span>
                     <button id="next-week" style="padding: 0.5rem; border: 1px solid #e5e7eb; background: #fff; border-radius: 0.5rem; cursor: pointer;"><i class="fa-solid fa-chevron-right"></i></button>
+                </div> --}}
+                {{-- <span id="field-name-header" style="font-weight: 600; color: #4b5563; font-size: 0.875rem;"></span>
+            </div> --}}
+
+            <div class="schedule-table-card">
+
+                <div class="table-scroll">
+
+                    <div id="table-container"></div>
+
                 </div>
-                <span id="field-name-header" style="font-weight: 600; color: #4b5563; font-size: 0.875rem;"></span>
+
             </div>
 
             <div style="overflow-x: auto;">
