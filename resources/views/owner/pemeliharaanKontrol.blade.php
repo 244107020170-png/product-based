@@ -342,16 +342,16 @@
         const rows = document.querySelectorAll('#taskTable tr');
 
         const statusMap = {
-            'Menunggu': { label: 'Menunggu', badgeClass: 'waiting', history: [
+            'Menunggu': { badgeClass: 'waiting', history: [
                 { label: 'Tugas dibuat', color: 'black' },
                 { label: 'Menunggu dikerjakan', color: '#F29E10' },
             ]},
-            'Dikerjakan': { label: 'Dikerjakan', badgeClass: 'progress', history: [
+            'Dikerjakan': { badgeClass: 'progress', history: [
                 { label: 'Tugas dibuat', color: 'black' },
                 { label: 'Menunggu dikerjakan', color: 'black' },
                 { label: 'Sedang dikerjakan', color: '#2563eb' },
             ]},
-            'Selesai': { label: 'Selesai', badgeClass: 'done', history: [
+            'Selesai': { badgeClass: 'done', history: [
                 { label: 'Tugas dibuat', color: 'black' },
                 { label: 'Menunggu dikerjakan', color: 'black' },
                 { label: 'Sedang dikerjakan', color: 'black' },
@@ -359,13 +359,26 @@
             ]},
         };
 
-        const prioritasMap = {
-            'Tinggi': 'high',
-            'Sedang': 'medium',
-            'Rendah': 'low',
-        };
+        let currentEditRow = null;
+
+        const editBtn = detailPanel?.querySelector('.edit-btn');
+        const saveBtn = detailPanel?.querySelector('.save-btn');
+        const cancelBtn = detailPanel?.querySelector('.cancel-btn');
+
+        function updateHistory(status) {
+            const list = detailPanel.querySelector('.history-list');
+            list.innerHTML = '';
+            const steps = statusMap[status]?.history || [];
+            steps.forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s.label;
+                li.style.color = s.color;
+                list.appendChild(li);
+            });
+        }
 
         function populateDetail(row) {
+            currentEditRow = row;
             const cells = row.querySelectorAll('td');
 
             const tugas = cells[1]?.textContent.trim() || '';
@@ -389,14 +402,112 @@
             detailPanel.querySelector('[data-field="prioritas"]').textContent = prioritas;
             detailPanel.querySelector('.pj-name').textContent = pj;
 
-            const historyList = detailPanel.querySelector('.history-list');
-            historyList.innerHTML = '';
-            (statusData.history || []).forEach(s => {
-                const li = document.createElement('li');
-                li.textContent = s.label;
-                li.style.color = s.color;
-                historyList.appendChild(li);
+            updateHistory(status);
+        }
+
+        function enterEditMode() {
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'flex';
+            cancelBtn.style.display = 'flex';
+
+            detailPanel.querySelectorAll('[data-field]').forEach(el => {
+                const field = el.dataset.field;
+                const val = el.textContent.trim();
+
+                if (field === 'prioritas') {
+                    const select = document.createElement('select');
+                    select.className = 'edit-input edit-select';
+                    ['Tinggi', 'Sedang', 'Rendah'].forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s;
+                        opt.textContent = s;
+                        if (s === val) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                    el.textContent = '';
+                    el.appendChild(select);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'edit-input';
+                    input.value = val;
+                    el.textContent = '';
+                    el.appendChild(input);
+                }
             });
+
+            const currentStatus = detailPanel.querySelector('.status-badge').textContent.trim();
+            const select = document.createElement('select');
+            select.className = 'edit-input edit-select';
+            ['Menunggu', 'Dikerjakan', 'Selesai'].forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                if (s === currentStatus) opt.selected = true;
+                select.appendChild(opt);
+            });
+            const badge = detailPanel.querySelector('.status-badge');
+            badge.textContent = '';
+            badge.appendChild(select);
+        }
+
+        function exitEditMode() {
+            editBtn.style.display = 'flex';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+
+            detailPanel.querySelectorAll('[data-field]').forEach(el => {
+                const input = el.querySelector('.edit-input, .edit-select');
+                if (input) {
+                    el.textContent = input.value.trim();
+                }
+            });
+
+            const badge = detailPanel.querySelector('.status-badge');
+            const sel = badge.querySelector('.edit-select');
+            if (sel) {
+                const val = sel.value.trim();
+                badge.textContent = val;
+                badge.className = 'status-badge ' + (statusMap[val]?.badgeClass || '');
+                updateHistory(val);
+            }
+        }
+
+        function saveEdit() {
+            let newStatus = null;
+
+            detailPanel.querySelectorAll('[data-field]').forEach(el => {
+                const input = el.querySelector('.edit-input, .edit-select');
+                if (input) {
+                    el.textContent = input.value.trim();
+                }
+            });
+
+            const badge = detailPanel.querySelector('.status-badge');
+            const sel = badge.querySelector('.edit-select');
+            if (sel) {
+                newStatus = sel.value.trim();
+                badge.textContent = newStatus;
+                badge.className = 'status-badge ' + (statusMap[newStatus]?.badgeClass || '');
+                updateHistory(newStatus);
+            }
+
+            editBtn.style.display = 'flex';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+
+            if (newStatus && currentEditRow) {
+                const statusCell = currentEditRow.querySelectorAll('td')[7];
+                const b = statusCell?.querySelector('.badge');
+                if (b) {
+                    b.textContent = newStatus;
+                    b.className = 'badge ' + (
+                        newStatus === 'Menunggu' ? 'waiting' :
+                        newStatus === 'Dikerjakan' ? 'progress' :
+                        newStatus === 'Selesai' ? 'done' : ''
+                    );
+                }
+            }
         }
 
         rows.forEach(row => {
@@ -411,6 +522,7 @@
             if (actionBtn) {
                 actionBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    exitEditMode();
                     populateDetail(row);
                     detailPanel?.classList.toggle('show');
                 });
@@ -419,9 +531,15 @@
 
         closeBtn?.addEventListener('click', () => {
             detailPanel?.classList.remove('show');
+            exitEditMode();
         });
 
+        editBtn?.addEventListener('click', enterEditMode);
+        saveBtn?.addEventListener('click', saveEdit);
+        cancelBtn?.addEventListener('click', exitEditMode);
+
     });
+
 </script>
 
 </body>
