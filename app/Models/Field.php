@@ -43,6 +43,16 @@ class Field extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function matches()
+    {
+        return $this->hasMany(Matchs::class);
+    }
+
     /**
      * Get formatted price with currency
      */

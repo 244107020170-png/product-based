@@ -6,13 +6,13 @@
     
     // Sidebar
     $sidebarItems = [
-        ['label'=>'Dashboard',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>false],
+        ['label'=>'Beranda',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>false],
         ['label'=>'Aktivitas',  'icon'=>asset('assets/images/icons/aktivitas.png'), 'href'=>route('activity.index'),       'active'=>false],
-        ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),                  'active'=>false],
+        ['label'=>'Favorit',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),                  'active'=>false],
         ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>route('history.index'),                  'active'=>false],
         ['label'=>'Cari tim',   'icon'=>asset('assets/images/icons/caritim.png'),   'href'=>route('matches.index'),'active'=>false],
-        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),       'active'=>true],
-        ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),                  'active'=>false],
+        ['label'=>'Pemesanan',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),       'active'=>true],
+        ['label'=>'Keahlian', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),                  'active'=>false],
         ['label'=>'Profil',     'icon'=>asset('assets/images/icons/profil.png'),    'href'=>route('profile.show'), 'active'=>false],
     ];
     $sidebarUtilities = [
@@ -190,7 +190,7 @@
                     </div>
                     
                     <div style="margin-top: auto; border-top: 1px dashed rgba(0,0,77,.1); padding-top: 16px;">
-                        <a href="{{ route('booking.detail', $booking->id) }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 0; background: #f5f7fa; color: #02025b; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: .95rem; border: 1px solid rgba(0,0,77,.1); transition: all .2s ease;" onmouseover="this.style.background='#ebeef4';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f5f7fa';this.style.transform='none'">
+                        <a href="{{ route('booking.detail', $booking->id) }}" class="booking-detail-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 0; background: #f5f7fa; color: #02025b; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: .95rem; border: 1px solid rgba(0,0,77,.1); transition: all .2s ease;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             Lihat Detail Booking
                         </a>
@@ -205,6 +205,12 @@
 </main>
 </div>
 
+<style>
+    .booking-detail-btn:hover {
+        background: #ebeef4 !important;
+        transform: translateY(-1px);
+    }
+</style>
 <script src="{{ asset('js/player-dashboard.js') }}"></script>
 </body>
 </html>

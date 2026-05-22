@@ -83,7 +83,7 @@
                 </div>
 
                 <!-- BUTTON MASUK -->
-                <button type="submit" class="btn-main w-full text-white text-sm font-bold py-2 rounded-lg mt-6 mb-2">
+                <button type="submit" class="w-full text-white text-sm font-bold py-2 rounded-lg mt-6 mb-2 bg-[#00004D] hover:bg-[#000033] transition-colors duration-200">
                     Masuk
                 </button>
 
@@ -91,12 +91,12 @@
 
             <!-- GOOGLE -->
             <div class="flex items-center gap-2 mt-2 mb-3">
-                <button type="button" onclick="alert('Google login belum disetup')" class="btn-main w-full text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
+                <button type="button" onclick="alert('Google login belum disetup')" class="w-full text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 bg-[#00004D] hover:bg-[#000033] transition-colors duration-200">
                     <img src="{{ asset('assets/images/icons/google.png') }}" class="w-4">
                     Masuk dengan Google
                 </button>
 
-                <button type="button" onclick="window.location.href='{{ route('register') }}'" class="btn-main py-2 px-4 rounded-lg cursor-pointer flex items-center justify-center">
+                <button type="button" onclick="window.location.href='{{ route('register') }}'" class="bg-[#00004D] hover:bg-[#000033] py-2 px-4 rounded-lg cursor-pointer flex items-center justify-center transition-colors duration-200">
                     <img src="{{ asset('assets/images/icons/user-add.png') }}" class="w-5 h-5">
                 </button>
             </div>

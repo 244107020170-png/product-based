@@ -19,8 +19,6 @@ use SensitiveParameter;
 
 class AdminLogin extends Login
 {
-    protected string $view = 'filament.pages.auth.login';
-
     public function mount(): void
     {
         if (Filament::auth()->check()) {
@@ -64,9 +62,6 @@ class AdminLogin extends Login
         return TextInput::make('password')
             ->label('Password')
             ->placeholder('Password')
-            ->helperText(new HtmlString(Blade::render(
-                '<a class="spies-admin-forgot-link" href="{{ route(\'password.request\') }}" tabindex="-1">Lupa password?</a>'
-            )))
             ->password()
             ->revealable()
             ->autocomplete('current-password')
@@ -95,39 +90,5 @@ class AdminLogin extends Login
         throw ValidationException::withMessages([
             'data.login' => 'Username/email atau password tidak sesuai.',
         ]);
-    }
-
-    public function getTitle(): string | Htmlable
-    {
-        return 'Admin Login';
-    }
-
-    public function getHeading(): string | Htmlable | null
-    {
-        return null;
-    }
-
-    public function getSubheading(): string | Htmlable | null
-    {
-        return null;
-    }
-
-    public function hasLogo(): bool
-    {
-        return false;
-    }
-
-    public function getFormContentComponent(): Component
-    {
-        return Form::make([EmbeddedSchema::make('form')])
-            ->id('form')
-            ->livewireSubmitHandler('authenticate')
-            ->footer([
-                \Filament\Schemas\Components\Actions::make($this->getFormActions())
-                    ->alignment($this->getFormActionsAlignment())
-                    ->fullWidth()
-                    ->key('form-actions'),
-            ])
-            ->visible(fn (): bool => blank($this->userUndertakingMultiFactorAuthentication));
     }
 }

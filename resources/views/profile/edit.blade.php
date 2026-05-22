@@ -2,13 +2,13 @@
     $userName  = $user->name ?? '';
     $gender    = $user->gender ?? '';
     $sidebarItems = [
-        ['label'=>'Dashboard',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>false],
+        ['label'=>'Beranda',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>false],
         ['label'=>'Aktivitas',  'icon'=>asset('assets/images/icons/aktivitas.png'), 'href'=>route('activity.index'),       'active'=>false],
-        ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),                  'active'=>false],
+        ['label'=>'Favorit',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),                  'active'=>false],
         ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>route('history.index'),                  'active'=>false],
         ['label'=>'Cari tim',   'icon'=>asset('assets/images/icons/caritim.png'),   'href'=>route('matches.index'),'active'=>false],
-        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),        'active'=>false],
-        ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),                  'active'=>false],
+        ['label'=>'Pemesanan',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),        'active'=>false],
+        ['label'=>'Keahlian', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),                  'active'=>false],
         ['label'=>'Profil',     'icon'=>asset('assets/images/icons/profil.png'),    'href'=>route('profile.show'), 'active'=>true],
     ];
     $sidebarUtilities = [
@@ -275,7 +275,9 @@
     avatarInput?.addEventListener('change', function(){
         const file = this.files[0];
         if(!file) return;
+        if (window._avatarUrl) URL.revokeObjectURL(window._avatarUrl);
         const url = URL.createObjectURL(file);
+        window._avatarUrl = url;
         if(avatarPreview) avatarPreview.src = url;
         if(topbarAvatar)  topbarAvatar.src  = url;
     });

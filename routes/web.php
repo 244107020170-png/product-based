@@ -104,7 +104,7 @@ Route::middleware('auth')->group(function () {
     // The dashboard now acts as the fields list, so we redirect /fields to dashboard to prevent duplicate pages.
     Route::get('/fields', function () {
         return redirect()->route('dashboard');
-    });
+    })->name('fields.index');
 
     Route::get('/booking/{field}', [BookingController::class, 'show'])->name('booking.show');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');

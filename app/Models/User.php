@@ -38,6 +38,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'points'            => 'integer',
         ];
     }
 
@@ -64,6 +65,24 @@ class User extends Authenticatable implements FilamentUser
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /** Favorite user ini */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /** Review user ini */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /** MatchPlayer entries */
+    public function matchPlayers()
+    {
+        return $this->hasMany(MatchPlayer::class);
     }
 
     /** Helper: URL avatar */

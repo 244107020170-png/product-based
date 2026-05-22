@@ -5,16 +5,17 @@
     $userName = Auth::user()->name ?? 'Player';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
+    $bookingNotifs = Auth::user()->bookings()->with('field')->latest()->get();
     
     // Sidebar
     $sidebarItems = [
-        ['label'=>'Dashboard',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>true],
+        ['label'=>'Beranda',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>true],
         ['label'=>'Aktivitas',  'icon'=>asset('assets/images/icons/aktivitas.png'), 'href'=>route('activity.index'),       'active'=>false],
-        ['label'=>'Favoritmu',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),                  'active'=>false],
+        ['label'=>'Favorit',  'icon'=>asset('assets/images/icons/favoritmu.png'), 'href'=>route('favorite.index'),                  'active'=>false],
         ['label'=>'Histori',    'icon'=>asset('assets/images/icons/histori.png'),   'href'=>route('history.index'),                  'active'=>false],
         ['label'=>'Cari tim',   'icon'=>asset('assets/images/icons/caritim.png'),   'href'=>route('matches.index'),'active'=>false],
-        ['label'=>'Booking',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),                  'active'=>false],
-        ['label'=>'Keahlianmu', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),                  'active'=>false],
+        ['label'=>'Pemesanan',    'icon'=>asset('assets/images/icons/booking.png'),   'href'=>route('booking.index'),                  'active'=>false],
+        ['label'=>'Keahlian', 'icon'=>asset('assets/images/icons/keahlian.png'),  'href'=>route('skill.index'),                  'active'=>false],
         ['label'=>'Profil',     'icon'=>asset('assets/images/icons/profil.png'),    'href'=>route('profile.show'), 'active'=>false],
     ];
     $sidebarUtilities = [
@@ -195,6 +196,10 @@
                             right: -20px !important;
                         }
                     }
+                    .field-card:hover {
+                        transform: translateY(-8px);
+                        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+                    }
                 </style>
             </div>
 
@@ -205,20 +210,42 @@
                     <a href="#" style="font-size: 13px; color: #666; text-decoration: none; font-weight: 600;">Lihat semua</a>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 200px;">
-                    @foreach(range(1, 3) as $i)
+                    @forelse($bookingNotifs as $notif)
+                    @php
+                        $notifField = $notif->field;
+                        $mapsUrl = $notifField && $notifField->location
+                            ? 'https://www.google.com/maps/search/?api=1&query='.urlencode($notifField->location)
+                            : 'https://maps.google.com';
+                        $statusLabels = [
+                            'confirmed' => ['label' => 'Terkonfirmasi', 'color' => '#166534', 'bg' => '#bbf7d0'],
+                            'selesai'   => ['label' => 'Selesai',       'color' => '#166534', 'bg' => '#bbf7d0'],
+                            'cancelled' => ['label' => 'Dibatalkan',    'color' => '#991b1b', 'bg' => '#fecaca'],
+                            'pending'   => ['label' => 'Menunggu',      'color' => '#92400e', 'bg' => '#fef3c7'],
+                        ];
+                        $status = $statusLabels[$notif->status] ?? ['label' => 'Unknown', 'color' => '#666', 'bg' => '#e5e7eb'];
+                    @endphp
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid rgba(0,0,77,.03);">
                         <div style="display: flex; gap: 12px; align-items: center;">
-                            <div style="width: 32px; height: 32px; background: #02025b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20.5a8.5 8.5 0 100-17 8.5 8.5 0 000 17z"/></svg>
+                            <div style="width: 32px; height: 32px; background: #02025b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">
+                                {{ strtoupper(substr($notifField?->name ?? 'L', 0, 1)) }}
                             </div>
                             <div>
-                                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #02025b;">Sistem Info</p>
-                                <p style="margin: 2px 0 0 0; font-size: 12px; color: #666;">Silakan lengkapi profil</p>
+                                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #02025b;">{{ $notifField?->name ?? 'Lapangan' }}</p>
+                                <p style="margin: 2px 0 0 0; font-size: 12px; color: #666;">
+                                    <span style="background: {{ $status['bg'] }}; color: {{ $status['color'] }}; padding: 1px 6px; border-radius: 4px; font-weight: 600;">{{ $status['label'] }}</span>
+                                    {{ \Carbon\Carbon::parse($notif->date)->locale('id')->translatedFormat('j F Y') }}, {{ $notif->start_time }} WIB
+                                </p>
                             </div>
                         </div>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#02025b" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        @if (in_array($notif->status, ['confirmed', 'selesai']))
+                            <a href="{{ $mapsUrl }}" target="_blank" style="display: inline-flex; text-decoration: none;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#02025b" stroke-width="2" style="cursor: pointer;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            </a>
+                        @endif
                     </div>
-                    @endforeach
+                    @empty
+                    <p style="text-align: center; color: #999; font-size: 13px; padding: 20px 0;">Belum ada notifikasi.</p>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -374,9 +401,7 @@
         @else
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
             @foreach($fields as $field)
-            <a href="{{ route('booking.show', $field->id) }}" style="text-decoration: none; color: inherit; transition: all 0.3s ease;"
-               onmouseover="this.style.transform = 'translateY(-8px)'; this.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15)';"
-               onmouseout="this.style.transform = 'translateY(0)'; this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';">
+            <a href="{{ route('booking.show', $field->id) }}" class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease;">
                 <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column;">
                     <div style="position: relative; height: 200px; overflow: hidden;">
                         <img src="{{ $field->image ?? asset('assets/images/bg/Explore.png') }}" 
@@ -410,7 +435,6 @@
 </main>
 </div>
 
-document.addEventListener('DOMContentLoaded', function() {
 <script src="{{ asset('js/player-dashboard.js') }}"></script>
 </body>
 </html>

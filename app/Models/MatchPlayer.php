@@ -10,4 +10,14 @@ class MatchPlayer extends Model
         'match_id',
         'user_id',
     ];
+
+    public function match()
+    {
+        return $this->belongsTo(Matchs::class, 'match_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
