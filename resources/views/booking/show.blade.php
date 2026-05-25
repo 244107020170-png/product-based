@@ -1,6 +1,6 @@
 @php
     use Carbon\Carbon;
-    $userName = Auth::user()->name ?? 'Player';
+    $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $field = $field;
@@ -211,7 +211,7 @@
             <div class="bk-top-wrap">
                 {{-- Carousel --}}
                 <div class="bk-carousel">
-                    <img :src="selectedField.image || '{{ asset('assets/images/bg/Explore.png') }}'" alt="Field">
+                    <img :src="selectedField.image || '{{ asset('assets/images/bg/Explore.png') }}'" alt="Lapangan">
                     <button class="bk-carousel-btn right">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
@@ -328,7 +328,7 @@
                                         'full': time.isFull,
                                         'disabled': time.isFull 
                                      }"
-                                     @click="if(!time.isFull) { selectedTime = time.start; selectedTimeDisplay = time.display; showTimeDropdown = false; calculateTotal(); checkSubfieldsAvailability(); }">
+                                     @click="if(!time.isFull) { selectedTime = time.start; selectedTimeDisplay = time.display; selectedTimeSlot = time; showTimeDropdown = false; calculateTotal(); checkSubfieldsAvailability(); }">
                                     <span x-text="time.start"></span>
                                 </div>
                             </template>
@@ -410,7 +410,7 @@
                         <span x-text="formatPrice(totalPrice)"></span>
                     </div>
                     
-                    <button class="bk-btn-submit" @click.prevent="submitBooking()">Book Now</button>
+                    <button class="bk-btn-submit" @click.prevent="submitBooking()">Booking Sekarang</button>
                 </div>
             </div>
         </div>
@@ -446,6 +446,7 @@ function bookingApp() {
         selectedDate: '',
         selectedTime: '',
         selectedTimeDisplay: '',
+        selectedTimeSlot: null,
         
         showFasilitas: true, // Based on screenshot it's open by default
         showTimeDropdown: false,
@@ -473,6 +474,7 @@ function bookingApp() {
             const t = this.availableTimes[1]; // 08.00
             this.selectedTime = t.start;
             this.selectedTimeDisplay = t.display;
+            this.selectedTimeSlot = t;
             
             this.calculateTotal();
             this.$nextTick(() => {
@@ -480,7 +482,8 @@ function bookingApp() {
                     minDate: 'today',
                     dateFormat: "d M Y",
                     onChange: (selectedDates, dateStr) => {
-                        this.selectedDate = selectedDates[0].toISOString().split('T')[0];
+                        const date = selectedDates[0];
+                        this.selectedDate = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                         this.$refs.dateInput.value = dateStr;
                     }
                 });
@@ -522,6 +525,10 @@ function bookingApp() {
         },
         
         submitBooking() {
+            if (!this.selectedDate || !this.selectedTime || !this.selectedTimeSlot) {
+                alert('Pilih tanggal dan jam terlebih dahulu');
+                return;
+            }
             if (!this.selectedDate || !this.selectedTime) {
                 alert('Pilih tanggal dan jam terlebih dahulu');
                 return;
@@ -536,16 +543,21 @@ function bookingApp() {
                 body: JSON.stringify({
                     field_id: this.selectedField.id,
                     date: this.selectedDate,
-                    start_time: this.selectedTime,
-                    end_time: this.availableTimes.find(t => t.start === this.selectedTime).end,
+                    start_time: this.selectedTimeSlot.start,
+                    end_time: this.selectedTimeSlot.end,
                 })
             })
             .then(r => r.json())
             .then(data => {
-                alert('Booking berhasil!');
+                if (!data.success) {
+                    const errors = data.errors ? Object.values(data.errors).flat().join('\n') : null;
+                    throw new Error(data.message || errors || 'Gagal membuat booking.');
+                }
+
+                alert(data.message || 'Booking berhasil!');
                 window.location.href = '{{ route("booking.index") }}';
             })
-            .catch(e => alert('Error: ' + e));
+            .catch(e => alert('Error: ' + e.message || e));
         }
     }
 }

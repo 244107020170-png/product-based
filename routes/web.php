@@ -13,7 +13,7 @@ use Carbon\Carbon;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 Route::get('/choose-role', function () {
     return view('auth.register.choose-role');
@@ -28,14 +28,19 @@ Route::get('/dashboard', function () {
         return redirect('/admin/dashboard');
     } else {
         $fields = \App\Models\Field::with('owner')->get();
-        $upcomingMatch = $user->joinedMatches()->where('date', '>=', now()->toDateString())->orderBy('date')->orderBy('time')->first();
-        if(!$upcomingMatch) $upcomingMatch = $user->createdMatches()->where('date', '>=', now()->toDateString())->orderBy('date')->orderBy('time')->first();
+        $upcomingBooking = \App\Models\Booking::where('user_id', $user->id)
+            ->where('status', \App\Enums\BookingStatus::CONFIRMED)
+            ->where('date', '>=', now()->toDateString())
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->with('field')
+            ->first();
         
         $recommendedMatches = \App\Models\Matchs::with('field')->where('date', '>=', now()->toDateString())->inRandomOrder()->limit(3)->get();
         $pesanLagiFields = \App\Models\Field::inRandomOrder()->limit(3)->get();
         $favoriteFields = \App\Models\Favorite::with('field')->where('user_id', $user->id)->limit(3)->get();
         
-        return view('fields.index', compact('fields', 'upcomingMatch', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields')); // player dashboard now shows available fields
+        return view('fields.index', compact('fields', 'upcomingBooking', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields')); // player dashboard now shows available fields
     }
 })->middleware(['auth'])->name('dashboard');
 

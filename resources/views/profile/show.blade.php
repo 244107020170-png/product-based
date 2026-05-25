@@ -1,6 +1,6 @@
 @php
     $gender    = $user->gender ?? 'perempuan';
-    $userName  = $user->name   ?? 'Sport Enthusiast';
+    $userName  = $user->name   ?? 'Pecinta Olahraga';
     $username  = $user->username
         ? '@'.$user->username
         : '@'.strtolower(str_replace(' ', '', $userName));
@@ -8,7 +8,8 @@
     $bio       = $user->bio ?: 'Hei! Saya suka olahraga dan senang bertemu teman baru.';
     $tags      = $user->sportTags();
     $playerChar = asset('assets/images/characters/player.png');
-    $coverImg   = asset('assets/images/bg/Explore.png');
+    $reviewChar = asset('assets/images/characters/review.png');
+    $coverImg   = $user->cover_photo ? (str_starts_with($user->cover_photo, 'covers/') ? asset('storage/' . $user->cover_photo) : $user->cover_photo) : asset('assets/images/bg/Explore.png');
 
     /* Sidebar */
     $sidebarItems = [
@@ -46,7 +47,7 @@
         $memberCount += 1; // +1 creator
         return [
             'img'     => $cover,
-            'type'    => ucfirst($m->type ?? 'Public Match'),
+            'type'    => ucfirst($m->type ?? 'Publik'),
             'title'   => $m->title,
             'host'    => optional($m->creator)->name ?? '-',
             'members' => $memberCount.' Member',
@@ -201,9 +202,9 @@
             {{-- TABS --}}
             <div class="profview-tabs" role="tablist">
                 <button class="profview-tab is-active" data-profview-tab="histori" role="tab" aria-selected="true" aria-controls="panel-histori">Histori Tim</button>
-                <button class="profview-tab" data-profview-tab="private" role="tab" aria-selected="false" aria-controls="panel-private">Private Match</button>
+                <button class="profview-tab" data-profview-tab="private" role="tab" aria-selected="false" aria-controls="panel-private">Pribadi</button>
                 <button class="profview-tab" data-profview-tab="favorit" role="tab" aria-selected="false" aria-controls="panel-favorit">Favorit</button>
-                <button class="profview-tab" data-profview-tab="review"  role="tab" aria-selected="false" aria-controls="panel-review">Review</button>
+                <button class="profview-tab" data-profview-tab="ulasan"  role="tab" aria-selected="false" aria-controls="panel-ulasan">Ulasan</button>
             </div>
 
             {{-- Panel: Histori Tim --}}
@@ -222,7 +223,7 @@
                 @endif
             </div>
 
-            {{-- Panel: Private Match --}}
+            {{-- Panel: Pribadi --}}
             <div class="profview-panel" id="panel-private" role="tabpanel">
                 @if($privateCards->isEmpty())
                     <div class="profview-empty-char">
@@ -247,9 +248,9 @@
             </div>
 
             {{-- Panel: Review --}}
-            <div class="profview-panel" id="panel-review" role="tabpanel">
+            <div class="profview-panel" id="panel-ulasan" role="tabpanel">
                 <div class="profview-empty-char">
-                    <img src="{{ $playerChar }}" alt="" class="profview-empty-char__img">
+                    <img src="{{ $reviewChar }}" alt="" class="profview-empty-char__img">
                     <p class="profview-empty-char__text">Wah, kayanya kamu belum pernah me-review nih!</p>
                 </div>
             </div>

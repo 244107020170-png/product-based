@@ -2,10 +2,9 @@
     use Carbon\Carbon;
 
     $user = auth()->user();
-    $userName = $user?->name ?: 'Sport Enthusiast';
+    $userName = $user?->name ?: 'Pecinta Olahraga';
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
-    $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
-    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile);
+    $profileAvatar = $user?->avatarUrl();
 
     $sidebarItems = [
         ['label' => 'Beranda', 'icon' => asset('assets/images/icons/dashboard.png'), 'href' => route('dashboard'), 'active' => false],
@@ -202,7 +201,7 @@
         <section class="team-main">
             <div class="header-container">
                 <div class="team-title">
-                    <h1>BUAT MATCH</h1>
+                    <h1>BUAT PERTANDINGAN</h1>
                     <p>Buat pertandingan barumu</p>
                 </div>
 
@@ -250,13 +249,13 @@
                         <label class="form-label">Tipe Pertandingan</label>
                         <select name="type" class="form-control" required>
                             <option value="">Pilih Tipe Pertandingan</option>
-                            <option value="public">Public - Cari Pemain (Muncul di Cari Tim)</option>
-                            <option value="private">Private - Booking Sendiri (Hanya untuk Anda)</option>
+                            <option value="public">Publik - Cari Pemain (Muncul di Cari Tim)</option>
+                            <option value="private">Pribadi - Booking Sendiri (Hanya untuk Anda)</option>
                         </select>
                     </div>
 
                     <div class="form-group form-group--full" style="margin-top: 8px;">
-                        <button type="submit" class="btn-submit">Buat Match Sekarang</button>
+                        <button type="submit" class="btn-submit">Buat Pertandingan Sekarang</button>
                     </div>
                 </form>
             </div>

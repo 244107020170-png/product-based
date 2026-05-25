@@ -26,6 +26,7 @@ class Field extends Model
         'facilities' => 'array',
         'rating' => 'float',
         'verified_at' => 'datetime',
+        'is_available' => 'boolean',
     ];
 
     public function owner()

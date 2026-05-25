@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BookingStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
@@ -13,12 +14,16 @@ class Booking extends Model
         'start_time',
         'end_time',
         'status',
+        'payment_deadline',
+        'expired_at',
     ];
 
     protected $casts = [
-        'date'       => 'date',
+        'date' => 'date',
         'start_time' => 'string',
-        'end_time'   => 'string',
+        'end_time' => 'string',
+        'payment_deadline' => 'datetime',
+        'expired_at' => 'datetime',
     ];
 
     public function user()
@@ -48,18 +53,28 @@ class Booking extends Model
     /**
      * Scopes
      */
-    public function scopeSelesai($query)
+    public function scopeActive($query)
     {
-        return $query->where('status', 'selesai');
+        return $query->whereIn('status', BookingStatus::activeStatuses());
     }
 
-    public function scopeAkanDatang($query)
+    public function scopeCompleted($query)
     {
-        return $query->where('status', 'confirmed');
+        return $query->where('status', BookingStatus::COMPLETED);
     }
 
-    public function scopeDibatalkan($query)
+    public function scopeCancelled($query)
     {
-        return $query->where('status', 'cancelled');
+        return $query->where('status', BookingStatus::CANCELLED);
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', BookingStatus::PENDING);
+    }
+
+    public function isActive(): bool
+    {
+        return in_array($this->status, BookingStatus::activeStatuses(), true);
     }
 }

@@ -103,7 +103,7 @@
 
     {{-- Page title --}}
     <section class="profile-page-title">
-        <h1>Edit Player</h1>
+        <h1>Edit Profil</h1>
     </section>
 
     <section class="profile-content">
@@ -130,13 +130,13 @@
 
         {{-- Cover --}}
         <div class="profile-cover" id="profile-cover-btn" role="button" tabindex="0" aria-label="Ganti foto sampul">
-            <img src="{{ asset('assets/images/bg/Explore.png') }}" alt="Cover" class="profile-cover__img" id="cover-img-preview">
+            <img src="{{ $user->cover_photo ? (str_starts_with($user->cover_photo, 'covers/') ? asset('storage/' . $user->cover_photo) : $user->cover_photo) : asset('assets/images/bg/Explore.png') }}" alt="Cover" class="profile-cover__img" id="cover-img-preview">
             <div class="profile-cover__edit-overlay">
                 <span class="profile-cover__edit-icon">
                     <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3 17L7.5 12.5L10.5 15.5L14 11L21 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="8" r="1.5" fill="currentColor"/></svg>
                 </span>
             </div>
-            <input type="file" id="cover-upload" accept="image/*" style="display:none;" aria-hidden="true">
+            {{-- cover upload input moved into the form to ensure it is submitted --}}
         </div>
 
         {{-- FORM CARD --}}
@@ -165,6 +165,9 @@
 
                 {{-- Hidden: avatar file --}}
                 <input type="file" id="avatar-upload" name="avatar" accept="image/*" style="display:none;" aria-hidden="true">
+
+                {{-- Hidden: cover file --}}
+                <input type="file" id="cover-upload" name="cover" accept="image/*" style="display:none;" aria-hidden="true">
 
                 <div class="profile-form__main-grid">
 
@@ -250,9 +253,9 @@
 
                 {{-- Actions --}}
                 <div class="profile-actions">
-                    <a href="{{ route('profile.show') }}" class="profile-btn profile-btn--discard">Discard</a>
+                    <a href="{{ route('profile.show') }}" class="profile-btn profile-btn--discard">Batal</a>
                     <button type="submit" class="profile-btn profile-btn--save" id="profile-save-btn">
-                        <span class="profile-btn__label">Save</span>
+                        <span class="profile-btn__label">Simpan</span>
                         <span class="profile-btn__spinner" aria-hidden="true" style="display:none;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="spinning"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-dasharray="40" stroke-dashoffset="20" stroke-linecap="round"/></svg>
                         </span>

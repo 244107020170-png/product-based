@@ -1,10 +1,9 @@
 @php
     use Carbon\Carbon;
     $user     = auth()->user();
-    $userName = $user?->name ?: 'Sport Enthusiast';
+    $userName = $user?->name ?: 'Pecinta Olahraga';
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
-    $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
-    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile);
+    $profileAvatar = $user?->avatarUrl();
 
     $sidebarItems = [
         ['label' => 'Beranda',  'icon' => asset('assets/images/icons/dashboard.png'),  'href' => route('dashboard'),     'active' => false],
@@ -485,7 +484,7 @@
       </div>
       <div class="sk-stat">
         <span class="sk-stat__num" data-count="{{ $totalMatches }}">0</span>
-        <p class="sk-stat__lbl">Join Public Match</p>
+        <p class="sk-stat__lbl">Gabung Pertandingan Publik</p>
       </div>
     </div>
 

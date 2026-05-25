@@ -43,6 +43,8 @@ class ProfileUpdateRequest extends FormRequest
             'sport_preference' => ['nullable', 'string', 'max:255'],
 
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+
+            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

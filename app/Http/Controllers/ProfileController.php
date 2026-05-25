@@ -79,6 +79,17 @@ class ProfileController extends Controller
             $validated['avatar_profile'] = $path;
         }
 
+        // --- Upload cover jika ada ---
+        if ($request->hasFile('cover')) {
+            // Hapus cover lama jika tersimpan di storage
+            if ($user->cover_photo && str_starts_with($user->cover_photo, 'covers/')) {
+                Storage::disk('public')->delete($user->cover_photo);
+            }
+
+            $path = $request->file('cover')->store('covers', 'public');
+            $validated['cover_photo'] = $path;
+        }
+
         // Hapus key 'avatar' dari validated (bukan kolom DB)
         unset($validated['avatar']);
 

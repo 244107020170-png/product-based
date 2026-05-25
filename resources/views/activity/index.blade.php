@@ -1,10 +1,9 @@
 @php
     use Carbon\Carbon;
     $user        = auth()->user();
-    $userName    = $user?->name ?: 'Sport Enthusiast';
+$userName = $user?->name ?: 'Pecinta Olahraga';
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
-    $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
-    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile);
+    $profileAvatar = $user?->avatarUrl();
 
     $sidebarItems = [
         ['label' => 'Beranda',  'icon' => asset('assets/images/icons/dashboard.png'),  'href' => route('dashboard'),       'active' => false],
@@ -378,7 +377,7 @@
           <rect x="4" y="22" width="20" height="4" rx="2" fill="#4f46e5" opacity=".45"/>
         </svg>
       </span>
-      <h1 class="act-title-text">Player Progress Badge</h1>
+      <h1 class="act-title-text">Lencana Kemajuan Pemain</h1>
     </div>
 
     {{-- Hero --}}
@@ -449,14 +448,14 @@
           <span class="act-rule__icon">
             <img src="{{ asset('assets/images/icons/caritim.png') }}" alt="match">
           </span>
-          Join public match
+          Gabung pertandingan publik
           <span class="act-rule__pts">+2 poin</span>
         </li>
         <li class="act-rule">
           <span class="act-rule__icon">
             <img src="{{ asset('assets/images/icons/badge.png') }}" alt="review">
           </span>
-          Memberi review lapangan
+          Memberi ulasan lapangan
           <span class="act-rule__pts">+3 poin</span>
         </li>
       </ul>

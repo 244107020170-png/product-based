@@ -1,9 +1,8 @@
 @php
     $user = auth()->user();
-    $userName = $user?->name ?: 'Sport Enthusiast';
+    $userName = $user?->name ?: 'Pecinta Olahraga';
     $currentDate = \Carbon\Carbon::now()->locale('id')->translatedFormat('j F Y');
-    $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
-    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile.'?v='.time());
+    $profileAvatar = $user?->avatarUrl() . '?v=' . time();
     $reviewAvatar = asset('assets/images/characters/review.png');
     $heroCharacter = asset('assets/images/characters/hero.png');
 
@@ -52,9 +51,9 @@
     ];
 
     $badgeSteps = [
-        ['slot' => 'BG1', 'title' => 'Beginner', 'meta' => '1-5 Match'],
-        ['slot' => 'BG2', 'title' => 'Active', 'meta' => '6-20 Match'],
-        ['slot' => 'BG3', 'title' => 'Pro', 'meta' => '>20 Match'],
+        ['slot' => 'BG1', 'title' => 'Pemula', 'meta' => '1-5 Pertandingan'],
+        ['slot' => 'BG2', 'title' => 'Aktif', 'meta' => '6-20 Pertandingan'],
+        ['slot' => 'BG3', 'title' => 'Pro', 'meta' => '>20 Pertandingan'],
     ];
 
     $rebookItems = [
@@ -71,7 +70,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>Dashboard Player - {{ config('app.name', 'Spies Sport') }}</title>
+        <title>Dashboard Pemain - {{ config('app.name', 'Spies Sport') }}</title>
 
         @vite([
             'resources/css/app.css',
@@ -207,12 +206,12 @@
                     <div class="player-dashboard-title__actions">
                         <div class="player-filter" data-filter-root>
                             <button type="button" class="player-filter__button" data-filter-button aria-expanded="false">
-                                <span data-filter-label>By Day</span>
+                                <span data-filter-label>Per Hari</span>
                                 <span class="player-filter__chevron"></span>
                             </button>
 
                             <div class="player-filter__menu" data-filter-menu hidden>
-                                <button type="button" class="player-filter__option is-active" data-filter-option="all">By Day</button>
+                                <button type="button" class="player-filter__option is-active" data-filter-option="all">Per Hari</button>
                                 <button type="button" class="player-filter__option" data-filter-option="today">Hari ini</button>
                                 <button type="button" class="player-filter__option" data-filter-option="tomorrow">Besok</button>
                                 <button type="button" class="player-filter__option" data-filter-option="status">Status</button>
@@ -226,7 +225,7 @@
                 <section class="player-dashboard-hero">
                     <div class="player-dashboard-card player-dashboard-card--hero">
                         <div class="player-dashboard-card__heading">
-                            <h2 class="player-hero__title">Hi, Sport Enthusiast!</h2>
+                            <h2 class="player-hero__title">Hai, Pecinta Olahraga!</h2>
                         </div>
 
                         <div class="player-hero">
@@ -340,7 +339,7 @@
                     <article class="player-dashboard-card" data-dashboard-searchable="upcoming match futsal competition zona sm futsal pertandingan jadwal detail">
                         <div class="player-dashboard-card__heading">
                             <img src="{{ asset('assets/images/icons/upcoming.png') }}" alt="" class="player-section-icon">
-                            <h2>Upcoming Match</h2>
+                            <h2>Pertandingan Mendatang</h2>
                             <span class="player-chip">2h</span>
                         </div>
 
@@ -357,11 +356,11 @@
                                 <div class="player-upcoming-card__avatars">
                                 </div>
                                 <div class="player-upcoming-card__countdown">
-                                    Starts In <strong>2h 1m</strong>
+                                    Mulai Dalam <strong>2h 1m</strong>
                                 </div>
                             </div>
 
-                            <a href="{{ url('/matches') }}" class="player-primary-button player-primary-button--block">View Details</a>
+                            <a href="{{ url('/matches') }}" class="player-primary-button player-primary-button--block">Lihat Detail</a>
                         </div>
                     </article>
 
@@ -371,7 +370,7 @@
                                 <img src="{{ asset('assets/images/icons/rekomendasi.png') }}" alt="" class="player-section-icon">
                                 <h2>Rekomendasi Match</h2>
                             </div>
-                            <a href="{{ url('/matches') }}" class="player-link-button">See all</a>
+                            <a href="{{ url('/matches') }}" class="player-link-button">Lihat semua</a>
                         </div>
 
                         <div class="player-stack-list">
@@ -414,7 +413,7 @@
                             @endforeach
                         </div>
 
-                        <a href="{{ url('/fields') }}" class="player-dashboard-card__footer-link">See all</a>
+                        <a href="{{ url('/fields') }}" class="player-dashboard-card__footer-link">Lihat semua</a>
                     </article>
 
                     <article class="player-dashboard-card" data-dashboard-searchable="badge pemain active player beginner pro level match player">
@@ -429,8 +428,8 @@
                                     <img src="{{ asset('assets/images/icons/badge.png') }}" alt="" class="player-badge-image">
                                 </div>
                                 <div class="player-badge-card__copy">
-                                    <p>Level: <strong>Active Player</strong></p>
-                                    <span>12 Match Player</span>
+                                    <p>Level: <strong>Pemain Aktif</strong></p>
+                                    <span>12 Pertandingan</span>
                                 </div>
                                 <span class="player-inline-icon" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" fill="none">

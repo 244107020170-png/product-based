@@ -2,10 +2,9 @@
     use Carbon\Carbon;
 
     $user = auth()->user();
-    $userName = $user?->name ?: 'Sport Enthusiast';
+    $userName = $user?->name ?: 'Pecinta Olahraga';
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
-    $profileAvatarFile = $user?->avatar_profile ?: (($user?->gender === 'perempuan') ? 'profil2.png' : 'profil1.png');
-    $profileAvatar = asset('assets/images/characters/'.$profileAvatarFile);
+    $profileAvatar = $user?->avatarUrl();
     $sportOptions = $cards->pluck('sport')->unique()->values();
 
     $sidebarItems = [
@@ -291,7 +290,7 @@
                         <option value="{{ $sport }}">{{ $sport }}</option>
                     @endforeach
                 </select>
-                <a href="{{ route('matches.create') }}" class="btn-create-match">Buat Match</a>
+                <a href="{{ route('matches.create') }}" class="btn-create-match">Buat Pertandingan</a>
             </div>
 
             <section class="team-stage">
@@ -350,7 +349,7 @@
                             </button>
                             <button type="button" class="swipe-btn swipe-btn--join" data-swipe-join>
                                 <svg viewBox="0 0 24 24" fill="none"><path d="M12.6 20.2C12.26 20.36 11.86 20.36 11.52 20.2C8.52 18.76 5 15.8 5 11.94C5 8.95 7.42 6.53 10.4 6.53C11.57 6.53 12.67 6.9 13.58 7.59C14.49 6.9 15.59 6.53 16.76 6.53C19.74 6.53 22.16 8.95 22.16 11.94C22.16 15.8 18.64 18.76 15.64 20.2" fill="currentColor"/></svg>
-                                <span>Join Tim</span>
+                                <span>Gabung Tim</span>
                             </button>
                         </div>
                     </article>

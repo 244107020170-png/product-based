@@ -2,7 +2,7 @@
     use App\Models\Field;
     use Carbon\Carbon;
     $fields = Field::with('owner')->get();
-    $userName = Auth::user()->name ?? 'Player';
+    $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $bookingNotifs = Auth::user()->bookings()->with('field')->latest()->get();
@@ -157,7 +157,7 @@
             <h1 style="font-size: 28px; font-weight: 800; color: #02025b; margin: 0;">Dashboard</h1>
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <select style="padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(0,0,77,.1); outline: none; font-weight: 600; color: #02025b; background: white;">
-                    <option>By Day</option>
+                    <option>Per Hari</option>
                 </select>
                 <a href="{{ route('matches.create') }}" style="background: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background .2s; text-align: center;">
                     Buat Pertandingan Baru
@@ -168,26 +168,8 @@
         <!-- HERO SECTION -->
         <div class="hero-section">
             <!-- Hero Banner -->
-            <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); position: relative; overflow: hidden; min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
-                <div class="hero-content-inner" style="position: relative; z-index: 2; max-width: 60%;">
-                    <h2 style="font-size: 32px; font-weight: 900; color: #02025b; margin: 0 0 20px 0;">Hi, {{ Auth::user()->name ?? 'Sport Enthusiast' }}!</h2>
-                    
-                    <div style="background: rgba(255,255,255,.9); padding: 16px; border-radius: 12px; display: flex; gap: 16px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); max-width: 320px;">
-                        <img src="{{ Auth::user()->avatarUrl() }}" alt="Profil" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
-                        <div>
-                            <p style="margin: 0; font-weight: 800; color: #02025b; font-size: 14px;">Gimana permainan nya?</p>
-                            <p style="margin: 2px 0; font-size: 12px; color: #666;">Silakan review permainan terakhir kamu.</p>
-                            <div style="display: flex; gap: 4px; margin-top: 4px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 0; bottom: 0; height: 130%; z-index: 1; object-fit: contain;">
+            <div style="position: relative;">
+                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 10px; bottom: 0; height: 115%; z-index: 3; object-fit: contain;">
                 <style>
                     @media (max-width: 768px) {
                         .hero-char-img {
@@ -201,6 +183,26 @@
                         box-shadow: 0 12px 24px rgba(0,0,0,0.15);
                     }
                 </style>
+                <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); position: relative; z-index: 1; min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
+                    <div class="hero-content-inner" style="max-width: 60%;">
+                        <h2 style="font-size: 32px; font-weight: 900; color: #02025b; margin: 0 0 20px 0;">Hai, {{ Auth::user()->name ?? 'Pecinta Olahraga' }}!</h2>
+                        
+                        <div style="background: rgba(255,255,255,.9); padding: 16px; border-radius: 12px; display: flex; gap: 16px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); max-width: 320px;">
+                            <img src="{{ Auth::user()->avatarUrl() }}" alt="Profil" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                            <div>
+                                <p style="margin: 0; font-weight: 800; color: #02025b; font-size: 14px;">Gimana permainan nya?</p>
+                                <p style="margin: 2px 0; font-size: 12px; color: #666;">Silakan review permainan terakhir kamu.</p>
+                                <div style="display: flex; gap: 4px; margin-top: 4px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Notifikasi -->
@@ -257,14 +259,29 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#02025b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Upcoming Match</h4>
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Mendatang</h4>
                     </div>
-                    <span style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ $upcomingMatch ? 'Akan datang' : '-' }}</span>
+                    @if($upcomingBooking)
+                        <span style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ \Carbon\Carbon::parse($upcomingBooking->date)->format('d M') }}</span>
+                    @else
+                        <span style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">-</span>
+                    @endif
                 </div>
-                @if($upcomingMatch)
-                    <h3 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; color: #02025b;">{{ $upcomingMatch->title }}</h3>
-                    <p style="margin: 0 0 16px 0; font-size: 13px; color: #666;">{{ $upcomingMatch->field->name ?? 'Venue' }}</p>
-                    <a href="{{ route('matches.show', $upcomingMatch->id) }}" style="margin-top: auto; background: #e11d48; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none;">View Details</a>
+                @if($upcomingBooking)
+                    @php
+                        $startDt = \Carbon\Carbon::parse($upcomingBooking->date->format('Y-m-d') . ' ' . $upcomingBooking->start_time);
+                        $cdTarget = $startDt->timestamp;
+                    @endphp
+                    <h3 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; color: #02025b;">{{ $upcomingBooking->field->name ?? 'Booking' }}</h3>
+                    <p style="margin: 0 0 4px 0; font-size: 13px; color: #666;">{{ $upcomingBooking->field->location ?? '' }}</p>
+                    <p style="margin: 0 0 12px 0; font-size: 12px; color: #888;">{{ \Carbon\Carbon::parse($upcomingBooking->date)->format('d M Y') }}, {{ substr($upcomingBooking->start_time, 0, 5) }} - {{ substr($upcomingBooking->end_time, 0, 5) }}</p>
+                    <div id="upcoming-countdown" style="display: flex; gap: 12px; margin-bottom: 16px;" data-target="{{ $cdTarget }}">
+                        <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-days">00</span><span style="font-size: 11px; color: #888;">Hari</span></div>
+                        <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-hours">00</span><span style="font-size: 11px; color: #888;">Jam</span></div>
+                        <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-minutes">00</span><span style="font-size: 11px; color: #888;">Menit</span></div>
+                        <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-seconds">00</span><span style="font-size: 11px; color: #888;">Detik</span></div>
+                    </div>
+                    <a href="{{ route('booking.detail', $upcomingBooking->id) }}" style="margin-top: auto; background: #e11d48; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none;">Lihat Detail</a>
                 @else
                     <p style="margin: 0; color: #888; font-size: 14px;">Belum ada jadwal.</p>
                 @endif
@@ -277,13 +294,13 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                         <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Rekomendasi Match</h4>
                     </div>
-                    <a href="{{ route('matches.index') }}" style="font-size: 12px; color: #666; font-weight: 600; text-decoration: none;">See all</a>
+                    <a href="{{ route('matches.index') }}" style="font-size: 12px; color: #666; font-weight: 600; text-decoration: none;">Lihat semua</a>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     @forelse($recommendedMatches as $rm)
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,77,.05);">
                             <div>
-                                <span style="background: #fee2e2; color: #e11d48; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">For You</span>
+                                <span style="background: #fee2e2; color: #e11d48; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">Untuk Anda</span>
                                 <span style="font-size: 14px; font-weight: 800; color: #02025b; margin-left: 6px;">{{ $rm->title }}</span>
                                 <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">{{ $rm->field->name ?? '' }}</p>
                             </div>
@@ -310,13 +327,13 @@
                                 <span style="font-size: 14px; font-weight: 800; color: #02025b;">{{ $ff->field->name ?? '' }}</span>
                                 <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">{{ $ff->field->location ?? '' }}</p>
                             </div>
-                            <a href="{{ route('booking.show', $ff->field_id) }}" style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none;">Quick Book</a>
+                            <a href="{{ route('booking.show', $ff->field_id) }}" style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none;">Pesan Cepat</a>
                         </div>
                     @empty
                         <p style="margin: 0; font-size: 13px; color: #888;">Belum ada favorit.</p>
                     @endforelse
                 </div>
-                <a href="{{ route('favorite.index') }}" style="margin-top: auto; font-size: 13px; color: #666; font-weight: 600; text-decoration: none; text-align: right;">See all ></a>
+                <a href="{{ route('favorite.index') }}" style="margin-top: auto; font-size: 13px; color: #666; font-weight: 600; text-decoration: none; text-align: right;">Lihat semua ></a>
             </div>
 
             <!-- Badge Pemain -->
@@ -342,18 +359,18 @@
                 <div style="display: flex; justify-content: space-between; text-align: center;">
                     <div>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Beginner</p>
-                        <span style="font-size: 9px; color: #666;">0-20 Pts</span>
+                        <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Pemula</p>
+                        <span style="font-size: 9px; color: #666;">0-20 Poin</span>
                     </div>
                     <div>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="#3b82f6"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                         <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Pro</p>
-                        <span style="font-size: 9px; color: #666;">20-50 Pts</span>
+                        <span style="font-size: 9px; color: #666;">20-50 Poin</span>
                     </div>
                     <div>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="#e11d48"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                         <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Master</p>
-                        <span style="font-size: 9px; color: #666;">>50 Pts</span>
+                        <span style="font-size: 9px; color: #666;">>50 Poin</span>
                     </div>
                 </div>
             </div>
@@ -421,7 +438,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0;">
                             <span style="font-size: 16px; font-weight: 700; color: #f59e0b;">{{ $field->formattedPrice() }}</span>
                             <button type="button" style="padding: 8px 16px; background: #f59e0b; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">
-                                Booking →
+                                Pesan →
                             </button>
                         </div>
                     </div>
@@ -436,5 +453,33 @@
 </div>
 
 <script src="{{ asset('js/player-dashboard.js') }}"></script>
+<script>
+(function(){
+    var cdEl = document.getElementById('upcoming-countdown');
+    if (!cdEl) return;
+    var target = parseInt(cdEl.dataset.target) * 1000;
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function update() {
+        var diff = target - Date.now();
+        if (diff <= 0) {
+            document.getElementById('cd-days').textContent = '00';
+            document.getElementById('cd-hours').textContent = '00';
+            document.getElementById('cd-minutes').textContent = '00';
+            document.getElementById('cd-seconds').textContent = '00';
+            return;
+        }
+        var days = Math.floor(diff / 86400000);
+        var hours = Math.floor((diff % 86400000) / 3600000);
+        var minutes = Math.floor((diff % 3600000) / 60000);
+        var seconds = Math.floor((diff % 60000) / 1000);
+        document.getElementById('cd-days').textContent = pad(days);
+        document.getElementById('cd-hours').textContent = pad(hours);
+        document.getElementById('cd-minutes').textContent = pad(minutes);
+        document.getElementById('cd-seconds').textContent = pad(seconds);
+    }
+    update();
+    setInterval(update, 1000);
+})();
+</script>
 </body>
 </html>

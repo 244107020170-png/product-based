@@ -1,6 +1,6 @@
 @php
     use Carbon\Carbon;
-    $userName = Auth::user()->name ?? 'Player';
+    $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     
