@@ -33,13 +33,34 @@ class User extends Authenticatable implements FilamentUser
         'remember_token',
     ];
 
-    protected function casts(): array
+    /**
+     * Default attribute values for model.
+     * Ensures `points` is 0 when not provided.
+     */
+    protected $attributes = [
+        'points' => 0,
+    ];
+    /**
+     * Model casts
+     *
+     * Use property $casts so Eloquent applies proper casting.
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password'          => 'hashed',
+        'points'            => 'integer',
+    ];
+
+    /**
+     * Ensure default values on model creation.
+     */
+    protected static function booted(): void
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'points'            => 'integer',
-        ];
+        static::creating(function (self $user) {
+            if ($user->points === null) {
+                $user->points = 0;
+            }
+        });
     }
 
     public function canAccessPanel(Panel $panel): bool

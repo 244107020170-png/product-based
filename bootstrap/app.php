@@ -14,7 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Register middleware aliases untuk role-based protection
+        $middleware->alias([
+            'role.admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'role.owner' => \App\Http\Middleware\EnsureUserIsOwner::class,
+            'role.player' => \App\Http\Middleware\EnsureUserIsPlayer::class,
+            'ownership' => \App\Http\Middleware\EnsureOwnership::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (HttpExceptionInterface $exception, Request $request) {

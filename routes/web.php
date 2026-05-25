@@ -50,8 +50,32 @@ Route::get('/preview-help', function () {
 
 Route::middleware('auth')->group(function () {
 
+    /* ADMIN */
+    Route::prefix('admin')->middleware('role.admin')->group(function () {
+        Route::get('/dashboard', function () {
+            $totalUsers = \App\Models\User::count();
+            $totalOwners = \App\Models\User::where('role', 'owner')->count();
+            $totalPlayers = \App\Models\User::where('role', 'player')->count();
+            $totalFields = \App\Models\Field::count();
+            $totalBookings = \App\Models\Booking::count();
+            $totalMatches = \App\Models\Matchs::count();
+
+            return view('admin.dashboard', compact(
+                'totalUsers',
+                'totalOwners', 
+                'totalPlayers',
+                'totalFields',
+                'totalBookings',
+                'totalMatches'
+            ));
+        })->name('admin.dashboard');
+
+        // Admin routes dapat ditambahkan di sini
+        // Contoh: Route::resource('users', UserController::class);
+    });
+
     /* OWNER */
-    Route::prefix('owner')->group(function () {
+    Route::prefix('owner')->middleware('role.owner')->group(function () {
 
         Route::get('/dashboard', function () {
             $user = auth()->user();
