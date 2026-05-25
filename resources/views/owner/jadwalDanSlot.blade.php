@@ -6,6 +6,7 @@
     <title>Jadwal Dan Slot</title>
 
     @vite(['resources/css/owner-jadwal-slot.css'])
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -209,16 +210,9 @@
 </div>
 
 <script>
-    const fields = [
-        { id: 1, name: 'Lapangan A', type: 'Futsal' },
-        { id: 2, name: 'Lapangan B', type: 'Basket' },
-        { id: 3, name: 'Lapangan C', type: 'Badminton' },
-        { id: 4, name: 'Lapangan D', type: 'Futsal' },
-    ];
+    const fields = @json($fields->map(fn($f) => ['id' => $f->id, 'name' => $f->name, 'type' => $f->type ?? 'Olahraga']));
 
-    const sportTypes = ['Semua Olahraga', 'Futsal', 'Basket', 'Badminton'];
-    const statusClasses = ['status-tersedia', 'status-dibooking', 'status-perbaikan', 'status-tutup'];
-    const statusLabels = ['Tersedia', 'Dibooking', 'Perbaikan', 'Tutup'];
+    const sportTypes = ['Semua Olahraga', ...new Set(fields.map(f => f.type).filter(Boolean))];
 
     let slotData = {};
 
@@ -256,8 +250,35 @@
         return names[date.getMonth()];
     }
 
+    function loadSlotData(fieldId, callback) {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        fetch('/owner/slots/data?field_id=' + fieldId)
+            .then(r => r.json())
+            .then(data => {
+                slotData = {};
+                holidayDates = [];
+                data.slots.forEach(s => {
+                    const key = s.field_id + '-' + s.date + '-' + s.hour;
+                    slotData[key] = s.status;
+                });
+                data.holidays.forEach(h => {
+                    holidayDates.push(h.date);
+                });
+                if (callback) callback();
+            })
+            .catch(() => {
+                slotData = {};
+                holidayDates = [];
+                if (callback) callback();
+            });
+    }
+
     function initFilters() {
         const fieldSelect = document.getElementById('filter-field');
+        if (fields.length === 0) {
+            document.getElementById('table-container').innerHTML = '<div style="text-align:center;padding:40px;color:#888;">Belum ada lapangan. Tambah lapangan terlebih dahulu.</div>';
+            return;
+        }
         fieldSelect.innerHTML = fields.map(f =>
             '<option value="' + f.id + '">' + f.name + '</option>'
         ).join('');
@@ -272,15 +293,19 @@
 
     function renderTable() {
         const weekDates = getWeekDates(currentDate);
-        const fieldId = parseInt(document.getElementById('filter-field').value) || fields[0].id;
-        const field = fields.find(f => f.id === fieldId);
-        const selectedField = field || fields[0];
+        const fieldId = parseInt(document.getElementById('filter-field').value) || (fields.length ? fields[0].id : 0);
+        const field = fields.find(f => f.id === fieldId) || (fields.length ? fields[0] : null);
+
+        if (!field) {
+            document.getElementById('table-container').innerHTML = '<div style="text-align:center;padding:40px;color:#888;">Pilih lapangan terlebih dahulu.</div>';
+            return;
+        }
 
         const start = weekDates[0];
         const end = weekDates[6];
         document.getElementById('week-label').textContent =
             start.getDate() + ' - ' + end.getDate() + ' ' + getMonthName(start) + ' ' + start.getFullYear();
-        document.getElementById('field-name-header').textContent = selectedField.name;
+        document.getElementById('field-name-header').textContent = field.name;
 
         const hours = [];
         for (let h = 8; h <= 22; h++) hours.push(h);
@@ -297,7 +322,7 @@
             html += '<th style="padding: 0.75rem 1rem; border-left: 1px solid #f3f4f6; min-width: 130px; ' + bg + '">';
             html += '<div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">';
             html += '<span>' + getDayName(date) + ', ' + date.getDate() + ' ' + getMonthName(date) + '</span>';
-            html += '<button class="toggle-holiday ' + (isHoliday ? 'is-holiday' : '') + '" onclick="toggleHoliday(\'' + dateStr + '\')" title="' + (isHoliday ? 'Hapus libur' : 'Tandai libur') + '">';
+            html += '<button class="toggle-holiday ' + (isHoliday ? 'is-holiday' : '') + '" data-date="' + dateStr + '" title="' + (isHoliday ? 'Hapus libur' : 'Tandai libur') + '">';
             html += '<i class="fa-solid ' + (isHoliday ? 'fa-lock' : 'fa-unlock') + '"></i> ';
             html += isHoliday ? 'Libur' : 'Tandai Libur';
             html += '</button>';
@@ -330,7 +355,7 @@
                     const stClass = 'status-' + st;
                     const stLabel = st.charAt(0).toUpperCase() + st.slice(1);
                     html += '<td style="padding: 0.5rem; border-left: 1px solid #f3f4f6; vertical-align: top;">';
-                    html += '<div class="slot-status ' + stClass + '" data-slot-key="' + key + '" data-slot-status="' + st + '">';
+                    html += '<div class="slot-status ' + stClass + '" data-slot-key="' + key + '" data-slot-status="' + st + '" data-field-id="' + fieldId + '" data-date="' + dateStr + '" data-hour="' + hour + '">';
                     html += '<div><strong>' + String(hour).padStart(2, '0') + '.00 - ' + String(hour + 1).padStart(2, '0') + '.00</strong><br>' + stLabel + '</div>';
                     html += '<div class="slot-actions">';
                     html += '<i class="fa-solid fa-ellipsis slot-toggle"></i>';
@@ -349,47 +374,85 @@
     }
 
     function toggleHoliday(dateStr) {
-        const idx = holidayDates.indexOf(dateStr);
-        if (idx === -1) {
-            holidayDates.push(dateStr);
-        } else {
-            holidayDates.splice(idx, 1);
-        }
-        renderTable();
+        const fieldId = parseInt(document.getElementById('filter-field').value) || (fields.length ? fields[0].id : 0);
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+        fetch('/owner/holidays/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+            body: JSON.stringify({ field_id: fieldId, date: dateStr }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.is_holiday) {
+                if (holidayDates.indexOf(dateStr) === -1) holidayDates.push(dateStr);
+            } else {
+                const idx = holidayDates.indexOf(dateStr);
+                if (idx !== -1) holidayDates.splice(idx, 1);
+            }
+            renderTable();
+        });
     }
 
     function applyFilters() {
         const dateVal = document.getElementById('filter-date').value;
         if (dateVal) currentDate = new Date(dateVal + 'T00:00:00');
-        renderTable();
+
+        const sportVal = document.getElementById('filter-sport').value;
+        const fieldSelect = document.getElementById('filter-field');
+        if (sportVal && sportVal !== 'Semua Olahraga') {
+            const filtered = fields.filter(f => f.type === sportVal);
+            fieldSelect.innerHTML = filtered.map(f =>
+                '<option value="' + f.id + '">' + f.name + '</option>'
+            ).join('');
+            if (fieldSelect.options.length > 0) fieldSelect.value = filtered[0].id;
+        } else {
+            fieldSelect.innerHTML = fields.map(f =>
+                '<option value="' + f.id + '">' + f.name + '</option>'
+            ).join('');
+        }
+
+        const fieldId = parseInt(fieldSelect.value) || (fields.length ? fields[0].id : 0);
+        loadSlotData(fieldId, renderTable);
     }
 
     function prevWeek() {
         currentDate.setDate(currentDate.getDate() - 7);
         document.getElementById('filter-date').value = toDateStr(currentDate);
-        renderTable();
+        applyFilters();
     }
 
     function nextWeek() {
         currentDate.setDate(currentDate.getDate() + 7);
         document.getElementById('filter-date').value = toDateStr(currentDate);
-        renderTable();
+        applyFilters();
     }
 
     function resetFilter() {
-        holidayDates = [];
         currentDate = new Date();
         document.getElementById('filter-date').value = toDateStr(currentDate);
-        document.getElementById('filter-field').value = fields[0].id;
+        if (fields.length > 0) {
+            document.getElementById('filter-field').value = fields[0].id;
+        }
         document.getElementById('filter-sport').value = 'Semua Olahraga';
-        renderTable();
+        const fieldId = parseInt(document.getElementById('filter-field').value) || (fields.length ? fields[0].id : 0);
+        loadSlotData(fieldId, renderTable);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        initFilters();
-        renderTable();
+        if (fields.length === 0) {
+            document.getElementById('table-container').innerHTML = '<div style="text-align:center;padding:40px;color:#888;">Belum ada lapangan. <a href="{{ route('owner.tambahLapangan') }}" style="color:#e52d2d;">Tambah sekarang</a></div>';
+            return;
+        }
 
-        document.getElementById('filter-field').addEventListener('change', applyFilters);
+        initFilters();
+        const firstFieldId = fields[0].id;
+        loadSlotData(firstFieldId, renderTable);
+
+        document.getElementById('filter-field').addEventListener('change', function () {
+            const fid = parseInt(this.value);
+            loadSlotData(fid, renderTable);
+        });
         document.getElementById('filter-sport').addEventListener('change', applyFilters);
         document.getElementById('filter-date').addEventListener('change', applyFilters);
         document.getElementById('prev-week').addEventListener('click', prevWeek);
@@ -407,14 +470,34 @@
                 return;
             }
 
+            const holidayBtn = e.target.closest('.toggle-holiday');
+            if (holidayBtn) {
+                e.preventDefault();
+                toggleHoliday(holidayBtn.dataset.date);
+                return;
+            }
+
             const item = e.target.closest('.slot-menu-item');
             if (item) {
                 e.stopPropagation();
-                const key = item.closest('.slot-status').dataset.slotKey;
+                const statusEl = item.closest('.slot-status');
+                const key = statusEl.dataset.slotKey;
                 const action = item.dataset.action;
+                const fieldId = parseInt(statusEl.dataset.fieldId);
+                const date = statusEl.dataset.date;
+                const hour = parseInt(statusEl.dataset.hour);
+
                 if (key && action) {
                     slotData[key] = action;
                     renderTable();
+
+                    // sync to server
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                    fetch('/owner/slots/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify({ field_id: fieldId, date: date, hour: hour, status: action }),
+                    }).catch(err => console.error('Gagal update slot:', err));
                 }
                 return;
             }

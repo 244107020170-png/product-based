@@ -7,6 +7,10 @@ use App\Http\Controllers\SkillController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\MatchController;
+use App\Http\Controllers\OwnerFieldController;
+use App\Models\Maintenance;
+use App\Models\Slot;
+use App\Models\Holiday;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -82,6 +86,8 @@ Route::middleware('auth')->group(function () {
     /* OWNER */
     Route::prefix('owner')->middleware('role.owner')->group(function () {
 
+        // ── STATIC PAGES ──────────────────────────────────────────
+
         Route::get('/dashboard', function () {
             $user = auth()->user();
             $fieldCount = \App\Models\Field::where('owner_id', $user->id)->count();
@@ -91,26 +97,12 @@ Route::middleware('auth')->group(function () {
             $todayBooking = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
                 $q->where('owner_id', $user->id);
             })->whereDate('date', Carbon::today())->count();
-            $monthlyRevenue = 0; // This would need to be calculated from booking data
+            $monthlyRevenue = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->whereIn('status', ['completed', 'confirmed'])->count() * 50000;
 
             return view('owner.dashboard', compact('fieldCount', 'bookingCount', 'todayBooking', 'monthlyRevenue'));
         })->name('owner.dashboard');
-
-        Route::get('/kelolaLapangan', function () {
-            $user = auth()->user();
-            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
-            return view('owner.kelolaLapangan', compact('fields'));
-        })->name('owner.kelolaLapangan');
-
-        Route::get('/tambahLapangan', function () {
-            return view('owner.tambahLapangan');
-        })->name('owner.tambahLapangan');
-
-        Route::get('/jadwalDanSlot', function () {
-            $user = auth()->user();
-            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
-            return view('owner.jadwalDanSlot', compact('fields'));
-        })->name('owner.jadwalDanSlot');
 
         Route::get('/kelolaBooking', function () {
             $user = auth()->user();
@@ -124,9 +116,155 @@ Route::middleware('auth')->group(function () {
             return view('owner.promosiDiskon');
         })->name('owner.promosiDiskon');
 
+        // ── FIELD CRUD ────────────────────────────────────────────
+
+        Route::get('/kelolaLapangan', function () {
+            $user = auth()->user();
+            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
+            return view('owner.kelolaLapangan', compact('fields'));
+        })->name('owner.kelolaLapangan');
+
+        Route::get('/tambahLapangan', function () {
+            return view('owner.tambahLapangan');
+        })->name('owner.tambahLapangan');
+
+        Route::get('/fields/{field}/edit', [OwnerFieldController::class, 'edit'])->name('owner.field.edit');
+        Route::post('/fields/store', [OwnerFieldController::class, 'store'])->name('owner.field.store');
+        Route::put('/fields/{field}/update', [OwnerFieldController::class, 'update'])->name('owner.field.update');
+        Route::delete('/fields/{field}', [OwnerFieldController::class, 'destroy'])->name('owner.field.destroy');
+
+        // ── JADWAL & SLOT (AJAX) ──────────────────────────────────
+
+        Route::get('/jadwalDanSlot', function () {
+            $user = auth()->user();
+            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
+            return view('owner.jadwalDanSlot', compact('fields'));
+        })->name('owner.jadwalDanSlot');
+
+        Route::get('/slots/data', function () {
+            $user = auth()->user();
+            $fieldId = request('field_id');
+            $date = request('date');
+
+            $slots = Slot::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->when($fieldId, fn($q) => $q->where('field_id', $fieldId))
+              ->when($date, fn($q) => $q->where('date', $date))
+              ->get();
+
+            $holidays = Holiday::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->when($fieldId, fn($q) => $q->where('field_id', $fieldId))
+              ->get();
+
+            return response()->json([
+                'slots'    => $slots,
+                'holidays' => $holidays,
+            ]);
+        })->name('owner.slots.data');
+
+        Route::post('/slots/update', function () {
+            $fieldId = request('field_id');
+            $date = request('date');
+            $hour = request('hour');
+            $status = request('status');
+
+            $field = \App\Models\Field::findOrFail($fieldId);
+            if ($field->owner_id !== auth()->id()) abort(403);
+
+            $slot = Slot::updateOrCreate(
+                ['field_id' => $fieldId, 'date' => $date, 'hour' => $hour],
+                ['status' => $status]
+            );
+
+            return response()->json(['success' => true, 'slot' => $slot]);
+        })->name('owner.slots.update');
+
+        Route::post('/holidays/toggle', function () {
+            $fieldId = request('field_id');
+            $date = request('date');
+
+            $field = \App\Models\Field::findOrFail($fieldId);
+            if ($field->owner_id !== auth()->id()) abort(403);
+
+            $holiday = Holiday::where('field_id', $fieldId)->where('date', $date)->first();
+            if ($holiday) {
+                $holiday->delete();
+                return response()->json(['success' => true, 'is_holiday' => false]);
+            } else {
+                Holiday::create(['field_id' => $fieldId, 'date' => $date]);
+                return response()->json(['success' => true, 'is_holiday' => true]);
+            }
+        })->name('owner.holidays.toggle');
+
+        // ── PEMELIHARAAN KONTROL ──────────────────────────────────
+
         Route::get('/pemeliharaanKontrol', function () {
-            return view('owner.pemeliharaanKontrol');
+            $user = auth()->user();
+            $maintenances = \App\Models\Maintenance::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->with('field')->orderBy('created_at', 'desc')->get();
+            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
+            return view('owner.pemeliharaanKontrol', compact('maintenances', 'fields'));
         })->name('owner.pemeliharaanKontrol');
+
+        Route::post('/maintenances/store', function () {
+            $data = request()->validate([
+                'field_id'      => 'required|exists:fields,id',
+                'task_name'     => 'required|string|max:255',
+                'type'          => 'nullable|string|max:100',
+                'schedule_date' => 'nullable|date',
+                'priority'      => 'nullable|string|max:50',
+                'pic_name'      => 'nullable|string|max:255',
+                'status'        => 'nullable|string|max:50',
+                'notes'         => 'nullable|string',
+            ]);
+
+            $field = \App\Models\Field::findOrFail($data['field_id']);
+            if ($field->owner_id !== auth()->id()) abort(403);
+
+            $maintenance = \App\Models\Maintenance::create($data);
+
+            return response()->json(['success' => true, 'maintenance' => $maintenance->load('field')]);
+        })->name('owner.maintenances.store');
+
+        Route::put('/maintenances/{maintenance}/update', function (\App\Models\Maintenance $maintenance) {
+            if ($maintenance->field->owner_id !== auth()->id()) abort(403);
+
+            $data = request()->validate([
+                'task_name'     => 'required|string|max:255',
+                'type'          => 'nullable|string|max:100',
+                'schedule_date' => 'nullable|date',
+                'priority'      => 'nullable|string|max:50',
+                'pic_name'      => 'nullable|string|max:255',
+                'status'        => 'nullable|string|max:50',
+                'notes'         => 'nullable|string',
+            ]);
+
+            $maintenance->update($data);
+
+            return response()->json(['success' => true, 'maintenance' => $maintenance->load('field')]);
+        })->name('owner.maintenances.update');
+
+        Route::delete('/maintenances/{maintenance}', function (\App\Models\Maintenance $maintenance) {
+            if ($maintenance->field->owner_id !== auth()->id()) abort(403);
+            $maintenance->delete();
+            return response()->json(['success' => true]);
+        })->name('owner.maintenances.destroy');
+
+        // ── BOOKING STATUS ────────────────────────────────────────
+
+        Route::put('/bookings/{booking}/status', function (\App\Models\Booking $booking) {
+            if ($booking->field->owner_id !== auth()->id()) abort(403);
+
+            $data = request()->validate([
+                'status' => 'required|string|in:confirmed,completed,cancelled,pending',
+            ]);
+
+            $booking->update(['status' => $data['status']]);
+
+            return response()->json(['success' => true, 'booking' => $booking->load('field', 'user')]);
+        })->name('owner.booking.status');
     });
 
     /* PLAYER */

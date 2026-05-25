@@ -90,7 +90,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Harga Sewa (per Jam)</label>
-                        <input type="number" name="price" class="form-control" value="{{ isset($field) ? $field->price : '' }}" placeholder="Contoh: 120000" required>
+                        <input type="number" name="price" class="form-control" value="{{ isset($field) ? $field->price_per_hour : '' }}" placeholder="Contoh: 120000" required>
                     </div>
 
                     <div class="form-group">
@@ -155,23 +155,28 @@
 
                 {{-- Fasilitas (Checkbox) --}}
                 <div class="facilities-section">
+                    @php $facilitiesArray = isset($field) && $field->facilities ? (is_array($field->facilities) ? $field->facilities : json_decode($field->facilities, true) ?? []) : []; @endphp
                     <label class="section-label">Fasilitas Lapangan</label>
                     <div class="checkbox-group">
                         <label class="checkbox-label">
-                            <input type="checkbox" name="facilities[]" value="wifi" {{ (isset($field) && in_array('wifi', $field->facilities)) ? 'checked' : '' }}> 
+                            <input type="checkbox" name="facilities[]" value="WiFi" {{ in_array('WiFi', $facilitiesArray) ? 'checked' : '' }}> 
                             <i class="fa-solid fa-wifi"></i> Wi-Fi
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" name="facilities[]" value="shower" {{ (isset($field) && in_array('shower', $field->facilities)) ? 'checked' : '' }}> 
+                            <input type="checkbox" name="facilities[]" value="Toilet" {{ in_array('Toilet', $facilitiesArray) ? 'checked' : '' }}> 
                             <i class="fa-solid fa-shower"></i> Kamar Mandi
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" name="facilities[]" value="parking" {{ (isset($field) && in_array('parking', $field->facilities)) ? 'checked' : '' }}> 
+                            <input type="checkbox" name="facilities[]" value="Parkir" {{ in_array('Parkir', $facilitiesArray) ? 'checked' : '' }}> 
                             <i class="fa-solid fa-car"></i> Parkir Luas
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" name="facilities[]" value="fan" {{ (isset($field) && in_array('fan', $field->facilities)) ? 'checked' : '' }}> 
+                            <input type="checkbox" name="facilities[]" value="AC" {{ in_array('AC', $facilitiesArray) ? 'checked' : '' }}> 
                             <i class="fa-solid fa-fan"></i> Kipas / AC
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="facilities[]" value="Mushala" {{ in_array('Mushala', $facilitiesArray) ? 'checked' : '' }}> 
+                            <i class="fa-solid fa-mosque"></i> Mushala
                         </label>
                     </div>
                 </div>

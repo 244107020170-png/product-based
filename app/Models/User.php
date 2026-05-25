@@ -88,6 +88,12 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Booking::class);
     }
 
+    /** Field milik owner */
+    public function fields()
+    {
+        return $this->hasMany(Field::class, 'owner_id');
+    }
+
     /** Favorite user ini */
     public function favorites()
     {

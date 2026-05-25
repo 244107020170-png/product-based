@@ -138,16 +138,16 @@
             <div class="field-card">
 
                 <div class="field-image">
-                    <img src="{{ $field->cover_photo ?? 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop' }}" alt="{{ $field->name }}">
+                    <img src="{{ $field->image ? asset('storage/'.$field->image) : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop' }}" alt="{{ $field->name }}">
 
-                    <span class="badge">{{ $field->sport_type ?? 'Olahraga' }}</span>
+                    <span class="badge">{{ $field->type ?? 'Olahraga' }}</span>
                 </div>
 
                 <div class="field-content">
                     <div class="field-top">
                         <div>
                             <h3>{{ $field->name }}</h3>
-                            <p>{{ $field->sport_type ?? 'Olahraga' }}</p>
+                            <p>{{ $field->type ?? 'Olahraga' }}</p>
                         </div>
 
                         <h4>Rp{{ number_format($field->price_per_hour ?? 0, 0, ',', '.') }}</h4>
@@ -163,7 +163,7 @@
                     <div class="field-info">
                         <span>
                             <i class="fa-regular fa-clock"></i>
-                            {{ $field->opening_time ?? '08:00' }} - {{ $field->closing_time ?? '22:00' }}
+                            {{ $field->open_time ?? '08:00' }} - {{ $field->close_time ?? '22:00' }}
                         </span>
 
                         <span>

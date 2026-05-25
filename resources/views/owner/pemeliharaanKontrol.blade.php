@@ -6,6 +6,7 @@
     <title>Pemeliharaan Kontrol</title>
 
     @vite(['resources/css/pemeliharaanDanKontrol.css'])
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,6 +52,13 @@
             </div>
         </div>
 
+         @php
+            $totalTasks = $maintenances->count();
+            $waitingTasks = $maintenances->where('status', 'Menunggu')->count();
+            $inProgressTasks = $maintenances->where('status', 'Dikerjakan')->count();
+            $completedTasks = $maintenances->where('status', 'Selesai')->count();
+            $overdueTasks = $maintenances->where('status', 'Menunggu')->where('schedule_date', '<', now()->toDateString())->count();
+        @endphp
          <div class="cards">
 
       <div class="card">
@@ -59,7 +67,7 @@
         </div>
 
         <div>
-          <h2>24</h2>
+          <h2>{{ $totalTasks }}</h2>
           <p>Total Tugas</p>
         </div>
       </div>
@@ -70,7 +78,7 @@
         </div>
 
         <div>
-          <h2>7</h2>
+          <h2>{{ $waitingTasks }}</h2>
           <p>Menunggu</p>
         </div>
       </div>
@@ -81,7 +89,7 @@
         </div>
 
         <div>
-          <h2>6</h2>
+          <h2>{{ $inProgressTasks }}</h2>
           <p>Sedang Dikerjakan</p>
         </div>
       </div>
@@ -92,7 +100,7 @@
         </div>
 
         <div>
-          <h2>11</h2>
+          <h2>{{ $completedTasks }}</h2>
           <p>Selesai</p>
         </div>
       </div>
@@ -103,7 +111,7 @@
         </div>
 
         <div>
-          <h2>3</h2>
+          <h2>{{ $overdueTasks }}</h2>
           <p>Overdue</p>
         </div>
       </div>
@@ -119,16 +127,26 @@
 
           <input type="text" placeholder="Cari tugas, lapangan, teknisi...">
 
-          <select>
-            <option>Semua Lapangan</option>
+          <select id="filter-field">
+            <option value="">Semua Lapangan</option>
+            @foreach ($fields as $f)
+            <option value="{{ $f->id }}">{{ $f->name }}</option>
+            @endforeach
           </select>
 
-          <select>
-            <option>Semua Jenis</option>
+          <select id="filter-type">
+            <option value="">Semua Jenis</option>
+            <option value="Elektrikal">Elektrikal</option>
+            <option value="Lapangan">Lapangan</option>
+            <option value="Kebersihan">Kebersihan</option>
+            <option value="Lainnya">Lainnya</option>
           </select>
 
-          <select>
-            <option>Semua Status</option>
+          <select id="filter-status">
+            <option value="">Semua Status</option>
+            <option value="Menunggu">Menunggu</option>
+            <option value="Dikerjakan">Dikerjakan</option>
+            <option value="Selesai">Selesai</option>
           </select>
 
           <button class="reset-btn">Reset Filter</button>
@@ -158,59 +176,53 @@
 
             <tbody id="taskTable">
 
-              <tr>
+              @forelse ($maintenances as $m)
+              @php
+                $pClass = match($m->priority) {
+                    'Tinggi' => 'high',
+                    'Sedang' => 'medium',
+                    'Rendah' => 'low',
+                    default => 'medium',
+                };
+                $sClass = match($m->status) {
+                    'Menunggu' => 'waiting',
+                    'Dikerjakan' => 'progress',
+                    'Selesai' => 'done',
+                    default => 'waiting',
+                };
+              @endphp
+              <tr data-id="{{ $m->id }}"
+                  data-tugas="{{ $m->task_name }}"
+                  data-lapangan="{{ $m->field?->name ?? '-' }}"
+                  data-jenis="{{ $m->type ?? '-' }}"
+                  data-jadwal="{{ $m->schedule_date?->format('d M Y') ?? '-' }}"
+                  data-prioritas="{{ $m->priority }}"
+                  data-pj="{{ $m->pic_name ?? '-' }}"
+                  data-status="{{ $m->status }}">
                 <td>
                     <input type="checkbox">
                 </td>
-                <td data-label="tugas">Perbaikan Lampu Lapangan A</td>
-                <td data-label="lapangan">Lapangan A</td>
-                <td data-label="jenis">Elektrikal</td>
-                <td data-label="jadwal">20 Mei 2025</td>
-                <td data-label="prioritas"><span class="badge high">Tinggi</span></td>
-                <td data-label="pj">Budi Setiawan</td>
-                <td data-label="status"><span class="badge waiting">Menunggu</span></td>
+                <td data-label="tugas">{{ $m->task_name }}</td>
+                <td data-label="lapangan">{{ $m->field?->name ?? '-' }}</td>
+                <td data-label="jenis">{{ $m->type ?? '-' }}</td>
+                <td data-label="jadwal">{{ $m->schedule_date?->format('d M Y') ?? '-' }}</td>
+                <td data-label="prioritas"><span class="badge {{ $pClass }}">{{ $m->priority }}</span></td>
+                <td data-label="pj">{{ $m->pic_name ?? '-' }}</td>
+                <td data-label="status"><span class="badge {{ $sClass }}">{{ $m->status }}</span></td>
                 <td>
                     <button class="action-btn">
                         <i class="fa-solid fa-ellipsis"></i>
                     </button>
                 </td>
               </tr>
-
+              @empty
               <tr>
-                <td>
-                    <input type="checkbox">
-                </td>
-                <td data-label="tugas">Pengecekan Rumput Sintetis</td>
-                <td data-label="lapangan">Lapangan B</td>
-                <td data-label="jenis">Lapangan</td>
-                <td data-label="jadwal">21 Mei 2025</td>
-                <td data-label="prioritas"><span class="badge medium">Sedang</span></td>
-                <td data-label="pj">Andi Permana</td>
-                <td data-label="status"><span class="badge progress">Dikerjakan</span></td>
-                <td>
-                    <button class="action-btn">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
+                <td colspan="9" style="text-align: center; padding: 40px; color: #888;">
+                    <i class="fa-solid fa-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; color: #ccc;"></i>
+                    Belum ada tugas pemeliharaan
                 </td>
               </tr>
-
-              <tr>
-                <td>
-                    <input type="checkbox">
-                </td>
-                <td data-label="tugas">Kalibrasi Scoreboard</td>
-                <td data-label="lapangan">Lapangan C</td>
-                <td data-label="jenis">Elektrikal</td>
-                <td data-label="jadwal">23 Mei 2025</td>
-                <td data-label="prioritas"><span class="badge low">Rendah</span></td>
-                <td data-label="pj">Rizky</td>
-                <td data-label="status"><span class="badge done">Selesai</span></td>
-                <td>
-                    <button class="action-btn">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
-                </td>
-              </tr>
+              @endforelse
 
             </tbody>
 
@@ -379,22 +391,22 @@
 
         function populateDetail(row) {
             currentEditRow = row;
-            const cells = row.querySelectorAll('td');
 
-            const tugas = cells[1]?.textContent.trim() || '';
-            const lapangan = cells[2]?.textContent.trim() || '';
-            const jenis = cells[3]?.textContent.trim() || '';
-            const jadwal = cells[4]?.textContent.trim() || '';
-            const prioritas = cells[5]?.querySelector('.badge')?.textContent.trim() || '';
-            const pj = cells[6]?.textContent.trim() || '';
-            const status = cells[7]?.querySelector('.badge')?.textContent.trim() || '';
+            const tugas = row.dataset.tugas || '';
+            const lapangan = row.dataset.lapangan || '';
+            const jenis = row.dataset.jenis || '';
+            const jadwal = row.dataset.jadwal || '';
+            const prioritas = row.dataset.prioritas || '';
+            const pj = row.dataset.pj || '';
+            const status = row.dataset.status || 'Menunggu';
             const statusData = statusMap[status] || statusMap['Menunggu'];
 
             const badge = detailPanel.querySelector('.status-badge');
             badge.textContent = status;
             badge.className = 'status-badge ' + statusData.badgeClass;
 
-            detailPanel.querySelector('.task-id').textContent = 'Tugas #MT-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+            const taskId = row.dataset.id || '0';
+            detailPanel.querySelector('.task-id').textContent = 'Tugas #MT-' + String(taskId).padStart(3, '0');
             detailPanel.querySelector('[data-field="tugas"]').textContent = tugas;
             detailPanel.querySelector('[data-field="lapangan"]').textContent = lapangan;
             detailPanel.querySelector('[data-field="jenis"]').textContent = jenis;
@@ -475,11 +487,15 @@
 
         function saveEdit() {
             let newStatus = null;
+            const id = currentEditRow?.dataset.id;
+            const data = {};
 
             detailPanel.querySelectorAll('[data-field]').forEach(el => {
                 const input = el.querySelector('.edit-input, .edit-select');
                 if (input) {
-                    el.textContent = input.value.trim();
+                    const val = input.value.trim();
+                    el.textContent = val;
+                    data[el.dataset.field] = val;
                 }
             });
 
@@ -487,6 +503,7 @@
             const sel = badge.querySelector('.edit-select');
             if (sel) {
                 newStatus = sel.value.trim();
+                data.status = newStatus;
                 badge.textContent = newStatus;
                 badge.className = 'status-badge ' + (statusMap[newStatus]?.badgeClass || '');
                 updateHistory(newStatus);
@@ -497,8 +514,8 @@
             cancelBtn.style.display = 'none';
 
             if (newStatus && currentEditRow) {
-                const statusCell = currentEditRow.querySelectorAll('td')[7];
-                const b = statusCell?.querySelector('.badge');
+                const badgeCell = currentEditRow.querySelectorAll('td')[7];
+                const b = badgeCell?.querySelector('.badge');
                 if (b) {
                     b.textContent = newStatus;
                     b.className = 'badge ' + (
@@ -508,13 +525,26 @@
                     );
                 }
             }
+
+            if (id) {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                fetch('/owner/maintenances/' + id + '/update', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                    body: JSON.stringify(data),
+                }).catch(err => console.error('Gagal update:', err));
+            }
         }
 
         rows.forEach(row => {
+            if (row.querySelector('td[colspan]')) return;
+
             row.addEventListener('click', (e) => {
                 if (e.target.closest('.action-btn') || e.target.closest('input[type="checkbox"]')) return;
 
-                rows.forEach(r => r.style.background = 'white');
+                rows.forEach(r => {
+                    if (!r.querySelector('td[colspan]')) r.style.background = 'white';
+                });
                 row.style.background = '#fff5f5';
             });
 
@@ -537,6 +567,45 @@
         editBtn?.addEventListener('click', enterEditMode);
         saveBtn?.addEventListener('click', saveEdit);
         cancelBtn?.addEventListener('click', exitEditMode);
+
+        /* === FILTER === */
+
+        const fieldFilter = document.getElementById('filter-field');
+        const typeFilter = document.getElementById('filter-type');
+        const statusFilter = document.getElementById('filter-status');
+        const resetFilterBtn = document.querySelector('.reset-btn');
+        const searchInput = document.querySelector('.filter-box input[type="text"]');
+
+        function applyFilters() {
+            const fVal = fieldFilter?.value || '';
+            const tVal = typeFilter?.value || '';
+            const sVal = statusFilter?.value || '';
+            const q = (searchInput?.value || '').toLowerCase();
+
+            rows.forEach(row => {
+                if (row.querySelector('td[colspan]')) return;
+                const matchField = !fVal || row.dataset.lapangan === document.querySelector('#filter-field option[value="' + fVal + '"]')?.textContent;
+                const matchType = !tVal || row.dataset.jenis === tVal;
+                const matchStatus = !sVal || row.dataset.status === sVal;
+                const matchSearch = !q || row.textContent.toLowerCase().includes(q);
+                row.style.display = (matchField && matchType && matchStatus && matchSearch) ? '' : 'none';
+            });
+        }
+
+        fieldFilter?.addEventListener('change', applyFilters);
+        typeFilter?.addEventListener('change', applyFilters);
+        statusFilter?.addEventListener('change', applyFilters);
+        searchInput?.addEventListener('input', applyFilters);
+
+        resetFilterBtn?.addEventListener('click', function () {
+            if (fieldFilter) fieldFilter.value = '';
+            if (typeFilter) typeFilter.value = '';
+            if (statusFilter) statusFilter.value = '';
+            if (searchInput) searchInput.value = '';
+            rows.forEach(row => {
+                if (!row.querySelector('td[colspan]')) row.style.display = '';
+            });
+        });
 
     });
 

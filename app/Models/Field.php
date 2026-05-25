@@ -9,13 +9,17 @@ class Field extends Model
     protected $fillable = [
         'name',
         'description',
+        'type',
         'location',
         'price_per_hour',
+        'open_time',
+        'close_time',
         'owner_id',
         'image',
         'facilities',
         'rating',
         'review_count',
+        'is_available',
         'verification_status',
         'verification_notes',
         'verified_at',
@@ -52,6 +56,21 @@ class Field extends Model
     public function matches()
     {
         return $this->hasMany(Matchs::class);
+    }
+
+    public function maintenances()
+    {
+        return $this->hasMany(Maintenance::class);
+    }
+
+    public function slots()
+    {
+        return $this->hasMany(Slot::class);
+    }
+
+    public function holidays()
+    {
+        return $this->hasMany(Holiday::class);
     }
 
     /**

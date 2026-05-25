@@ -8,6 +8,7 @@
     <title>Kelola Booking</title>
 
     @vite(['resources/css/owner-kelola-booking.css', 'resources/js/owner-kelola-booking.js'])
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- GOOGLE FONT --}}
     <link rel="preconnect"
@@ -83,7 +84,7 @@
                 <div class="booking-header">
 
                     <div>
-                        <h1>Selamat datang kembali, Owner Arena Sport!</h1>
+                        <h1>Selamat datang kembali, {{ auth()->user()->name }}!</h1>
                     </div>
                     <a href="{{ route('owner.tambahLapangan') }}" style="display: inline-block; background: linear-gradient(135deg, #ff4d4d, #ff2e63); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
                         <i class="fa-solid fa-plus"></i> Tambah Lapangan
@@ -92,13 +93,22 @@
                 </div>
 
                 {{-- STATS --}}
+                @php
+                    $fieldIds = auth()->user()->fields->pluck('id');
+                    $totalFields = $fieldIds->count();
+                    $availableFields = \App\Models\Field::whereIn('id', $fieldIds)->where('is_available', true)->count();
+                    $inMaintenance = \App\Models\Maintenance::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
+                        ->where('status', '!=', 'Selesai')->count();
+                    $bookedCount = \App\Models\Booking::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
+                        ->whereIn('status', ['confirmed', 'pending'])->count();
+                @endphp
                 <div class="stats-grid">
 
                     <div class="stats-card">
 
                         <div>
                             <p>Total Lapangan</p>
-                            <h2>12</h2>
+                            <h2>{{ $totalFields }}</h2>
                         </div>
 
                         <div class="stats-icon blue">
@@ -111,7 +121,7 @@
 
                         <div>
                             <p>Tersedia</p>
-                            <h2>2</h2>
+                            <h2>{{ $availableFields }}</h2>
                         </div>
 
                         <div class="stats-icon green">
@@ -124,7 +134,7 @@
 
                         <div>
                             <p>Perbaikan</p>
-                            <h2>5</h2>
+                            <h2>{{ $inMaintenance }}</h2>
                         </div>
 
                         <div class="stats-icon yellow">
@@ -137,7 +147,7 @@
 
                         <div>
                             <p>Telah Dibooking</p>
-                            <h2>5</h2>
+                            <h2>{{ $bookedCount }}</h2>
                         </div>
 
                         <div class="stats-icon red">
@@ -216,7 +226,43 @@
 
                                 <tbody>
 
-                                <tr>
+                                @forelse ($bookings as $booking)
+                                @php
+                                    $statusLabel = match($booking->status) {
+                                        'confirmed' => 'Telah Dikonfirmasi',
+                                        'completed' => 'Selesai',
+                                        'cancelled' => 'Dibatalkan',
+                                        'rejected'  => 'Ditolak',
+                                        'pending'   => 'Menunggu Konfirmasi',
+                                        'waiting_payment' => 'Menunggu Pembayaran',
+                                        'paid'      => 'Dibayar',
+                                        'expired'   => 'Kadaluarsa',
+                                        default     => ucfirst($booking->status),
+                                    };
+                                    $badgeClass = match($booking->status) {
+                                        'confirmed', 'completed', 'paid' => 'success',
+                                        'pending', 'waiting_payment' => 'warning',
+                                        'cancelled', 'rejected', 'expired' => 'danger',
+                                        default => 'info',
+                                    };
+                                    $start = \Carbon\Carbon::parse($booking->start_time);
+                                    $end   = \Carbon\Carbon::parse($booking->end_time);
+                                    $hours = max(1, $start->diffInHours($end));
+                                    $duration = $hours . ' Jam';
+                                    if ($hours != floor($hours)) $duration = number_format($hours, 1) . ' Jam';
+                                @endphp
+                                <tr data-booking-id="{{ $booking->id }}"
+                                    data-customer-name="{{ $booking->user?->name ?? 'N/A' }}"
+                                    data-customer-phone="{{ $booking->user?->phone ?? '' }}"
+                                    data-customer-email="{{ $booking->user?->email ?? '' }}"
+                                    data-field-name="{{ $booking->field?->name ?? 'N/A' }}"
+                                    data-field-type="{{ $booking->field?->type ?? '' }}"
+                                    data-date="{{ $booking->date?->format('d M Y') }}"
+                                    data-time="{{ \Carbon\Carbon::parse($booking->start_time)->format('H.i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H.i') }}"
+                                    data-duration="{{ $duration }}"
+                                    data-status="{{ $statusLabel }}"
+                                    data-price="Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}"
+                                    data-raw-status="{{ $booking->status }}">
 
                                     <td>
                                         <input type="checkbox">
@@ -226,12 +272,12 @@
 
                                         <div class="customer-cell">
 
-                                            <img src="https://i.pravatar.cc/100"
+                                            <img src="https://i.pravatar.cc/100?u={{ $booking->user_id }}"
                                                  alt="">
 
                                             <div>
-                                                <h5>Namtan T.</h5>
-                                                <p>089123456789</p>
+                                                <h5>{{ $booking->user?->name ?? 'N/A' }}</h5>
+                                                <p>{{ $booking->user?->phone ?? '-' }}</p>
                                             </div>
 
                                         </div>
@@ -245,8 +291,8 @@
                                             <i class="fa-regular fa-futbol"></i>
 
                                             <div>
-                                                <h5>Lapangan A</h5>
-                                                <p>Futsal Indoor</p>
+                                                <h5>{{ $booking->field?->name ?? 'N/A' }}</h5>
+                                                <p>{{ $booking->field?->type ?? 'Olahraga' }}</p>
                                             </div>
 
                                         </div>
@@ -254,27 +300,27 @@
                                     </td>
 
                                     <td>
-                                        22 Mei 2026
+                                        {{ $booking->date?->format('d M Y') }}
                                     </td>
 
                                     <td>
-                                        08.00 - 09.00
+                                        {{ \Carbon\Carbon::parse($booking->start_time)->format('H.i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H.i') }}
                                     </td>
 
                                     <td>
-                                        1 Jam
+                                        {{ $duration }}
                                     </td>
 
                                     <td>
 
-                                        <span class="status-badge success">
-                                            Telah Dikonfirmasi
+                                        <span class="status-badge {{ $badgeClass }}">
+                                            {{ $statusLabel }}
                                         </span>
 
                                     </td>
 
                                     <td>
-                                        Rp120.000
+                                        Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}
                                     </td>
 
                                     <td>
@@ -286,290 +332,14 @@
                                     </td>
 
                                 </tr>
-
+                                @empty
                                 <tr>
-
-                                    <td>
-                                        <input type="checkbox">
+                                    <td colspan="9" style="text-align: center; padding: 40px; color: #888;">
+                                        <i class="fa-solid fa-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; color: #ccc;"></i>
+                                        Belum ada booking
                                     </td>
-
-                                    <td>
-
-                                        <div class="customer-cell">
-
-                                            <img src="https://i.pravatar.cc/100"
-                                                 alt="">
-
-                                            <div>
-                                                <h5>Rizky P.</h5>
-                                                <p>085712345678</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="field-cell">
-
-                                            <i class="fa-regular fa-futbol"></i>
-
-                                            <div>
-                                                <h5>Lapangan B</h5>
-                                                <p>Futsal Outdoor</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        23 Mei 2026
-                                    </td>
-
-                                    <td>
-                                        10.00 - 11.00
-                                    </td>
-
-                                    <td>
-                                        1 Jam
-                                    </td>
-
-                                    <td>
-
-                                        <span class="status-badge success">
-                                            Telah Dikonfirmasi
-                                        </span>
-
-                                    </td>
-
-                                    <td>
-                                        Rp150.000
-                                    </td>
-
-                                    <td>
-
-                                        <button class="action-btn">
-                                            <i class="fa-solid fa-ellipsis"></i>
-                                        </button>
-
-                                    </td>
-
                                 </tr>
-
-                                <tr>
-
-                                    <td>
-                                        <input type="checkbox">
-                                    </td>
-
-                                    <td>
-
-                                        <div class="customer-cell">
-
-                                            <img src="https://i.pravatar.cc/100"
-                                                 alt="">
-
-                                            <div>
-                                                <h5>Siti N.</h5>
-                                                <p>081234567890</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="field-cell">
-
-                                            <i class="fa-regular fa-futbol"></i>
-
-                                            <div>
-                                                <h5>Lapangan A</h5>
-                                                <p>Futsal Indoor</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        24 Mei 2026
-                                    </td>
-
-                                    <td>
-                                        14.00 - 15.30
-                                    </td>
-
-                                    <td>
-                                        1.5 Jam
-                                    </td>
-
-                                    <td>
-
-                                        <span class="status-badge warning">
-                                            Menunggu Konfirmasi
-                                        </span>
-
-                                    </td>
-
-                                    <td>
-                                        Rp180.000
-                                    </td>
-
-                                    <td>
-
-                                        <button class="action-btn">
-                                            <i class="fa-solid fa-ellipsis"></i>
-                                        </button>
-
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-
-                                    <td>
-                                        <input type="checkbox">
-                                    </td>
-
-                                    <td>
-
-                                        <div class="customer-cell">
-
-                                            <img src="https://i.pravatar.cc/100"
-                                                 alt="">
-
-                                            <div>
-                                                <h5>Budi S.</h5>
-                                                <p>087812345678</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="field-cell">
-
-                                            <i class="fa-regular fa-futbol"></i>
-
-                                            <div>
-                                                <h5>Lapangan C</h5>
-                                                <p>Basket Indoor</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        20 Mei 2026
-                                    </td>
-
-                                    <td>
-                                        16.00 - 18.00
-                                    </td>
-
-                                    <td>
-                                        2 Jam
-                                    </td>
-
-                                    <td>
-
-                                        <span class="status-badge success">
-                                            Selesai
-                                        </span>
-
-                                    </td>
-
-                                    <td>
-                                        Rp250.000
-                                    </td>
-
-                                    <td>
-
-                                        <button class="action-btn">
-                                            <i class="fa-solid fa-ellipsis"></i>
-                                        </button>
-
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-
-                                    <td>
-                                        <input type="checkbox">
-                                    </td>
-
-                                    <td>
-
-                                        <div class="customer-cell">
-
-                                            <img src="https://i.pravatar.cc/100"
-                                                 alt="">
-
-                                            <div>
-                                                <h5>Dewi K.</h5>
-                                                <p>082198765432</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-
-                                        <div class="field-cell">
-
-                                            <i class="fa-regular fa-futbol"></i>
-
-                                            <div>
-                                                <h5>Lapangan B</h5>
-                                                <p>Futsal Outdoor</p>
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        19 Mei 2026
-                                    </td>
-
-                                    <td>
-                                        09.00 - 10.00
-                                    </td>
-
-                                    <td>
-                                        1 Jam
-                                    </td>
-
-                                    <td>
-
-                                        <span class="status-badge danger">
-                                            Dibatalkan
-                                        </span>
-
-                                    </td>
-
-                                    <td>
-                                        Rp150.000
-                                    </td>
-
-                                    <td>
-
-                                        <button class="action-btn">
-                                            <i class="fa-solid fa-ellipsis"></i>
-                                        </button>
-
-                                    </td>
-
-                                </tr>
+                                @endforelse
 
                                 </tbody>
 

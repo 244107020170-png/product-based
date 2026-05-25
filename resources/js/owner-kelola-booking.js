@@ -26,34 +26,65 @@ document.addEventListener('DOMContentLoaded', () => {
             { label: 'Menunggu konfirmasi', color: 'black' },
             { label: 'Dibatalkan', color: '#dc3d3d' },
         ],
+        'Ditolak': [
+            { label: 'Booking dibuat', color: 'black' },
+            { label: 'Menunggu konfirmasi', color: 'black' },
+            { label: 'Ditolak', color: '#dc3d3d' },
+        ],
+        'Kadaluarsa': [
+            { label: 'Booking dibuat', color: 'black' },
+            { label: 'Kadaluarsa', color: '#dc3d3d' },
+        ],
     };
+
+    const statusMap = {
+        'pending': 'Menunggu Konfirmasi',
+        'waiting_payment': 'Menunggu Konfirmasi',
+        'paid': 'Telah Dikonfirmasi',
+        'confirmed': 'Telah Dikonfirmasi',
+        'completed': 'Selesai',
+        'cancelled': 'Dibatalkan',
+        'rejected': 'Ditolak',
+        'expired': 'Kadaluarsa',
+    };
+
+    const statusReverseMap = {
+        'Menunggu Konfirmasi': 'pending',
+        'Telah Dikonfirmasi': 'confirmed',
+        'Selesai': 'completed',
+        'Dibatalkan': 'cancelled',
+        'Ditolak': 'rejected',
+        'Kadaluarsa': 'expired',
+    };
+
+    function getBadgeClass(status) {
+        if (['Telah Dikonfirmasi', 'Selesai', 'Dibayar'].includes(status)) return 'success';
+        if (['Menunggu Konfirmasi', 'Menunggu Pembayaran'].includes(status)) return 'warning';
+        if (['Dibatalkan', 'Ditolak', 'Kadaluarsa'].includes(status)) return 'danger';
+        return 'info';
+    }
 
     function populateDetail(row) {
         if (!detail) return;
 
-        const cells = row.querySelectorAll('td');
-        const customerName = cells[1]?.querySelector('h5')?.textContent || '';
-        const customerPhone = cells[1]?.querySelector('p')?.textContent || '';
-        const fieldName = cells[2]?.querySelector('h5')?.textContent || '';
-        const fieldType = cells[2]?.querySelector('p')?.textContent || '';
-        const date = cells[3]?.textContent.trim() || '';
-        const time = cells[4]?.textContent.trim() || '';
-        const duration = cells[5]?.textContent.trim() || '';
-        const status = cells[6]?.querySelector('.status-badge')?.textContent.trim() || '';
-        const price = cells[7]?.textContent.trim() || '';
-
-        const bookingId = '#' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        const customerName = row.dataset.customerName || '';
+        const customerPhone = row.dataset.customerPhone || '';
+        const customerEmail = row.dataset.customerEmail || '';
+        const fieldName = row.dataset.fieldName || '';
+        const fieldType = row.dataset.fieldType || '';
+        const date = row.dataset.date || '';
+        const time = row.dataset.time || '';
+        const status = row.dataset.status || '';
+        const price = row.dataset.price || '';
+        const bookingId = row.dataset.bookingId || '';
 
         detail.querySelector('.status-badge').textContent = status;
-        detail.querySelector('.status-badge').className = 'status-badge ' + (
-            status === 'Telah Dikonfirmasi' || status === 'Selesai' ? 'success' :
-            status === 'Menunggu Konfirmasi' ? 'warning' :
-            status === 'Dibatalkan' ? 'danger' : ''
-        );
-        detail.querySelector('.booking-id').textContent = 'Booking ID ' + bookingId;
+        detail.querySelector('.status-badge').className = 'status-badge ' + getBadgeClass(status);
+        detail.querySelector('.booking-id').textContent = 'Booking ID #' + String(bookingId).padStart(7, '0');
         detail.querySelector('.detail-profile h4').textContent = customerName;
-        detail.querySelectorAll('.detail-profile p')[0].textContent = customerPhone;
-        detail.querySelectorAll('.detail-profile p')[1].textContent = customerName.toLowerCase().replace(/\s+/g, '') + '@gmail.com';
+        const pp = detail.querySelectorAll('.detail-profile p');
+        if (pp[0]) pp[0].textContent = customerPhone || '-';
+        if (pp[1]) pp[1].textContent = customerEmail || '-';
         detail.querySelector('.detail-info div:nth-child(1) strong').textContent = fieldName;
         detail.querySelector('.detail-info div:nth-child(2) strong').textContent = date;
         detail.querySelector('.detail-info div:nth-child(3) strong').textContent = time;
@@ -71,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.booking-table tbody tr').forEach(row => {
+        if (row.querySelector('td[colspan]')) return;
 
         row.addEventListener('click', (e) => {
             if (e.target.closest('.action-btn')) return;
@@ -91,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 detail?.classList.add('show');
             });
         }
-
     });
 
     closeBtn?.addEventListener('click', () => {
@@ -117,16 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
             li.style.color = s.color;
             historyList.appendChild(li);
         });
-    }
-
-    function setStatusDisplay(status) {
-        const badge = detail.querySelector('.status-badge');
-        badge.textContent = status;
-        badge.className = 'status-badge ' + (
-            status === 'Telah Dikonfirmasi' || status === 'Selesai' ? 'success' :
-            status === 'Menunggu Konfirmasi' ? 'warning' :
-            status === 'Dibatalkan' ? 'danger' : ''
-        );
     }
 
     function enterEditMode() {
@@ -168,19 +189,20 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         detail.querySelectorAll('[data-field]').forEach(el => {
-            const input = el.querySelector('.edit-input, .edit-select');
-            if (input) {
-                const field = el.dataset.field;
-                let val = input.value.trim();
-                if (field === 'harga') val = 'Rp' + val;
-                el.textContent = val;
-                if (field === 'status') {
-                    el.className = 'status-badge ' + (
-                        val === 'Telah Dikonfirmasi' || val === 'Selesai' ? 'success' :
-                        val === 'Menunggu Konfirmasi' ? 'warning' :
-                        val === 'Dibatalkan' ? 'danger' : ''
-                    );
+            if (el.dataset.field === 'status') {
+                const sel = el.querySelector('.edit-select');
+                if (sel) {
+                    const val = sel.value.trim();
+                    el.textContent = val;
+                    el.className = 'status-badge ' + getBadgeClass(val);
                     updateHistory(val);
+                }
+            } else {
+                const input = el.querySelector('.edit-input');
+                if (input) {
+                    let val = input.value.trim();
+                    if (el.dataset.field === 'harga') val = 'Rp' + val;
+                    el.textContent = val;
                 }
             }
         });
@@ -198,11 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.textContent = val;
                 if (field === 'status') {
                     newStatus = val;
-                    el.className = 'status-badge ' + (
-                        val === 'Telah Dikonfirmasi' || val === 'Selesai' ? 'success' :
-                        val === 'Menunggu Konfirmasi' ? 'warning' :
-                        val === 'Dibatalkan' ? 'danger' : ''
-                    );
+                    el.className = 'status-badge ' + getBadgeClass(val);
                 }
             }
         });
@@ -215,11 +233,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const badge = currentEditRow.querySelector('.status-badge');
             if (badge) {
                 badge.textContent = newStatus;
-                badge.className = 'status-badge ' + (
-                    newStatus === 'Telah Dikonfirmasi' || newStatus === 'Selesai' ? 'success' :
-                    newStatus === 'Menunggu Konfirmasi' ? 'warning' :
-                    newStatus === 'Dibatalkan' ? 'danger' : ''
-                );
+                badge.className = 'status-badge ' + getBadgeClass(newStatus);
+            }
+
+            const rawStatus = statusReverseMap[newStatus] || 'pending';
+            const bookingId = currentEditRow.dataset.bookingId;
+
+            if (bookingId) {
+                fetch('/owner/bookings/' + bookingId + '/status', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    },
+                    body: JSON.stringify({ status: rawStatus }),
+                }).catch(err => console.error('Gagal update status:', err));
             }
         }
 
@@ -257,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = opt.dataset.status;
 
             rows.forEach(row => {
+                if (row.querySelector('td[colspan]')) return;
                 const badge = row.querySelector('.status-badge');
                 if (status === 'all' || badge?.textContent.trim() === status) {
                     row.style.display = '';
