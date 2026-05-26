@@ -61,7 +61,7 @@
         $memberCount += 1; // +1 creator
         return [
             'img'     => $cover,
-            'type'    => ucfirst($m->type ?? 'Publik'),
+            'type'    => $m->type === 'public' ? 'Publik' : 'Pribadi',
             'title'   => $m->title,
             'host'    => optional($m->creator)->name ?? '-',
             'members' => $memberCount.' Member',
@@ -73,6 +73,18 @@
 
     $historiCards  = $historiTim->map($buildCard);
     $privateCards  = $privateMatch->map($buildCard);
+
+    $favFieldCards = $favoriteFields->map(function ($fav) {
+        $f = $fav->field;
+        if (!$f) return null;
+        return [
+            'id'       => $f->id,
+            'name'     => $f->name,
+            'location' => $f->location ?? 'Lokasi tidak tersedia',
+            'rating'   => $f->rating ?? '4.8',
+            'image'    => $f->image ? asset('storage/' . $f->image) : asset('assets/images/bg/Explore.png'),
+        ];
+    })->filter();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -246,9 +258,13 @@
                         <p class="profview-empty-char__text">Wah, kayanya kamu belum pernah ikut match nih!</p>
                     </div>
                 @else
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 14px; font-weight: 700; color: #02025b;">Riwayat pertandingan yang kamu ikuti</span>
+                    <a href="{{ route('history.index') }}" style="padding: 8px 16px; border-radius: 8px; background: rgba(0,0,77,.06); color: #02025b; font-weight: 700; font-size: 12px; text-decoration: none; transition: background .2s;" onmouseover="this.style.background='rgba(0,0,77,.12)'" onmouseout="this.style.background='rgba(0,0,77,.06)'">Lihat semua</a>
+                </div>
                 <div class="profview-match-list" id="scroll-histori">
                     @foreach($historiCards as $m)
-                        @include('profile.partials.match-card', ['match'=>$m, 'scrollListId'=>'scroll-histori'])
+                        @include('profile.partials.match-card', ['match'=>$m])
                     @endforeach
                 </div>
                 @endif
@@ -264,7 +280,7 @@
                 @else
                 <div class="profview-match-list" id="scroll-private">
                     @foreach($privateCards as $m)
-                        @include('profile.partials.match-card', ['match'=>$m, 'scrollListId'=>'scroll-private'])
+                        @include('profile.partials.match-card', ['match'=>$m])
                     @endforeach
                 </div>
                 @endif
@@ -272,10 +288,36 @@
 
             {{-- Panel: Favorit --}}
             <div class="profview-panel" id="panel-favorit" role="tabpanel">
+                @if($favFieldCards->isEmpty())
                 <div class="profview-empty-char">
                     <img src="{{ $playerChar }}" alt="" class="profview-empty-char__img">
                     <p class="profview-empty-char__text">Wah, kayanya kamu belum pernah tambah favorit nih!</p>
                 </div>
+                @else
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+                    @foreach($favFieldCards as $fc)
+                    <a href="{{ route('booking.show', $fc['id']) }}" style="text-decoration: none; color: inherit; display: block; background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,77,.08); overflow: hidden; transition: all .2s; box-shadow: 0 2px 8px rgba(0,0,0,.04);" onmouseover="this.style.boxShadow='0 8px 20px rgba(0,0,0,.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,.04)';this.style.transform='none'">
+                        <div style="height: 140px; overflow: hidden; background: #e2e8f0;">
+                            <img src="{{ $fc['image'] }}" alt="{{ $fc['name'] }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div style="padding: 14px;">
+                            <h4 style="margin: 0 0 4px; font-size: 15px; font-weight: 800; color: #02025b;">{{ $fc['name'] }}</h4>
+                            <p style="margin: 0 0 6px; font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {{ $fc['location'] }}
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 13px; font-weight: 700; color: #02025b;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" style="display: inline; vertical-align: -2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    {{ $fc['rating'] }}
+                                </span>
+                                <span style="background: #02025b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">Pesan</span>
+                            </div>
+                        </div>
+                    </a>
+                    @endforeach
+                </div>
+                @endif
             </div>
 
             {{-- Panel: Review --}}

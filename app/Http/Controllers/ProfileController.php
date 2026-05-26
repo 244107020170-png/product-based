@@ -21,18 +21,22 @@ class ProfileController extends Controller
         $user = $request->user();
 
         try {
-            // Histori Tim: match yang dibuat ATAU diikuti user
+            // Histori Tim: match yang DIikuti user (sebagai player)
             $historiTim = Matchs::with(['field', 'creator', 'players'])
-                ->where(function ($q) use ($user) {
-                    $q->where('created_by', $user->id)
-                      ->orWhereHas('players', fn ($q2) => $q2->where('users.id', $user->id));
-                })
+                ->whereHas('players', fn ($q2) => $q2->where('users.id', $user->id))
                 ->latest()
                 ->get();
 
-            // Private Match: match yang dibuat user sendiri
+            // Private Match: match pribadi yang dibuat user sendiri
             $privateMatch = Matchs::with(['field', 'creator', 'players'])
                 ->where('created_by', $user->id)
+                ->where('type', 'private')
+                ->latest()
+                ->get();
+
+            // Favorit: lapangan favorit user
+            $favoriteFields = \App\Models\Favorite::with('field')
+                ->where('user_id', $user->id)
                 ->latest()
                 ->get();
 
@@ -45,9 +49,10 @@ class ProfileController extends Controller
                 ->get();
 
             $privateMatch = $historiTim;
+            $favoriteFields = collect();
         }
 
-        return view('profile.show', compact('user', 'historiTim', 'privateMatch'));
+        return view('profile.show', compact('user', 'historiTim', 'privateMatch', 'favoriteFields'));
     }
 
     /* ================================================================
