@@ -12,7 +12,9 @@ class MatchController extends Controller
 {
     public function index()
     {
-        // Only show upcoming public matches in "Cari tim" page, newest first
+        $user = auth()->user();
+        
+        // Only show upcoming public matches in "Cari tim" page, sorted by date
         $matches = Matchs::with(['field', 'players'])
             ->where('type', 'public')
             ->where('date', '>=', now()->toDateString())
@@ -37,12 +39,67 @@ class MatchController extends Controller
                 'sport' => $sport,
                 'venue' => $fieldName,
                 'neededPlayers' => $neededPlayers,
+                'playersJoined' => $playersJoined,
+                'maxPlayers' => $match->max_player,
                 'schedule' => $dateFormatted . ' jam ' . $timeFormatted,
                 'image' => $this->sportImage($sport),
+                'contributionPerPlayer' => $match->contribution_per_player,
             ];
         })->values();
 
-        return view('matches.index', compact('cards'));
+        // User's upcoming bookings (confirmed or waiting)
+        $upcomingBookings = \App\Models\Booking::where('user_id', $user->id)
+            ->where('status', \App\Enums\BookingStatus::CONFIRMED)
+            ->where(function($q) {
+                $q->where('date', '>', now()->toDateString())
+                  ->orWhere(function($q2) {
+                      $q2->where('date', '=', now()->toDateString())
+                         ->where('start_time', '>', now()->toTimeString());
+                  });
+            })
+            ->with('field')
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->take(10)
+            ->get();
+
+        // User's created teams
+        $myTeams = Matchs::with('players')
+            ->where('created_by', $user->id)
+            ->where('date', '>=', now()->toDateString())
+            ->orderBy('date')
+            ->orderBy('time')
+            ->take(5)
+            ->get();
+
+        // User skill level (calculate from bookings & matches)
+        $totalBookings = \App\Models\Booking::where('user_id', $user->id)
+            ->whereIn('status', [
+                \App\Enums\BookingStatus::CONFIRMED,
+                \App\Enums\BookingStatus::COMPLETED,
+            ])
+            ->count();
+        
+        $totalMatches = MatchPlayer::where('user_id', $user->id)
+            ->count();
+
+        $userSkill = [
+            'totalBookings' => $totalBookings,
+            'totalMatches' => $totalMatches,
+            'level' => $this->getUserLevel($totalBookings + $totalMatches),
+            'progress' => min(($totalBookings + $totalMatches) % 5, 4),
+        ];
+
+        return view('matches.index', compact('cards', 'upcomingBookings', 'myTeams', 'userSkill'));
+    }
+
+    private function getUserLevel($total): string
+    {
+        if ($total < 3) return 'Pemula';
+        if ($total < 8) return 'Pemain Biasa';
+        if ($total < 15) return 'Pemain Aktif';
+        if ($total < 25) return 'Pemain Berpengalaman';
+        return 'Master';
     }
 
     public function create()
