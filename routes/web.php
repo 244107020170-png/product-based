@@ -47,10 +47,30 @@ Route::get('/dashboard', function () {
             ->first();
         
         $recommendedMatches = \App\Models\Matchs::with('field')->where('date', '>=', now()->toDateString())->inRandomOrder()->limit(3)->get();
-        $pesanLagiFields = \App\Models\Field::inRandomOrder()->limit(3)->get();
+
+        // Pesan Lagi: only show if user has previously booked fields
+        $previousFieldIds = \App\Models\Booking::where('user_id', $user->id)
+            ->whereNotIn('status', [
+                \App\Enums\BookingStatus::CANCELLED,
+                \App\Enums\BookingStatus::EXPIRED,
+                \App\Enums\BookingStatus::REJECTED,
+            ])
+            ->pluck('field_id')
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $pesanLagiFields = collect();
+        if (count($previousFieldIds) > 0) {
+            $pesanLagiFields = \App\Models\Field::whereIn('id', $previousFieldIds)
+                ->inRandomOrder()
+                ->limit(3)
+                ->get();
+        }
+
         $favoriteFields = \App\Models\Favorite::with('field')->where('user_id', $user->id)->limit(3)->get();
         
-        return view('fields.index', compact('fields', 'upcomingBooking', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields')); // player dashboard now shows available fields
+        return view('fields.index', compact('fields', 'upcomingBooking', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields', 'previousFieldIds')); // player dashboard now shows available fields
     }
 })->middleware(['auth'])->name('dashboard');
 
@@ -300,6 +320,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/cari-tim/{match}/participant/payment', [MatchController::class, 'markParticipantPaid'])->name('matches.participant.pay');
     Route::post('/cari-tim/{match}/participant/{participant}/confirm', [MatchController::class, 'confirmParticipantPayment'])->name('matches.participant.confirm');
     Route::post('/cari-tim/{match}/participant/{participant}/reject', [MatchController::class, 'rejectParticipantPayment'])->name('matches.participant.reject');
+    Route::get('/tim-saya', function () {
+        $teams = \App\Models\Matchs::with('field')->where('created_by', auth()->id())->latest()->get();
+        return view('matches.my-teams', compact('teams'));
+    })->name('matches.myTeams');
 
     /* FAVORIT */
     Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorite.index');
@@ -317,6 +341,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    /* NOTIFICATIONS */
+    Route::get('/notifications', [App\Http\Controllers\NotificationsController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationsController::class, 'markAllAsRead'])->name('notifications.markAllRead');
 
 });
 

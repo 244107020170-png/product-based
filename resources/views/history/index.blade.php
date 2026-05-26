@@ -143,14 +143,9 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                         <span>{{ $currentDate }}</span>
                     </div>
 
-                    <button type="button" class="player-dashboard-topbar__icon" aria-label="Notifikasi">
-                        <span class="player-inline-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M9 18H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
-                                <path d="M6.5 17.5H17.5L16.3 15.6C15.9 15 15.7 14.3 15.7 13.6V10.8C15.7 8.49 14.04 6.54 11.8 6.16V5.5C11.8 4.67 11.13 4 10.3 4C9.47 4 8.8 4.67 8.8 5.5V6.16C6.56 6.54 4.9 8.49 4.9 10.8V13.6C4.9 14.3 4.7 15 4.3 15.6L3.1 17.5H6.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
-                            </svg>
-                        </span>
-                    </button>
+                    <div style="position: relative;">
+                        @include('partials.notification-bell')
+                    </div>
 
                     <a href="{{ route('profile.show') }}" class="player-profile-pill" aria-label="Profil pengguna">
                         <span class="player-profile-pill__avatar">

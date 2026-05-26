@@ -142,6 +142,9 @@
                     </span>
                     <span>{{ $currentDate }}</span>
                 </div>
+                <div style="position: relative;">
+                    @include('partials.notification-bell')
+                </div>
                 <a href="{{ route('profile.show') }}" class="player-profile-pill">
                     <span class="player-profile-pill__avatar">
                         <img src="{{ $profileAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile">
@@ -152,7 +155,7 @@
         </header>
 
         <section class="match-detail-main">
-            <a href="{{ route('matches.index') }}" class="btn-back">&larr; Kembali</a>
+            <a href="{{ route('matches.myTeams') }}" class="btn-back">&larr; Kembali</a>
 
             @if(session('error'))
                 <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
@@ -279,42 +282,106 @@
                             @endif
 
                             @if($isCreator)
+                                @php
+                                    $pendingNotif = auth()->user()->unreadNotifications()
+                                        ->where('data->match_id', $match->id)
+                                        ->where('data->type', 'payment_claimed')
+                                        ->get();
+                                    $hasPending = $pendingNotif->isNotEmpty();
+                                @endphp
+
+                                @if($hasPending)
+                                    <div style="background: #fefce8; border: 2px solid #f59e0b; border-radius: 20px; padding: 22px; margin-bottom: 20px;">
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                            <span style="font-size: 24px;">🔔</span>
+                                            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #92400e;">Notifikasi Pembayaran</h3>
+                                            <span style="margin-left: auto; background: #f59e0b; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px;">{{ $pendingNotif->count() }} baru</span>
+                                        </div>
+                                        @foreach($pendingNotif as $notif)
+                                            <div style="background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 8px; border: 1px solid #fde68a;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <div>
+                                                        <strong style="color: #02025b;">{{ $notif->data['user_name'] }}</strong>
+                                                        <span style="color: #6b7280; font-size: 13px;"> mengklaim sudah bayar</span>
+                                                        <div style="font-size: 13px; color: #92400e; margin-top: 4px;">
+                                                            Rp{{ number_format($notif->data['amount'], 0, ',', '.') }}
+                                                        </div>
+                                                    </div>
+                                                    @php
+                                                        $entry = $match->participantEntries->firstWhere('user_id', $notif->data['user_id']);
+                                                    @endphp
+                                                    @if($entry && $entry->isWaiting())
+                                                        <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                                            <form action="{{ route('matches.participant.confirm', [$match->id, $entry->id]) }}" method="POST">
+                                                                @csrf
+                                                                <button type="submit" style="background: #43a680; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer;">Confirm</button>
+                                                            </form>
+                                                            <form action="{{ route('matches.participant.reject', [$match->id, $entry->id]) }}" method="POST">
+                                                                @csrf
+                                                                <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 10px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer;">Reject</button>
+                                                            </form>
+                                                        </div>
+                                                    @else
+                                                        <span style="color: #6b7280; font-size: 13px;">Sudah diproses</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
                                 <div style="background: white; border-radius: 20px; padding: 22px; border: 1px solid rgba(0,0,77,.08);">
                                     <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: #02025b;">Daftar Participant</h3>
                                     <div style="overflow-x: auto;">
                                         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                                             <thead>
-                                                <tr style="text-align: left; color: #4b5563;">
-                                                    <th style="padding: 12px 10px;">Player</th>
-                                                    <th style="padding: 12px 10px;">Kontribusi</th>
-                                                    <th style="padding: 12px 10px;">Status</th>
-                                                    <th style="padding: 12px 10px;">Aksi</th>
+                                                <tr style="border-bottom: 2px solid rgba(0,0,77,.06);">
+                                                    <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Player</th>
+                                                    <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Kontribusi</th>
+                                                    <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Status</th>
+                                                    <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach($match->participantEntries as $entry)
-                                                    <tr style="border-top: 1px solid rgba(0,0,77,.08);">
-                                                        <td style="padding: 12px 10px;">{{ $entry->user?->name ?? 'Pengguna' }}</td>
-                                                        <td style="padding: 12px 10px;">Rp{{ number_format($entry->contribution_amount, 0, ',', '.') }}</td>
-                                                        <td style="padding: 12px 10px;">
-                                                            @if($entry->isPaid())
-                                                                <span style="display: inline-flex; padding: 6px 12px; border-radius: 999px; background: #eafaf1; color: #155724; font-weight: 700;">paid</span>
-                                                            @else
-                                                                <span style="display: inline-flex; padding: 6px 12px; border-radius: 999px; background: #fff4e5; color: #8a6d3b; font-weight: 700;">waiting</span>
+                                                    @php
+                                                        $needConfirm = $entry->isWaiting() && $entry->paid_at;
+                                                    @endphp
+                                                    <tr style="border-bottom: 1px solid rgba(0,0,77,.04); {{ $needConfirm ? 'background: #fffbeb;' : '' }}">
+                                                        <td style="padding: 12px; vertical-align: middle;">
+                                                            <span style="font-weight: 600; color: #02025b;">{{ $entry->user?->name ?? 'Pengguna' }}</span>
+                                                            @if($needConfirm)
+                                                                <span style="display: inline-block; margin-left: 6px; vertical-align: middle; background: #f59e0b; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px;">BUTUH KONFIRMASI</span>
                                                             @endif
                                                         </td>
-                                                        <td style="padding: 12px 10px; display: flex; gap: 10px; flex-wrap: wrap;">
-                                                            @if($entry->isWaiting())
-                                                                <form action="{{ route('matches.participant.confirm', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block;">
-                                                                    @csrf
-                                                                    <button type="submit" class="btn-primary" style="background: #43a680;">Confirm</button>
-                                                                </form>
-                                                                <form action="{{ route('matches.participant.reject', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block;">
-                                                                    @csrf
-                                                                    <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 12px; padding: 10px 14px; font-weight: 700;">Reject</button>
-                                                                </form>
+                                                        <td style="padding: 12px; vertical-align: middle; font-weight: 600; color: #02025b;">Rp{{ number_format($entry->contribution_amount, 0, ',', '.') }}</td>
+                                                        <td style="padding: 12px; vertical-align: middle;">
+                                                            @if($entry->isPaid())
+                                                                <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #eafaf1; color: #155724; font-weight: 700; font-size: 12px;">paid</span>
+                                                            @elseif($needConfirm)
+                                                                <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; font-size: 12px;">menunggu konfirmasi</span>
                                                             @else
-                                                                <span style="color: #6b7280;">Tidak ada aksi</span>
+                                                                <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #fff4e5; color: #8a6d3b; font-weight: 700; font-size: 12px;">waiting</span>
+                                                            @endif
+                                                        </td>
+                                                        <td style="padding: 12px; vertical-align: middle; white-space: nowrap;">
+                                                            @php
+                                                                $waNumber = $entry->user?->phone ? preg_replace('/[^0-9]/', '', $entry->user->phone) : null;
+                                                            @endphp
+                                                            @if($waNumber)
+                                                                <a href="https://wa.me/{{ $waNumber }}" target="_blank" style="display: inline-flex; vertical-align: middle; background: #25d366; color: #fff; padding: 6px; border-radius: 8px; text-decoration: none;">
+                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.052 0C5.495 0 .16 5.333.158 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.332 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                                                </a>
+                                                            @endif
+                                                            @if($entry->isWaiting())
+                                                                <form action="{{ route('matches.participant.confirm', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block; margin-left: 6px;">
+                                                                    @csrf
+                                                                    <button type="submit" style="background: #43a680; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 12px; cursor: pointer;">Confirm</button>
+                                                                </form>
+                                                                <form action="{{ route('matches.participant.reject', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block; margin-left: 4px;">
+                                                                    @csrf
+                                                                    <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 12px; cursor: pointer;">Reject</button>
+                                                                </form>
                                                             @endif
                                                         </td>
                                                     </tr>

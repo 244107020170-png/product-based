@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\BookingStatus;
 use App\Models\Field;
 use App\Models\Booking;
+use App\Models\Matchs;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -81,6 +82,12 @@ class BookingController extends Controller
                              ->where('payment_deadline', '<', now());
                       });
                 })->delete();
+
+            $pendingMatch = session('pending_match');
+            if ($pendingMatch) {
+                session()->forget('pending_match');
+                $match = Matchs::create($pendingMatch);
+            }
 
             if ($this->isJsonRequest($request)) {
                 return response()->json([

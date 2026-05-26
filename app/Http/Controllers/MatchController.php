@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Enums\PaymentStatus;
 use App\Models\MatchPlayer;
 use App\Models\Matchs;
+use App\Notifications\PaymentClaimed;
+use Carbon\Carbon;
 
 class MatchController extends Controller
 {
     public function index()
     {
-        // Only show public matches in "Cari tim" page
+        // Only show upcoming public matches in "Cari tim" page, newest first
         $matches = Matchs::with(['field', 'players'])
             ->where('type', 'public')
+            ->where('date', '>=', now()->toDateString())
             ->orderBy('date')
             ->orderBy('time')
             ->get();
@@ -23,13 +26,18 @@ class MatchController extends Controller
             $playersJoined = $match->players->count();
             $neededPlayers = max(0, (int) $match->max_player - $playersJoined);
 
+            $dateFormatted = \Carbon\Carbon::parse($match->date)
+                ->locale('id')
+                ->translatedFormat('l, j F Y');
+            $timeFormatted = \Carbon\Carbon::createFromFormat('H:i:s', $match->time)->format('H.i');
+
             return [
                 'id' => $match->id,
                 'title' => $match->title,
                 'sport' => $sport,
                 'venue' => $fieldName,
                 'neededPlayers' => $neededPlayers,
-                'schedule' => 'Main tiap ' . \Carbon\Carbon::parse($match->date)->locale('id')->translatedFormat('l') . ' jam ' . \Carbon\Carbon::createFromFormat('H:i:s', $match->time)->format('H.i'),
+                'schedule' => $dateFormatted . ' jam ' . $timeFormatted,
                 'image' => $this->sportImage($sport),
             ];
         })->values();
@@ -48,24 +56,32 @@ class MatchController extends Controller
         // Check if user has phone number
         $user = auth()->user();
         if (!$user->phone) {
-            return redirect()->route('profile.edit')
+            return redirect()->route('matches.create')
                 ->with('error', 'Mohon isi nomor WhatsApp di profil terlebih dahulu sebelum membuat pertandingan.');
         }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'field_id' => 'required|exists:fields,id',
-            'date' => 'required|date',
-            'time' => 'required',
-            'max_player' => 'required|integer|min:1',
+            'date' => 'required|date|after_or_equal:today',
+            'time' => 'required|date_format:H:i',
+            'max_player' => 'required|integer|min:2',
             'type' => 'required|in:public,private',
         ]);
 
         $validated['created_by'] = auth()->id();
 
-        Matchs::create($validated);
+        session(['pending_match' => $validated]);
 
-        return redirect()->route('matches.index')->with('success', 'Match berhasil dibuat!');
+        $startTime = Carbon::createFromFormat('H:i', $validated['time']);
+        $endTime = $startTime->copy()->addHours(2);
+
+        return redirect()->route('booking.show', [
+            'field' => $validated['field_id'],
+            'date' => $validated['date'],
+            'start_time' => $startTime->format('H:i'),
+            'end_time' => $endTime->format('H:i'),
+        ]);
     }
 
     public function show(Matchs $match)
@@ -83,6 +99,10 @@ class MatchController extends Controller
 
     public function join(Matchs $match)
     {
+        if (! $match->isPublic()) {
+            return back()->with('error', 'Pertandingan pribadi tidak bisa diikuti.');
+        }
+
         if ($match->created_by === auth()->id()) {
             return back()->with('error', 'Host tidak bisa bergabung dalam pertandingan sendiri.');
         }
@@ -119,6 +139,8 @@ class MatchController extends Controller
 
         $participant->update(['paid_at' => now()]);
 
+        $match->creator->notify(new PaymentClaimed($participant));
+
         return back()->with('success', 'Pembayaran berhasil dilaporkan. Tunggu konfirmasi host.');
     }
 
@@ -140,6 +162,12 @@ class MatchController extends Controller
             'payment_status' => PaymentStatus::PAID,
             'confirmed_at' => now(),
         ]);
+
+        auth()->user()->notifications()
+            ->where('data->match_id', $match->id)
+            ->where('data->user_id', $participant->user_id)
+            ->where('data->type', 'payment_claimed')
+            ->delete();
 
         return back()->with('success', 'Pembayaran peserta berhasil dikonfirmasi.');
     }
@@ -163,6 +191,12 @@ class MatchController extends Controller
             'paid_at' => null,
             'confirmed_at' => null,
         ]);
+
+        auth()->user()->notifications()
+            ->where('data->match_id', $match->id)
+            ->where('data->user_id', $participant->user_id)
+            ->where('data->type', 'payment_claimed')
+            ->delete();
 
         return back()->with('success', 'Pembayaran peserta dikembalikan ke status waiting.');
     }

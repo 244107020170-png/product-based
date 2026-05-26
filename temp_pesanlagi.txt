@@ -1,0 +1,109 @@
+        </div>
+
+        <!-- Pesan Lagi -->
+        <div style="margin-bottom: 40px;">
+            <h2 style="font-size: 24px; font-weight: 800; color: #02025b; margin-bottom: 16px;">Pesan lagi</h2>
+            <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                    @foreach($pesanLagiFields as $plf)
+                    <div>
+                        <div style="border-radius: 12px; overflow: hidden; height: 160px; margin-bottom: 12px; position: relative;">
+                            <img src="{{ $plf->image ?? asset('assets/images/bg/Explore.png') }}" alt="{{ $plf->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 800; color: #02025b;">{{ $plf->name }}</h4>
+                        <div style="display: flex; gap: 8px; align-items: center; color: #e11d48;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span style="font-size: 12px; font-weight: 600; color: #666;">{{ rand(2, 8) }}.{{ rand(1,9) }} KM</span>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- LAPANGAN TERSEDIA (Original Section) -->
+        <div style="margin-bottom: 30px;">
+            <h2 style="font-size: 24px; font-weight: 800; color: #02025b; margin-bottom: 10px; display:flex; align-items:center; gap:8px;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+                <span>Lapangan Tersedia</span>
+            </h2>
+            <p style="color: #666;">Pilih lapangan yang ingin kamu booking</p>
+        </div>
+
+        @if($fields->isEmpty())
+        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px;">
+            <h3 style="font-size: 20px; color: #001a4d; margin-bottom: 10px;">Belum Ada Lapangan</h3>
+            <p style="color: #666;">Tidak ada lapangan yang tersedia saat ini.</p>
+        </div>
+        @else
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+            @foreach($fields as $field)
+            <a href="{{ route('booking.show', $field->id) }}" class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease;">
+                <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column;">
+                    <div style="position: relative; height: 200px; overflow: hidden;">
+                        <img src="{{ $field->image ?? asset('assets/images/bg/Explore.png') }}" 
+                             alt="{{ $field->name }}"
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600;">
+                            <span style="display:inline-flex;vertical-align:-2px;margin-right:4px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 3L14.9 8.7L21 9.6L16.5 14L17.6 20L12 17.1L6.4 20L7.5 14L3 9.6L9.1 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                </svg>
+                            </span>{{ $field->rating ?? '4.8' }}
+                        </div>
+                    </div>
+                    <div style="padding: 18px; flex: 1; display: flex; flex-direction: column;">
+                        <h3 style="font-size: 18px; font-weight: 700; color: #001a4d; margin: 0 0 10px 0;">{{ $field->name }}</h3>
+                        <p style="color: #666; font-size: 13px; margin: 0 0 12px 0; flex: 1;">{{ $field->location }}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0;">
+                            <span style="font-size: 16px; font-weight: 700; color: #f59e0b;">{{ $field->formattedPrice() }}</span>
+                            <button type="button" style="padding: 8px 16px; background: #f59e0b; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">
+                                Pesan →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+        @endif
+
+    </section>
+</main>
+</div>
+
+<script src="{{ asset('js/player-dashboard.js') }}"></script>
+<script>
+(function(){
+    var cdEl = document.getElementById('upcoming-countdown');
+    if (!cdEl) return;
+    var target = parseInt(cdEl.dataset.target) * 1000;
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function update() {
+        var diff = target - Date.now();
+        if (diff <= 0) {
+            document.getElementById('cd-days').textContent = '--';
+            document.getElementById('cd-hours').textContent = '--';
+            document.getElementById('cd-minutes').textContent = '--';
+            document.getElementById('cd-seconds').textContent = '--';
+            return;
+        }
+        var days = Math.floor(diff / 86400000);
+        var hours = Math.floor((diff % 86400000) / 3600000);
+        var minutes = Math.floor((diff % 3600000) / 60000);
+        var seconds = Math.floor((diff % 60000) / 1000);
+        document.getElementById('cd-days').textContent = pad(days);
+        document.getElementById('cd-hours').textContent = pad(hours);
+        document.getElementById('cd-minutes').textContent = pad(minutes);
+        document.getElementById('cd-seconds').textContent = pad(seconds);
+    }
+    update();
+    setInterval(update, 1000);
+})();
+</script>
+</body>
+</html>

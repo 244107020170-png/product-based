@@ -6,6 +6,7 @@
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $bookingNotifs = Auth::user()->bookings()->with('field')->latest()->get();
+    $myTeams = \App\Models\Matchs::with('field')->where('created_by', Auth::id())->latest()->take(4)->get();
     
     // Sidebar
     $sidebarItems = [
@@ -105,11 +106,9 @@
                 </span>
                 <span>{{ $currentDate }}</span>
             </div>
-            <button type="button" class="player-dashboard-topbar__icon">
-                <span class="player-inline-icon">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 18H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6.5 17.5H17.5L16.3 15.6C15.9 15 15.7 14.3 15.7 13.6V10.8C15.7 8.49 14.04 6.54 11.8 6.16V5.5C11.8 4.67 11.13 4 10.3 4C9.47 4 8.8 4.67 8.8 5.5V6.16C6.56 6.54 4.9 8.49 4.9 10.8V13.6C4.9 14.3 4.7 15 4.3 15.6L3.1 17.5H6.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-                </span>
-            </button>
+            <div style="position: relative;">
+                @include('partials.notification-bell')
+            </div>
             <a href="{{ route('profile.show') }}" class="player-profile-pill">
                 <span class="player-profile-pill__avatar">
                     <img src="{{ $userAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile">
@@ -173,7 +172,7 @@
                 <select style="padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(0,0,77,.1); outline: none; font-weight: 600; color: #02025b; background: white;">
                     <option>Per Hari</option>
                 </select>
-                <a href="{{ route('matches.create') }}" style="background: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background .2s; text-align: center;">
+                <a href="javascript:void(0)" onclick="showCreateModal()" style="background: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background .2s; display: inline-block;">
                     Buat Pertandingan Baru
                 </a>
             </div>
@@ -183,12 +182,13 @@
         <div class="hero-section">
             <!-- Hero Banner -->
             <div style="position: relative;">
-                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 10px; bottom: 0; height: 115%; z-index: 3; object-fit: contain;">
+                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 10px; bottom: 20px; height: 110%; max-height: 320px; z-index: 3; object-fit: contain;">
                 <style>
                     @media (max-width: 768px) {
                         .hero-char-img {
                             opacity: 0.2;
-                            height: 100% !important;
+                            height: 90% !important;
+                            bottom: 10px !important;
                             right: -20px !important;
                         }
                     }
@@ -390,26 +390,75 @@
             </div>
         </div>
 
+        @if($myTeams->isNotEmpty())
+        <!-- Tim Saya -->
+        <div style="margin-bottom: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 24px; font-weight: 800; color: #02025b; margin: 0;">Tim Saya</h2>
+                <a href="{{ route('matches.myTeams') }}" style="font-size: 13px; color: #666; font-weight: 600; text-decoration: none;">Lihat semua</a>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+                @foreach($myTeams as $tm)
+                <a href="{{ route('matches.show', $tm->id) }}" style="text-decoration: none; color: inherit; display: block; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); transition: all .3s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #02025b;">{{ $tm->title }}</h4>
+                        @if($tm->isPublic())
+                            <span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">Publik</span>
+                        @else
+                            <span style="background: #f3e8ff; color: #6b21a8; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">Pribadi</span>
+                        @endif
+                    </div>
+                    <p style="margin: 0 0 6px 0; font-size: 13px; color: #666;">
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5"/></svg>
+                            {{ \Carbon\Carbon::parse($tm->date)->locale('id')->translatedFormat('j F Y') }}
+                        </span>
+                        <span style="margin-left: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            {{ \Carbon\Carbon::createFromFormat('H:i:s', $tm->time)->format('H:i') }} WIB
+                        </span>
+                    </p>
+                    <p style="margin: 0; font-size: 13px; color: #666;">
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {{ $tm->field->name ?? 'Lapangan' }}
+                        </span>
+                    </p>
+                    <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0,0,77,.06); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; color: #02025b; font-weight: 700;">
+                            <span style="color: #e11d48;">{{ $tm->participantEntries->count() }}</span> / {{ $tm->max_player }} pemain
+                        </span>
+                        <span style="background: #02025b; color: #fff; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;">Detail</span>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        @if($pesanLagiFields->isNotEmpty())
         <!-- Pesan Lagi -->
         <div style="margin-bottom: 40px;">
             <h2 style="font-size: 24px; font-weight: 800; color: #02025b; margin-bottom: 16px;">Pesan lagi</h2>
             <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05);">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
                     @foreach($pesanLagiFields as $plf)
-                    <div>
+                    <a href="{{ route('booking.show', $plf->id) }}" style="text-decoration: none; color: inherit; display: block;">
                         <div style="border-radius: 12px; overflow: hidden; height: 160px; margin-bottom: 12px; position: relative;">
+                            <span style="position: absolute; top: 10px; left: 10px; background: #02025b; color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; z-index: 2;">Sebelumnya</span>
                             <img src="{{ $plf->image ?? asset('assets/images/bg/Explore.png') }}" alt="{{ $plf->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 800; color: #02025b;">{{ $plf->name }}</h4>
-                        <div style="display: flex; gap: 8px; align-items: center; color: #e11d48;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            <span style="font-size: 12px; font-weight: 600; color: #666;">{{ rand(2, 8) }}.{{ rand(1,9) }} KM</span>
+                            <span style="font-size: 12px; font-weight: 600; color: #666;">{{ $plf->location ?: 'Lokasi tidak tersedia' }}</span>
                         </div>
-                    </div>
+                    </a>
                     @endforeach
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- LAPANGAN TERSEDIA (Original Section) -->
         <div style="margin-bottom: 30px;">
@@ -494,6 +543,74 @@
     update();
     setInterval(update, 1000);
 })();
+</script>
+
+<div id="createMatchModal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)hideCreateModal()">
+    <div style="background:#fff; border-radius:16px; padding:36px 32px; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.25); text-align:center;">
+        <h2 style="margin:0 0 6px; font-size:20px; font-weight:800; color:#02025b;">Buat Pertandingan</h2>
+        <p style="margin:0 0 24px; font-size:14px; color:#666;">Pilih tipe pertandingan yang ingin kamu buat</p>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <a href="{{ route('matches.create') }}" style="flex:1; min-width:140px; padding:20px 16px; border-radius:12px; border:2px solid #e11d48; text-decoration:none; transition:all .2s; background:#fff; display:flex; flex-direction:column; align-items:center; gap:8px;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='#fff'">
+                <span style="font-size:36px;">🌍</span>
+                <span style="font-weight:800; font-size:16px; color:#02025b;">Publik</span>
+                <span style="font-size:12px; color:#666;">Cari pemain lain</span>
+            </a>
+            <a href="javascript:void(0)" onclick="hideCreateModal();showFieldModal()" style="flex:1; min-width:140px; padding:20px 16px; border-radius:12px; border:2px solid #02025b; text-decoration:none; transition:all .2s; background:#fff; display:flex; flex-direction:column; align-items:center; gap:8px;" onmouseover="this.style.background='#f5f5ff'" onmouseout="this.style.background='#fff'">
+                <span style="font-size:36px;">🔒</span>
+                <span style="font-weight:800; font-size:16px; color:#02025b;">Pribadi</span>
+                <span style="font-size:12px; color:#666;">Booking lapangan langsung</span>
+            </a>
+        </div>
+        <button onclick="hideCreateModal()" style="margin-top:20px; background:none; border:none; color:#999; font-size:14px; cursor:pointer; font-weight:600;">Batal</button>
+    </div>
+</div>
+<div id="fieldListModal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)hideFieldModal()">
+    <div style="background:#fff; border-radius:16px; max-width:600px; width:92%; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="position:sticky; top:0; background:#fff; border-radius:16px 16px 0 0; padding:24px 24px 16px; border-bottom:1px solid rgba(0,0,77,.08); z-index:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div>
+                    <h2 style="margin:0; font-size:18px; font-weight:800; color:#02025b;">Pilih Lapangan</h2>
+                    <p style="margin:4px 0 0; font-size:13px; color:#666;">Pilih lapangan untuk booking langsung</p>
+                </div>
+                <button onclick="hideFieldModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#999; padding:4px;">&times;</button>
+            </div>
+            <input id="fieldSearchInput" type="text" placeholder="Cari lapangan atau lokasi..." oninput="filterFields()" style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(0,0,77,.15); background:#f5f5f5; font-size:14px; outline:none; box-sizing:border-box;">
+        </div>
+        <div style="padding:16px 24px 24px;">
+            <div id="fieldListGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
+                @foreach($fields as $f)
+                <a href="{{ route('booking.show', $f->id) }}" data-field-name="{{ strtolower($f->name) }}" data-field-location="{{ strtolower($f->location ?? '') }}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:14px; padding:14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); transition:all .2s; background:#fafafa;" onmouseover="this.style.borderColor='#02025b';this.style.background='#fff'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='#fafafa'">
+                    <div style="width:56px; height:56px; border-radius:10px; overflow:hidden; flex-shrink:0; background:#e2e8f0;">
+                        <img src="{{ $f->image ?? asset('assets/images/bg/Explore.png') }}" alt="" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <div style="min-width:0; flex:1;">
+                        <h4 style="margin:0 0 2px; font-size:14px; font-weight:800; color:#02025b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $f->name }}</h4>
+                        <p style="margin:0; font-size:12px; color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-1px;margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {{ $f->location ?: 'Lokasi tidak tersedia' }}
+                        </p>
+                        <p style="margin:2px 0 0; font-size:11px; color:#888;">
+                            <span style="display:inline-flex;align-items:center;gap:2px;">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                {{ $f->rating ?? '4.8' }}
+                            </span>
+                            &middot;
+                            <span>{{ $f->sport ?? 'Olahraga' }}</span>
+                        </p>
+                    </div>
+                    <span style="font-size:18px; color:#ccc;">&rarr;</span>
+                </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function showCreateModal(){document.getElementById('createMatchModal').style.display='flex';}
+function hideCreateModal(){document.getElementById('createMatchModal').style.display='none';}
+function showFieldModal(){document.getElementById('fieldListModal').style.display='flex';setTimeout(function(){document.getElementById('fieldSearchInput').focus();},100);}
+function hideFieldModal(){document.getElementById('fieldListModal').style.display='none';}
+function filterFields(){var q=document.getElementById('fieldSearchInput').value.toLowerCase(),cards=document.querySelectorAll('#fieldListGrid > a');for(var i=0;i<cards.length;i++){var card=cards[i];card.style.display=(card.getAttribute('data-field-name').includes(q)||card.getAttribute('data-field-location').includes(q))?'flex':'none';}}
 </script>
 </body>
 </html>

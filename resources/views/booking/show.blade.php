@@ -6,7 +6,11 @@
     $field = $field;
     $allFields = $allFields;
     $availableTimes = $availableTimes;
-    
+
+    $prefillDate = request('date', '');
+    $prefillStart = request('start_time', '');
+    $prefillEnd = request('end_time', '');
+
     $visibleFields = ['id', 'name', 'location', 'price_per_hour', 'image', 'facilities', 'rating'];
     $selectedFieldJson = $field->makeVisible($visibleFields);
     $allFieldsJson = $allFields->map(fn($f) => $f->makeVisible($visibleFields))->toArray();
@@ -190,11 +194,9 @@
                 </span>
                 <span>{{ $currentDate }}</span>
             </div>
-            <button type="button" class="player-dashboard-topbar__icon">
-                <span class="player-inline-icon">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 18H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6.5 17.5H17.5L16.3 15.6C15.9 15 15.7 14.3 15.7 13.6V10.8C15.7 8.49 14.04 6.54 11.8 6.16V5.5C11.8 4.67 11.13 4 10.3 4C9.47 4 8.8 4.67 8.8 5.5V6.16C6.56 6.54 4.9 8.49 4.9 10.8V13.6C4.9 14.3 4.7 15 4.3 15.6L3.1 17.5H6.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-                </span>
-            </button>
+            <div style="position: relative;">
+                @include('partials.notification-bell')
+            </div>
             <a href="{{ route('profile.show') }}" class="player-profile-pill">
                 <span class="player-profile-pill__avatar">
                     <img src="{{ $userAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile">
@@ -470,15 +472,13 @@ function bookingApp() {
         },
         
         init() {
-            // Set initial selected time for the demo match screenshot
-            const t = this.availableTimes[1]; // 08.00
-            this.selectedTime = t.start;
-            this.selectedTimeDisplay = t.display;
-            this.selectedTimeSlot = t;
-            
+            const prefillDate = '{{ $prefillDate }}';
+            const prefillStart = '{{ $prefillStart }}';
+            const prefillEnd = '{{ $prefillEnd }}';
+
             this.calculateTotal();
             this.$nextTick(() => {
-                flatpickr(this.$refs.dateInput, {
+                const picker = flatpickr(this.$refs.dateInput, {
                     minDate: 'today',
                     dateFormat: "d M Y",
                     onChange: (selectedDates, dateStr) => {
@@ -487,6 +487,21 @@ function bookingApp() {
                         this.$refs.dateInput.value = dateStr;
                     }
                 });
+
+                if (prefillDate) {
+                    const d = new Date(prefillDate + 'T00:00:00');
+                    picker.setDate(d);
+                    this.selectedDate = prefillDate;
+                }
+
+                if (prefillStart && prefillEnd) {
+                    const display = prefillStart + ' - ' + prefillEnd;
+                    this.selectedTime = prefillStart;
+                    this.selectedTimeDisplay = display;
+                    this.selectedTimeSlot = { start: prefillStart, end: prefillEnd, display: display };
+                    this.calculateTotal();
+                    this.checkSubfieldsAvailability();
+                }
             });
             
             // Close dropdowns on outside click

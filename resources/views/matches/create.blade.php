@@ -206,18 +206,36 @@
                 </div>
 
                 <div style="margin-top: 16px;">
-                    <a href="{{ route('matches.index') }}" class="btn-back">
-                        &larr; Kembali ke Cari Tim
+                    <a href="{{ route('dashboard') }}" class="btn-back">
+                        &larr; Kembali ke Dashboard
                     </a>
                 </div>
             </div>
 
             <div class="create-match-card">
+                @if(session('error'))
+                <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                    {{ session('error') }}
+                </div>
+                @endif
+
+                @if($errors->any())
+                <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+                    <ul style="margin: 0; padding-left: 16px;">
+                        @foreach($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
                 <form action="{{ route('matches.store') }}" method="POST" class="form-grid">
                     @csrf
+                    <input type="hidden" name="type" value="public">
                     <div class="form-group form-group--full">
                         <label class="form-label">Nama Pertandingan</label>
-                        <input type="text" name="title" class="form-control" placeholder="Contoh: Futsal Santai Bareng" required>
+                        <input type="text" name="title" class="form-control" placeholder="Contoh: Futsal Santai Bareng" value="{{ old('title') }}" required>
+                        @error('title') <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-group form-group--full">
@@ -225,33 +243,28 @@
                         <select name="field_id" class="form-control" required>
                             <option value="">Pilih Lapangan</option>
                             @foreach($fields as $field)
-                                <option value="{{ $field->id }}">{{ $field->name }} ({{ $field->location }})</option>
+                                <option value="{{ $field->id }}" {{ old('field_id') == $field->id ? 'selected' : '' }}>{{ $field->name }} ({{ $field->location }})</option>
                             @endforeach
                         </select>
+                        @error('field_id') <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Tanggal</label>
-                        <input type="date" name="date" class="form-control" required>
+                        <input type="date" name="date" class="form-control" value="{{ old('date') }}" required>
+                        @error('date') <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Waktu</label>
-                        <input type="time" name="time" class="form-control" required>
+                        <input type="time" name="time" class="form-control" value="{{ old('time') }}" required>
+                        @error('time') <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-group form-group--full">
                         <label class="form-label">Maksimal Pemain (Total)</label>
-                        <input type="number" name="max_player" class="form-control" placeholder="Contoh: 10" min="1" required>
-                    </div>
-
-                    <div class="form-group form-group--full">
-                        <label class="form-label">Tipe Pertandingan</label>
-                        <select name="type" class="form-control" required>
-                            <option value="">Pilih Tipe Pertandingan</option>
-                            <option value="public">Publik - Cari Pemain (Muncul di Cari Tim)</option>
-                            <option value="private">Pribadi - Booking Sendiri (Hanya untuk Anda)</option>
-                        </select>
+                        <input type="number" name="max_player" class="form-control" placeholder="Contoh: 10" min="2" value="{{ old('max_player', 10) }}" required>
+                        @error('max_player') <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-group form-group--full" style="margin-top: 8px;">
