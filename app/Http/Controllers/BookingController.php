@@ -73,6 +73,15 @@ class BookingController extends Controller
         try {
             $booking = $this->bookingService->createBooking($validator->validated(), auth()->user());
 
+            Booking::where('user_id', auth()->id())
+                ->where(function ($q) {
+                    $q->where('status', BookingStatus::EXPIRED)
+                      ->orWhere(function ($q2) {
+                          $q2->where('status', BookingStatus::WAITING_PAYMENT)
+                             ->where('payment_deadline', '<', now());
+                      });
+                })->delete();
+
             if ($this->isJsonRequest($request)) {
                 return response()->json([
                     'success' => true,
@@ -81,7 +90,7 @@ class BookingController extends Controller
                 ], 201);
             }
 
-            return redirect()->route('booking.index')->with('success', 'Booking berhasil dibuat!');
+            return redirect()->route('booking.detail', $booking->id)->with('success', 'Booking berhasil dibuat!');
         } catch (ValidationException $exception) {
             if ($this->isJsonRequest($request)) {
                 return response()->json([
@@ -129,12 +138,69 @@ class BookingController extends Controller
      */
     public function detail(Booking $booking)
     {
-        // Check if the booking belongs to the current user
         if ($booking->user_id !== auth()->id()) {
             abort(403);
         }
-        
+
         $booking->load('field');
         return view('booking.detail', compact('booking'));
+    }
+
+    public function pay(Booking $booking)
+    {
+        if ($booking->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($booking->status !== BookingStatus::WAITING_PAYMENT) {
+            return back()->with('error', 'Booking ini tidak tersedia untuk pembayaran.');
+        }
+
+        if ($booking->payment_deadline && now()->greaterThan($booking->payment_deadline)) {
+            $booking->update(['status' => BookingStatus::EXPIRED]);
+            return back()->with('error', 'Waktu pembayaran telah kadaluarsa.');
+        }
+
+        $booking->update([
+            'status' => BookingStatus::WAITING_CONFIRMATION,
+            'paid_at' => now(),
+        ]);
+
+        return back()->with('success', 'Kami menerima notifikasi pembayaran Anda. Silakan tunggu konfirmasi owner.');
+    }
+
+    public function confirmPayment(Booking $booking)
+    {
+        if ($booking->field->owner_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($booking->status !== BookingStatus::WAITING_CONFIRMATION) {
+            return back()->with('error', 'Booking tidak dalam status menunggu konfirmasi.');
+        }
+
+        $booking->update([
+            'status' => BookingStatus::CONFIRMED,
+            'confirmed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Booking telah dikonfirmasi.');
+    }
+
+    public function rejectPayment(Booking $booking)
+    {
+        if ($booking->field->owner_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($booking->status !== BookingStatus::WAITING_CONFIRMATION) {
+            return back()->with('error', 'Booking tidak dalam status menunggu konfirmasi.');
+        }
+
+        $booking->update([
+            'status' => BookingStatus::REJECTED,
+        ]);
+
+        return back()->with('success', 'Booking pembayaran telah ditolak.');
     }
 }

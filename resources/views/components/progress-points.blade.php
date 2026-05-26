@@ -10,45 +10,36 @@
 
     /* Indonesian tier names */
     $tierNameId = match($tierName) {
-        'Champion' => 'Juara',
-        'Master'   => 'Master',
         'Pro'      => 'Pro',
+        'Active'   => 'Aktif',
         default    => 'Pemula',
     };
 
-    /* Tier definitions */
+    /* Tier definitions — 3 level sesuai Keahlian */
     $tiers = [
         [
             'name'    => 'Pemula',
-            'range'   => '0–20 poin',
+            'range'   => '1-5 poin',
             'min'     => 0,
             'color'   => '#6b7280',
             'bg'      => '#f3f4f6',
             'icon'    => '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12C12 12 7 11 5 7C3 3 7 2 9 3C11 4 12 7 12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12C12 12 17 10 18 6C19 2 15 2 13 3C11 4 12 7 12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 22H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
         ],
         [
-            'name'    => 'Pro',
-            'range'   => '20–50 poin',
-            'min'     => 20,
+            'name'    => 'Aktif',
+            'range'   => '6-20 poin',
+            'min'     => 5,
             'color'   => '#1d6fcf',
             'bg'      => '#eff6ff',
             'icon'    => '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>',
         ],
         [
-            'name'    => 'Master',
-            'range'   => '50–100 poin',
-            'min'     => 50,
+            'name'    => 'Pro',
+            'range'   => '>20 poin',
+            'min'     => 20,
             'color'   => '#7c3aed',
             'bg'      => '#f5f3ff',
             'icon'    => '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 6V12C4 16.4 7.4 20.5 12 22C16.6 20.5 20 16.4 20 12V6L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-        ],
-        [
-            'name'    => 'Juara',
-            'range'   => '100+ poin',
-            'min'     => 100,
-            'color'   => '#d97706',
-            'bg'      => '#fffbeb',
-            'icon'    => '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 21H16M12 17V21M7 4H17V11C17 14.314 14.761 17 12 17C9.239 17 7 14.314 7 11V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 6H4C4 6 3 10 6 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6H20C20 6 21 10 18 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         ],
     ];
 @endphp
@@ -261,10 +252,10 @@
     text-align: center;
 }
 
-/* ── 4 Tier Cards ── */
+/* ── 3 Tier Cards ── */
 .ppts-tiers {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
 

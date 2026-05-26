@@ -34,7 +34,13 @@ Route::get('/dashboard', function () {
         $fields = \App\Models\Field::with('owner')->get();
         $upcomingBooking = \App\Models\Booking::where('user_id', $user->id)
             ->where('status', \App\Enums\BookingStatus::CONFIRMED)
-            ->where('date', '>=', now()->toDateString())
+            ->where(function($q) {
+                $q->where('date', '>', now()->toDateString())
+                  ->orWhere(function($q2) {
+                      $q2->where('date', '=', now()->toDateString())
+                         ->where('start_time', '>', now()->toTimeString());
+                  });
+            })
             ->orderBy('date')
             ->orderBy('start_time')
             ->with('field')
@@ -265,6 +271,12 @@ Route::middleware('auth')->group(function () {
 
             return response()->json(['success' => true, 'booking' => $booking->load('field', 'user')]);
         })->name('owner.booking.status');
+
+        Route::post('/bookings/{booking}/confirm-payment', [BookingController::class, 'confirmPayment'])
+            ->name('owner.booking.confirmPayment');
+
+        Route::post('/bookings/{booking}/reject-payment', [BookingController::class, 'rejectPayment'])
+            ->name('owner.booking.rejectPayment');
     });
 
     /* PLAYER */
@@ -277,6 +289,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/bookings', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/bookings/{booking}', [BookingController::class, 'detail'])->name('booking.detail');
+    Route::post('/bookings/{booking}/pay', [BookingController::class, 'pay'])->name('booking.pay');
 
     Route::get('/matches', [ActivityController::class, 'index'])->name('activity.index');
     Route::get('/cari-tim', [MatchController::class, 'index'])->name('matches.index');
@@ -284,6 +297,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/buat-match', [MatchController::class, 'store'])->name('matches.store');
     Route::get('/cari-tim/{match}', [MatchController::class, 'show'])->name('matches.show');
     Route::post('/cari-tim/{match}/join', [MatchController::class, 'join'])->name('matches.join');
+    Route::post('/cari-tim/{match}/participant/payment', [MatchController::class, 'markParticipantPaid'])->name('matches.participant.pay');
+    Route::post('/cari-tim/{match}/participant/{participant}/confirm', [MatchController::class, 'confirmParticipantPayment'])->name('matches.participant.confirm');
+    Route::post('/cari-tim/{match}/participant/{participant}/reject', [MatchController::class, 'rejectParticipantPayment'])->name('matches.participant.reject');
 
     /* FAVORIT */
     Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorite.index');

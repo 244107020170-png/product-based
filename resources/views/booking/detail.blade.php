@@ -3,6 +3,56 @@
     $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
+
+    $statusLabels = [
+        'pending' => 'Menunggu',
+        'waiting_payment' => 'Menunggu Pembayaran',
+        'waiting_confirmation' => 'Menunggu Konfirmasi',
+        'paid' => 'Dibayar',
+        'confirmed' => 'Terkonfirmasi',
+        'completed' => 'Selesai',
+        'cancelled' => 'Dibatalkan',
+        'expired' => 'Kadaluarsa',
+        'rejected' => 'Ditolak',
+    ];
+
+    $statusStyles = [
+        'pending' => ['bg' => '#fef3c7', 'color' => '#92400e', 'dot' => '#d97706'],
+        'waiting_payment' => ['bg' => '#fef3c7', 'color' => '#92400e', 'dot' => '#d97706'],
+        'waiting_confirmation' => ['bg' => '#fef3c7', 'color' => '#92400e', 'dot' => '#d97706'],
+        'paid' => ['bg' => '#d1fae5', 'color' => '#065f46', 'dot' => '#10b981'],
+        'confirmed' => ['bg' => '#bbf7d0', 'color' => '#166534', 'dot' => '#16a34a'],
+        'completed' => ['bg' => '#d1fae5', 'color' => '#065f46', 'dot' => '#10b981'],
+        'cancelled' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'dot' => '#ef4444'],
+        'expired' => ['bg' => '#fee2e2', 'color' => '#842029', 'dot' => '#dc2626'],
+        'rejected' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'dot' => '#dc2626'],
+    ];
+
+    $isExpired = $booking->status === 'expired' || ($booking->status === 'waiting_payment' && $booking->payment_deadline && now()->greaterThan($booking->payment_deadline));
+    if ($isExpired) {
+        $booking->status = 'expired';
+    }
+    $bookingStatusLabel = $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status));
+    $bookingStatusStyle = $statusStyles[$booking->status] ?? ['bg' => '#f4f6fb', 'color' => '#111', 'dot' => '#43a680'];
+
+    $paymentCountdownLabel = '-';
+    if (in_array($booking->status, ['waiting_confirmation', 'confirmed', 'paid', 'completed'])) {
+        $paymentCountdownLabel = 'Selesai';
+    } elseif ($booking->status === 'expired') {
+        $paymentCountdownLabel = 'Kadaluarsa';
+    } elseif ($booking->status === 'waiting_payment' && $booking->payment_deadline) {
+        if (now()->lte($booking->payment_deadline)) {
+            $remaining = $booking->payment_deadline->diff(now());
+            $segments = [];
+            if ($remaining->d) $segments[] = $remaining->d . ' hari';
+            if ($remaining->h) $segments[] = $remaining->h . ' jam';
+            if ($remaining->i) $segments[] = $remaining->i . ' menit';
+            if (empty($segments)) $segments[] = 'kurang dari 1 menit';
+            $paymentCountdownLabel = implode(' ', array_slice($segments, 0, 2)) . ' tersisa';
+        } else {
+            $paymentCountdownLabel = 'Kadaluarsa';
+        }
+    }
     
     // Sidebar
     $sidebarItems = [
@@ -102,7 +152,7 @@
         </div>
     </header>
 
-    <section style="padding: 24px; max-width: 600px; margin: 0 auto;">
+    <section style="padding: 24px; max-width: 900px; margin: 0 auto;">
         
         <div style="margin-bottom: 20px;">
             <a href="{{ route('booking.index') }}" style="display: inline-flex; align-items: center; padding: 0 20px; height: 40px; background: rgba(255,255,255,.76); color: #11114b; font-size: .95rem; font-weight: 700; text-decoration: none; border-radius: 10px; transition: all .2s ease; border: 1.8px solid #14144a;">
@@ -112,15 +162,17 @@
 
         <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,77,.06); border: 1px solid rgba(0,0,77,.08);">
             
-            <div style="background: linear-gradient(135deg, #02025b 0%, #11114b 100%); color: white; padding: 24px; text-align: center;">
-                <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800;">Detail Booking</h1>
-                <p style="margin: 0; font-size: 14px; opacity: 0.9;">Booking ID: #{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</p>
-                <div style="margin-top: 16px;">
-                    <span style="display: inline-block; padding: 6px 16px; border-radius: 50px; font-size: 14px; font-weight: 700;
-                        {{ $booking->status === 'confirmed' ? 'background: #B5FF2B; color: #02025b;' : 'background: #fff3cd; color: #856404;' }}">
-                        Status: {{ ucfirst($booking->status) }}
-                    </span>
-                </div>
+<div style="background: linear-gradient(135deg, #02025b 0%, #11114b 100%); color: white; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+                    <div>
+                        <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800;">Detail Booking</h1>
+                        <p style="margin: 0; font-size: 14px; opacity: 0.9;">Booking ID: #{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</p>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <span style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 50px; font-size: 14px; font-weight: 700; background: {{ $bookingStatusStyle['bg'] }}; color: {{ $bookingStatusStyle['color'] }};">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ $bookingStatusStyle['dot'] }}; display: inline-block;"></span>
+                            {{ $bookingStatusLabel }}
+                        </span>
+                    </div>
             </div>
 
             <div style="padding: 32px 24px;">
@@ -153,6 +205,96 @@
                     </div>
                 </div>
 
+                <div style="margin-top: 28px; background: #f8fafc; border: 1px solid rgba(2,2,91,.08); padding: 24px; border-radius: 18px;">
+                    <style>
+                        .payment-details-layout {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 24px;
+                            align-items: start;
+                        }
+                        @media (max-width: 1024px) {
+                            .payment-details-layout {
+                                grid-template-columns: 1fr 320px;
+                            }
+                        }
+                        @media (max-width: 768px) {
+                            .payment-details-layout {
+                                grid-template-columns: 1fr;
+                            }
+                            .qr-card {
+                                max-width: 100% !important;
+                            }
+                        }
+                    </style>
+                    <div class="payment-details-layout">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                                <span style="width: 10px; height: 10px; background: #43a680; border-radius: 50%; display: inline-block;"></span>
+                                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #02025b;">Detail Pembayaran</h3>
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <div style="color: #666; font-size: 14px; margin-bottom: 4px;">Status Pembayaran</div>
+                                <div style="font-weight: 700; color: #111;">{{ $bookingStatusLabel }}</div>
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <div style="color: #666; font-size: 14px; margin-bottom: 4px;">Batas Pembayaran</div>
+                                <div style="font-weight: 700; color: #111;">
+                                    {{ $booking->payment_deadline ? $booking->payment_deadline->locale('id')->translatedFormat('H:i, d F Y') : '-' }}
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 18px;">
+                                <div style="color: #666; font-size: 14px; margin-bottom: 4px;">Countdown</div>
+                                <div id="payment-countdown" data-deadline="{{ $booking->status === 'waiting_payment' && $booking->payment_deadline ? $booking->payment_deadline->toIso8601String() : '' }}" style="font-weight: 700; color: {{ $paymentCountdownLabel === 'Selesai' ? '#16a34a' : ($paymentCountdownLabel === 'Kadaluarsa' ? '#dc2626' : '#111') }};">
+                                    {{ $paymentCountdownLabel }}
+                                </div>
+                            </div>
+
+                            <div style="display: grid; gap: 12px;">
+                                @if($booking->status === 'waiting_payment' && $booking->payment_deadline && now()->lte($booking->payment_deadline))
+                                    <form action="{{ route('booking.pay', $booking->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" style="width: 100%; border: none; border-radius: 14px; background: #43a680; color: white; font-weight: 800; padding: 14px 18px; cursor: pointer;">Saya Sudah Bayar</button>
+                                    </form>
+                                @elseif($booking->status === 'waiting_confirmation')
+                                    <div style="padding: 14px 16px; border-radius: 14px; background: #eafaf1; color: #155724; font-weight: 700;">Pembayaran diterima. Tunggu konfirmasi owner.</div>
+                                @elseif($booking->status === 'confirmed')
+                                    <div style="padding: 14px 16px; border-radius: 14px; background: #e7f5ff; color: #0d3c61; font-weight: 700;">Booking sudah dikonfirmasi.</div>
+                                @elseif($booking->status === 'expired')
+                                    <div style="padding: 16px; border-radius: 14px; background: #fff4f4; color: #842029; font-weight: 700; text-align: center;">
+                                        <div style="margin-bottom: 12px;">Pembayaran sudah kadaluarsa.</div>
+                                        <a href="{{ route('booking.show', $booking->field_id) }}" style="display: inline-block; padding: 10px 24px; background: #842029; color: white; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700;">Pesan Lapangan Lagi</a>
+                                    </div>
+                                @else
+                                    <div style="padding: 14px 16px; border-radius: 14px; background: #f4f6fb; color: #333;">Aksi pembayaran tidak tersedia untuk status ini.</div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="qr-card" style="width: 100%; background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,77,.08); padding: 24px; text-align: center;">
+                            <div style="font-size: 13px; color: #666; margin-bottom: 12px;">Scan QR dan transfer</div>
+                            <div style="width: 200px; height: 200px; margin: 0 auto 12px auto; background: white; border: 1px solid rgba(0,0,77,.08); border-radius: 20px; display: grid; place-items: center;">
+                                <svg width="150" height="150" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="160" height="160" rx="28" fill="#02025b"/>
+                                    <rect x="24" y="24" width="42" height="42" rx="8" fill="#fff"/>
+                                    <rect x="24" y="94" width="42" height="42" rx="8" fill="#fff"/>
+                                    <rect x="94" y="24" width="42" height="42" rx="8" fill="#fff"/>
+                                    <rect x="70" y="70" width="20" height="20" fill="#fff"/>
+                                    <rect x="70" y="94" width="42" height="20" fill="#fff"/>
+                                    <rect x="94" y="70" width="20" height="42" fill="#fff"/>
+                                    <rect x="24" y="70" width="20" height="20" fill="#fff"/>
+                                    <rect x="46" y="46" width="14" height="14" fill="#02025b"/>
+                                    <rect x="46" y="100" width="14" height="14" fill="#02025b"/>
+                                    <rect x="100" y="46" width="14" height="14" fill="#02025b"/>
+                                </svg>
+                            </div>
+                            <div style="font-size: 18px; font-weight: 800; color: #02025b;">Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -160,6 +302,73 @@
 </main>
 </div>
 
-<script src="{{ asset('js/player-dashboard.js') }}"></script>
+<div id="toast" style="position: fixed; top: 24px; right: 24px; z-index: 99999; padding: 16px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; color: white; display: none; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15); max-width: 400px; transform: translateX(120%); transition: transform .3s ease;">
+    <span id="toast-icon" style="font-size: 20px; flex-shrink: 0;"></span>
+    <span id="toast-msg" style="flex: 1;"></span>
+    <button onclick="closeToast()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; line-height: 1; opacity: .8;">&times;</button>
+</div>
+<script>
+    var toastEl = document.getElementById('toast');
+    var toastMsg = document.getElementById('toast-msg');
+    var toastIcon = document.getElementById('toast-icon');
+    var toastTimer;
+
+    function showToast(msg, type) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastMsg.textContent = msg;
+        toastEl.style.background = type === 'error' ? '#dc2626' : '#16a34a';
+        toastIcon.textContent = type === 'error' ? '\u26A0' : '\u2714';
+        toastEl.style.display = 'flex';
+        setTimeout(function() { toastEl.style.transform = 'translateX(0)'; }, 10);
+        toastTimer = setTimeout(closeToast, 4000);
+    }
+
+    function closeToast() {
+        toastEl.style.transform = 'translateX(120%)';
+        setTimeout(function() { toastEl.style.display = 'none'; }, 300);
+    }
+
+    @if(session('success'))
+        showToast('{{ session('success') }}', 'success');
+    @elseif(session('error'))
+        showToast('{{ session('error') }}', 'error');
+    @endif
+
+    @if($booking->status === 'waiting_payment')
+    (function() {
+        var countdownEl = document.getElementById('payment-countdown');
+        if (!countdownEl) return;
+
+        var deadlineValue = countdownEl.dataset.deadline;
+        if (!deadlineValue) return;
+
+        var deadline = new Date(deadlineValue);
+        if (isNaN(deadline.getTime())) return;
+
+        function formatCountdown(diffMs) {
+            var totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
+            var minutes = Math.floor(totalSeconds / 60);
+            var seconds = totalSeconds % 60;
+            return minutes + ' menit ' + String(seconds).padStart(2, '0') + ' detik';
+        }
+
+        function updateCountdown() {
+            var now = new Date();
+            var diff = deadline.getTime() - now.getTime();
+            if (diff <= 0) {
+                countdownEl.textContent = 'Kadaluarsa';
+                clearInterval(timer);
+                return;
+            }
+            countdownEl.textContent = formatCountdown(diff);
+        }
+
+        if (countdownEl.textContent.includes('menit') || countdownEl.textContent.includes('hari') || countdownEl.textContent.includes('jam') || countdownEl.textContent.includes('detik')) {
+            updateCountdown();
+            var timer = setInterval(updateCountdown, 1000);
+        }
+    })();
+    @endif
+</script>
 </body>
 </html>

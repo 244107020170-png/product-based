@@ -526,11 +526,11 @@ function bookingApp() {
         
         submitBooking() {
             if (!this.selectedDate || !this.selectedTime || !this.selectedTimeSlot) {
-                alert('Pilih tanggal dan jam terlebih dahulu');
+                showToast('Pilih tanggal dan jam terlebih dahulu', 'error');
                 return;
             }
             if (!this.selectedDate || !this.selectedTime) {
-                alert('Pilih tanggal dan jam terlebih dahulu');
+                showToast('Pilih tanggal dan jam terlebih dahulu', 'error');
                 return;
             }
 
@@ -551,17 +551,49 @@ function bookingApp() {
             .then(data => {
                 if (!data.success) {
                     const errors = data.errors ? Object.values(data.errors).flat().join('\n') : null;
-                    throw new Error(data.message || errors || 'Gagal membuat booking.');
+                    showToast(data.message || errors || 'Gagal membuat booking.', 'error');
+                    return;
                 }
 
-                alert(data.message || 'Booking berhasil!');
-                window.location.href = '{{ route("booking.index") }}';
+                window.location.href = '{{ url("bookings") }}/' + data.booking.id;
             })
-            .catch(e => alert('Error: ' + e.message || e));
+            .catch(e => showToast(e.message || e, 'error'));
         }
     }
 }
 </script>
 
+<div id="toast" style="position: fixed; top: 24px; right: 24px; z-index: 99999; padding: 16px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; color: white; display: none; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15); max-width: 400px; transform: translateX(120%); transition: transform .3s ease;">
+    <span id="toast-icon" style="font-size: 20px; flex-shrink: 0;"></span>
+    <span id="toast-msg" style="flex: 1;"></span>
+    <button onclick="closeToast()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; line-height: 1; opacity: .8;">&times;</button>
+</div>
+<script>
+    var toastEl = document.getElementById('toast');
+    var toastMsg = document.getElementById('toast-msg');
+    var toastIcon = document.getElementById('toast-icon');
+    var toastTimer;
+
+    function showToast(msg, type) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastMsg.textContent = msg;
+        toastEl.style.background = type === 'error' ? '#dc2626' : '#16a34a';
+        toastIcon.textContent = type === 'error' ? '\u26A0' : '\u2714';
+        toastEl.style.display = 'flex';
+        setTimeout(function() { toastEl.style.transform = 'translateX(0)'; }, 10);
+        toastTimer = setTimeout(closeToast, 4000);
+    }
+
+    function closeToast() {
+        toastEl.style.transform = 'translateX(120%)';
+        setTimeout(function() { toastEl.style.display = 'none'; }, 300);
+    }
+
+    @if(session('success'))
+        showToast('{{ session('success') }}', 'success');
+    @elseif(session('error'))
+        showToast('{{ session('error') }}', 'error');
+    @endif
+</script>
 </body>
 </html>

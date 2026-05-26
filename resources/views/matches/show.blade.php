@@ -221,6 +221,112 @@
                         @endif
                     </div>
 
+                    @if($match->isPublic())
+                        <div style="margin-bottom: 32px; background: #f7fafc; border: 1px solid rgba(2,2,91,.08); border-radius: 20px; padding: 24px;">
+                            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px;">
+                                <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Total Biaya Lapangan</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">Rp{{ number_format($match->total_cost, 0, ',', '.') }}</div>
+                                </div>
+                                <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Biaya Kontribusi / Player</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">Rp{{ number_format($match->contribution_per_player, 0, ',', '.') }}</div>
+                                </div>
+                                <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Max Player</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">{{ $match->max_player }}</div>
+                                </div>
+                                <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Joined Player</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">{{ $playersJoined }}</div>
+                                </div>
+                            </div>
+
+                            @if($hasJoined && ! $isCreator)
+                                <div style="display: grid; gap: 20px;">
+                                    @if($participant?->payment_status === 'waiting')
+                                        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+                                            <div style="flex: 1 1 220px; min-width: 220px; background: white; border-radius: 18px; padding: 22px; border: 1px solid rgba(0,0,77,.08);">
+                                                <div style="margin-bottom: 12px; font-size: 14px; color: #666;">Nominal Kontribusi</div>
+                                                <div style="font-size: 26px; font-weight: 800; color: #02025b;">Rp{{ number_format($participant->contribution_amount, 0, ',', '.') }}</div>
+                                                <div style="margin-top: 10px; font-size: 13px; color: #444;">Pembayaran menunggu konfirmasi host setelah Anda klik bayar.</div>
+                                            </div>
+                                            <div style="width: 220px; background: white; border-radius: 18px; padding: 18px; border: 1px solid rgba(0,0,77,.08); text-align: center;">
+                                                <div style="margin-bottom: 12px; font-size: 14px; color: #666;">Scan QR berikut</div>
+                                                <div style="width: 160px; height: 160px; margin: 0 auto 14px auto; background: #02025b; border-radius: 20px; display: grid; place-items: center;">
+                                                    <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <rect width="120" height="120" rx="20" fill="#fff"/>
+                                                        <rect x="12" y="12" width="28" height="28" rx="6" fill="#02025b"/>
+                                                        <rect x="12" y="80" width="28" height="28" rx="6" fill="#02025b"/>
+                                                        <rect x="80" y="12" width="28" height="28" rx="6" fill="#02025b"/>
+                                                        <rect x="50" y="50" width="14" height="14" fill="#02025b"/>
+                                                        <rect x="50" y="80" width="14" height="14" fill="#02025b"/>
+                                                        <rect x="80" y="50" width="14" height="14" fill="#02025b"/>
+                                                    </svg>
+                                                </div>
+                                                <form action="{{ route('matches.participant.pay', $match->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="btn-primary" style="width: 100%;">Saya Sudah Bayar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    @elseif($participant?->payment_status === 'paid')
+                                        <div style="padding: 20px; background: #eafaf1; border: 1px solid #43a680; border-radius: 18px; color: #155724; font-weight: 700;">Pembayaran Anda telah dikonfirmasi oleh host.</div>
+                                    @else
+                                        <div style="padding: 20px; background: #fff7e9; border: 1px solid #f1c40f; border-radius: 18px; color: #8a6d3b; font-weight: 700;">Silakan klik tombol bayar jika sudah transfer.</div>
+                                    @endif
+                                </div>
+                            @endif
+
+                            @if($isCreator)
+                                <div style="background: white; border-radius: 20px; padding: 22px; border: 1px solid rgba(0,0,77,.08);">
+                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: #02025b;">Daftar Participant</h3>
+                                    <div style="overflow-x: auto;">
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                            <thead>
+                                                <tr style="text-align: left; color: #4b5563;">
+                                                    <th style="padding: 12px 10px;">Player</th>
+                                                    <th style="padding: 12px 10px;">Kontribusi</th>
+                                                    <th style="padding: 12px 10px;">Status</th>
+                                                    <th style="padding: 12px 10px;">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($match->participantEntries as $entry)
+                                                    <tr style="border-top: 1px solid rgba(0,0,77,.08);">
+                                                        <td style="padding: 12px 10px;">{{ $entry->user?->name ?? 'Pengguna' }}</td>
+                                                        <td style="padding: 12px 10px;">Rp{{ number_format($entry->contribution_amount, 0, ',', '.') }}</td>
+                                                        <td style="padding: 12px 10px;">
+                                                            @if($entry->isPaid())
+                                                                <span style="display: inline-flex; padding: 6px 12px; border-radius: 999px; background: #eafaf1; color: #155724; font-weight: 700;">paid</span>
+                                                            @else
+                                                                <span style="display: inline-flex; padding: 6px 12px; border-radius: 999px; background: #fff4e5; color: #8a6d3b; font-weight: 700;">waiting</span>
+                                                            @endif
+                                                        </td>
+                                                        <td style="padding: 12px 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                                            @if($entry->isWaiting())
+                                                                <form action="{{ route('matches.participant.confirm', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block;">
+                                                                    @csrf
+                                                                    <button type="submit" class="btn-primary" style="background: #43a680;">Confirm</button>
+                                                                </form>
+                                                                <form action="{{ route('matches.participant.reject', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block;">
+                                                                    @csrf
+                                                                    <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 12px; padding: 10px 14px; font-weight: 700;">Reject</button>
+                                                                </form>
+                                                            @else
+                                                                <span style="color: #6b7280;">Tidak ada aksi</span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
                     <div class="action-container">
                         @if($isCreator)
                             <button type="button" class="btn-primary btn-disabled" disabled>Ini Tim Buatanmu</button>

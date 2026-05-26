@@ -36,6 +36,34 @@ class Matchs extends Model
         return $this->belongsToMany(User::class, 'match_players', 'match_id', 'user_id');
     }
 
+    public function participantEntries()
+    {
+        return $this->hasMany(MatchPlayer::class, 'match_id');
+    }
+
+    public function getTotalCostAttribute(): int
+    {
+        if (! $this->field) {
+            return 0;
+        }
+
+        return $this->field->price_per_hour * 2;
+    }
+
+    public function getContributionPerPlayerAttribute(): int
+    {
+        if (! $this->field || $this->max_player < 1) {
+            return 0;
+        }
+
+        return (int) round(($this->field->price_per_hour * 2) / $this->max_player);
+    }
+
+    public function isPublic(): bool
+    {
+        return $this->type === 'public';
+    }
+
     /** Waktu dalam format HH:MM – HH:MM (end = start + 2h) */
     public function timeRange(): string
     {

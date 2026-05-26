@@ -141,6 +141,12 @@
                     grid-template-columns: 1fr;
                 }
             }
+            .badge-tiers {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+                text-align: center;
+            }
             @media (max-width: 768px) {
                 .dashboard-header-flex {
                     flex-direction: column;
@@ -148,6 +154,14 @@
                 }
                 .hero-content-inner {
                     max-width: 100% !important;
+                }
+                .badge-tiers {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+            @media (max-width: 480px) {
+                .badge-tiers {
+                    grid-template-columns: 1fr;
                 }
             }
         </style>
@@ -356,7 +370,7 @@
                     <p style="margin: 0; font-size: 11px; color: #888; text-align: center;">{{ Auth::user()->points ?? 0 }} Points / {{ Auth::user()->nextTierTarget() }}</p>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; text-align: center;">
+                <div class="badge-tiers">
                     <div>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                         <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Pemula</p>
@@ -462,10 +476,10 @@
     function update() {
         var diff = target - Date.now();
         if (diff <= 0) {
-            document.getElementById('cd-days').textContent = '00';
-            document.getElementById('cd-hours').textContent = '00';
-            document.getElementById('cd-minutes').textContent = '00';
-            document.getElementById('cd-seconds').textContent = '00';
+            document.getElementById('cd-days').textContent = '--';
+            document.getElementById('cd-hours').textContent = '--';
+            document.getElementById('cd-minutes').textContent = '--';
+            document.getElementById('cd-seconds').textContent = '--';
             return;
         }
         var days = Math.floor(diff / 86400000);

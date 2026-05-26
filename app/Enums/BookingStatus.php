@@ -6,6 +6,7 @@ final class BookingStatus
 {
     public const PENDING = 'pending';
     public const WAITING_PAYMENT = 'waiting_payment';
+    public const WAITING_CONFIRMATION = 'waiting_confirmation';
     public const PAID = 'paid';
     public const CONFIRMED = 'confirmed';
     public const COMPLETED = 'completed';
@@ -18,6 +19,7 @@ final class BookingStatus
         return [
             self::PENDING,
             self::WAITING_PAYMENT,
+            self::WAITING_CONFIRMATION,
             self::PAID,
             self::CONFIRMED,
         ];

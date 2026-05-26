@@ -68,8 +68,8 @@ class BookingService
                 'date' => $date->toDateString(),
                 'start_time' => $start->format('H:i:s'),
                 'end_time' => $end->format('H:i:s'),
-                'status' => BookingStatus::PENDING,
-                'payment_deadline' => Carbon::now()->addMinutes(30),
+                'status' => BookingStatus::WAITING_PAYMENT,
+                'payment_deadline' => Carbon::now()->addMinutes(15),
                 'expired_at' => Carbon::now()->addHours(4),
             ]);
         });

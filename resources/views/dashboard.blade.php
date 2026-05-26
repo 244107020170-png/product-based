@@ -50,17 +50,48 @@
         ['icon' => asset('assets/images/icons/futsal.png'), 'title' => 'Futsal', 'location' => 'Champion Futsal Malang'],
     ];
 
+    /* Badge logic — sama persis dengan Keahlian */
+    $badgeBookings = \App\Models\Booking::where('user_id', $user->id)
+        ->whereIn('status', ['selesai', 'confirmed', 'pending'])
+        ->count();
+    $badgeMatches = \Illuminate\Support\Facades\DB::table('match_players')
+        ->where('user_id', $user->id)
+        ->count();
+    $badgePoints = $badgeBookings + $badgeMatches;
+
     $badgeSteps = [
-        ['slot' => 'BG1', 'title' => 'Pemula', 'meta' => '1-5 Pertandingan'],
-        ['slot' => 'BG2', 'title' => 'Aktif', 'meta' => '6-20 Pertandingan'],
-        ['slot' => 'BG3', 'title' => 'Pro', 'meta' => '>20 Pertandingan'],
+        ['slot' => 'BG1', 'title' => 'Pemula', 'meta' => '1-5 Aktivitas'],
+        ['slot' => 'BG2', 'title' => 'Aktif', 'meta' => '6-20 Aktivitas'],
+        ['slot' => 'BG3', 'title' => 'Pro', 'meta' => '>20 Aktivitas'],
     ];
+
+    $currentBadgeLevel = 'Pemula';
+    $badgeColor = '#6b7280';
+    if ($badgePoints >= 21) { $currentBadgeLevel = 'Pro'; $badgeColor = '#7c3aed'; }
+    elseif ($badgePoints >= 6) { $currentBadgeLevel = 'Aktif'; $badgeColor = '#1d6fcf'; }
+
+    $badgeActiveSteps = $badgePoints >= 21 ? 3 : ($badgePoints >= 6 ? 2 : 1);
 
     $rebookItems = [
         ['title' => 'Lapangan Voli - Veteran Muda', 'distance' => '3.5 KM'],
         ['title' => 'Lapangan Futsal - Soekarno Hatta', 'distance' => '3.5 KM'],
         ['title' => 'Kolam Renang - Blimbing', 'distance' => '3.5 KM'],
     ];
+
+    $upcomingBookings = \App\Models\Booking::with('field')
+        ->where('user_id', $user->id)
+        ->where('status', 'confirmed')
+        ->where(function ($q) {
+            $q->where('date', '>', now()->toDateString())
+              ->orWhere(function ($q2) {
+                  $q2->where('date', '=', now()->toDateString())
+                     ->where('start_time', '>', now()->format('H:i:s'));
+              });
+        })
+        ->orderBy('date')
+        ->orderBy('start_time')
+        ->take(5)
+        ->get();
 @endphp
 
 <!DOCTYPE html>
@@ -336,19 +367,22 @@
                 </section>
 
                 <section class="player-dashboard-grid">
-                    <article class="player-dashboard-card" data-dashboard-searchable="upcoming match futsal competition zona sm futsal pertandingan jadwal detail">
+                    <article class="player-dashboard-card" data-dashboard-searchable="upcoming booking pertandingan mendatang jadwal">
                         <div class="player-dashboard-card__heading">
                             <img src="{{ asset('assets/images/icons/upcoming.png') }}" alt="" class="player-section-icon">
                             <h2>Pertandingan Mendatang</h2>
-                            <span class="player-chip">2h</span>
+                            @if($upcomingBookings->isNotEmpty())
+                            <span class="player-chip">{{ $upcomingBookings->count() }}</span>
+                            @endif
                         </div>
 
+                        @forelse($upcomingBookings as $upcoming)
                         <div class="player-upcoming-card">
                             <div class="player-upcoming-card__meta">
                                 <img src="{{ asset('assets/images/icons/futsal.png') }}" alt="" class="player-sport-icon">
                                 <div>
-                                    <h3>Futsal Competition</h3>
-                                    <p>Zona SM Futsal</p>
+                                    <h3>{{ $upcoming->field->name }}</h3>
+                                    <p>{{ \Carbon\Carbon::parse($upcoming->date)->locale('id')->translatedFormat('l, d F Y') }}</p>
                                 </div>
                             </div>
 
@@ -356,12 +390,19 @@
                                 <div class="player-upcoming-card__avatars">
                                 </div>
                                 <div class="player-upcoming-card__countdown">
-                                    Mulai Dalam <strong>2h 1m</strong>
+                                    <span class="countdown-timer" data-target="{{ \Carbon\Carbon::parse($upcoming->date.' '.$upcoming->start_time)->timestamp }}">
+                                        Memuat...
+                                    </span>
                                 </div>
                             </div>
 
-                            <a href="{{ url('/matches') }}" class="player-primary-button player-primary-button--block">Lihat Detail</a>
+                            <a href="{{ route('booking.detail', $upcoming->id) }}" class="player-primary-button player-primary-button--block">Lihat Detail</a>
                         </div>
+                        @empty
+                        <div class="player-upcoming-card" style="text-align: center; padding: 24px; color: #666;">
+                            <p style="margin: 0;">Belum ada pertandingan mendatang.</p>
+                        </div>
+                        @endforelse
                     </article>
 
                     <article class="player-dashboard-card" data-dashboard-searchable="rekomendasi match basket badminton futsal gor bimasakti tidar champion for you">
@@ -428,8 +469,8 @@
                                     <img src="{{ asset('assets/images/icons/badge.png') }}" alt="" class="player-badge-image">
                                 </div>
                                 <div class="player-badge-card__copy">
-                                    <p>Level: <strong>Pemain Aktif</strong></p>
-                                    <span>12 Pertandingan</span>
+                                    <p>Level: <strong>{{ $currentBadgeLevel }}</strong></p>
+                                    <span>{{ $badgePoints }} Aktivitas</span>
                                 </div>
                                 <span class="player-inline-icon" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" fill="none">
@@ -439,11 +480,9 @@
                             </div>
 
                             <div class="player-badge-card__progress">
-                                <span class="is-active"></span>
-                                <span class="is-active"></span>
-                                <span class="is-active"></span>
-                                <span class="is-active"></span>
-                                <span></span>
+                                @for ($i = 1; $i <= 3; $i++)
+                                    <span @class(['is-active' => $i <= $badgeActiveSteps])></span>
+                                @endfor
                             </div>
 
                             <div class="player-badge-card__steps">
@@ -496,5 +535,45 @@
                 </section>
             </main>
         </div>
+
+<script>
+    (function() {
+        var timers = document.querySelectorAll('.countdown-timer');
+        if (!timers.length) return;
+
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+        function updateTimers() {
+            var now = Date.now();
+            for (var i = 0; i < timers.length; i++) {
+                var el = timers[i];
+                var ts = el.getAttribute('data-target');
+                if (!ts) continue;
+
+                var diff = parseInt(ts) * 1000 - now;
+
+                if (diff <= 0) {
+                    el.textContent = 'Sedang berlangsung';
+                    continue;
+                }
+
+                var days = Math.floor(diff / 86400000);
+                var hours = Math.floor((diff % 86400000) / 3600000);
+                var minutes = Math.floor((diff % 3600000) / 60000);
+                var seconds = Math.floor((diff % 60000) / 1000);
+
+                var text = '';
+                if (days > 0) text += days + 'h ';
+                if (hours > 0 || days > 0) text += pad(hours) + 'j ';
+                text += pad(minutes) + 'm ' + pad(seconds) + 'd';
+
+                el.innerHTML = 'Mulai Dalam <strong>' + text + '</strong>';
+            }
+        }
+
+        updateTimers();
+        setInterval(updateTimers, 1000);
+    })();
+</script>
     </body>
 </html>

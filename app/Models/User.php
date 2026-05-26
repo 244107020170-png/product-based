@@ -127,7 +127,7 @@ class User extends Authenticatable implements FilamentUser
         return asset('assets/images/characters/' . $default);
     }
 
-    /** Helper: badge berdasarkan jumlah match (Bahasa Indonesia) */
+    /** Helper: badge berdasarkan jumlah match */
     public function playerBadge(): string
     {
         $count = $this->createdMatches()->count() + $this->joinedMatches()->count();
@@ -159,10 +159,9 @@ class User extends Authenticatable implements FilamentUser
     {
         $currentPoints = $this->points ?? 0;
 
+        if ($currentPoints < 5)   return 5;
         if ($currentPoints < 20)  return 20;
-        if ($currentPoints < 50)  return 50;
-        if ($currentPoints < 100) return 100;
-        return 100; // Already at max tier
+        return 20; // Already at max tier
     }
 
     /** Helper: Get points needed to reach next tier */
@@ -179,9 +178,8 @@ class User extends Authenticatable implements FilamentUser
     {
         $currentPoints = $this->points ?? 0;
 
-        if ($currentPoints >= 100) return 'Champion';
-        if ($currentPoints >= 50)  return 'Master';
-        if ($currentPoints >= 20)  return 'Pro';
+        if ($currentPoints >= 20) return 'Pro';
+        if ($currentPoints >= 5)  return 'Active';
         return 'Beginner';
     }
 
@@ -189,9 +187,8 @@ class User extends Authenticatable implements FilamentUser
     public function tierNameId(): string
     {
         return match($this->tierName()) {
-            'Champion' => 'Juara',
-            'Master'   => 'Master',
             'Pro'      => 'Pro',
+            'Active'   => 'Aktif',
             default    => 'Pemula',
         };
     }
@@ -200,9 +197,8 @@ class User extends Authenticatable implements FilamentUser
     public function tierColor(): string
     {
         return match($this->tierName()) {
-            'Champion' => '#fbbf24',
-            'Master'   => '#7c3aed',
-            'Pro'      => '#1d6fcf',
+            'Pro'      => '#7c3aed',
+            'Active'   => '#1d6fcf',
             default    => '#6b7280',
         };
     }
@@ -213,15 +209,15 @@ class User extends Authenticatable implements FilamentUser
         $target = $this->nextTierTarget();
         $current = $this->points ?? 0;
         $previousTarget = match(true) {
-            $target == 20 => 0,
-            $target == 50 => 20,
-            $target == 100 => 50,
-            default => 100,
+            $target == 5  => 0,
+            $target == 20 => 5,
+            default => 20,
         };
         
         $totalInTier = $target - $previousTarget;
         $progressInTier = $current - $previousTarget;
         
+        if ($totalInTier <= 0) return 100;
         return min(100, ($progressInTier / $totalInTier) * 100);
     }
 }

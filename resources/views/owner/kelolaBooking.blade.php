@@ -229,11 +229,10 @@
                                 @forelse ($bookings as $booking)
                                 @php
                                     $statusLabel = match($booking->status) {
-                                        'confirmed' => 'Telah Dikonfirmasi',
-                                        'completed' => 'Selesai',
+                                        'confirmed', 'completed' => 'Selesai',
                                         'cancelled' => 'Dibatalkan',
                                         'rejected'  => 'Ditolak',
-                                        'pending'   => 'Menunggu Konfirmasi',
+                                        'pending', 'waiting_confirmation' => 'Menunggu Konfirmasi',
                                         'waiting_payment' => 'Menunggu Pembayaran',
                                         'paid'      => 'Dibayar',
                                         'expired'   => 'Kadaluarsa',
@@ -324,11 +323,22 @@
                                     </td>
 
                                     <td>
-
-                                        <button class="action-btn">
-                                            <i class="fa-solid fa-ellipsis"></i>
-                                        </button>
-
+                                        @if($booking->status === 'waiting_confirmation')
+                                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                                <form action="{{ route('owner.booking.confirmPayment', $booking->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="action-btn" style="background: #43a680; border: none; color: white;">Terima</button>
+                                                </form>
+                                                <form action="{{ route('owner.booking.rejectPayment', $booking->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="action-btn" style="background: #f8d7da; border: none; color: #842029;">Tolak</button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <button class="action-btn">
+                                                <i class="fa-solid fa-ellipsis"></i>
+                                            </button>
+                                        @endif
                                     </td>
 
                                 </tr>

@@ -16,6 +16,8 @@ class Booking extends Model
         'status',
         'payment_deadline',
         'expired_at',
+        'paid_at',
+        'confirmed_at',
     ];
 
     protected $casts = [
@@ -24,7 +26,37 @@ class Booking extends Model
         'end_time' => 'string',
         'payment_deadline' => 'datetime',
         'expired_at' => 'datetime',
+        'paid_at' => 'datetime',
+        'confirmed_at' => 'datetime',
     ];
+
+    public function isWaitingPayment(): bool
+    {
+        return $this->status === BookingStatus::WAITING_PAYMENT;
+    }
+
+    public function isWaitingConfirmation(): bool
+    {
+        return $this->status === BookingStatus::WAITING_CONFIRMATION;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === BookingStatus::CONFIRMED;
+    }
+
+    public function getPaymentDeadlineCountdownAttribute(): string
+    {
+        if (! $this->payment_deadline) {
+            return '-';
+        }
+
+        return now()->diffForHumans($this->payment_deadline, [
+            'parts' => 2,
+            'short' => true,
+            'syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW,
+        ]);
+    }
 
     public function user()
     {

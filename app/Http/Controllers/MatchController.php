@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentStatus;
+use App\Models\MatchPlayer;
 use App\Models\Matchs;
 
 class MatchController extends Controller
@@ -68,18 +70,23 @@ class MatchController extends Controller
 
     public function show(Matchs $match)
     {
-        $match->load(['field', 'creator', 'players']);
+        $match->load(['field', 'creator', 'players', 'participantEntries.user']);
         $sport = $this->detectSport($match->title . ' ' . ($match->field?->name ?? ''));
         $image = $this->sportImage($sport);
         
         $hasJoined = $match->players->contains(auth()->id());
         $isCreator = $match->created_by === auth()->id();
+        $participant = $match->participantEntries->firstWhere('user_id', auth()->id());
         
-        return view('matches.show', compact('match', 'sport', 'image', 'hasJoined', 'isCreator'));
+        return view('matches.show', compact('match', 'sport', 'image', 'hasJoined', 'isCreator', 'participant'));
     }
 
     public function join(Matchs $match)
     {
+        if ($match->created_by === auth()->id()) {
+            return back()->with('error', 'Host tidak bisa bergabung dalam pertandingan sendiri.');
+        }
+
         if ($match->players->contains(auth()->id())) {
             return back()->with('error', 'Kamu sudah bergabung dalam tim ini!');
         }
@@ -88,9 +95,76 @@ class MatchController extends Controller
             return back()->with('error', 'Tim sudah penuh!');
         }
 
-        $match->players()->attach(auth()->id());
+        MatchPlayer::create([
+            'match_id' => $match->id,
+            'user_id' => auth()->id(),
+            'contribution_amount' => $match->contribution_per_player,
+            'payment_status' => PaymentStatus::WAITING,
+        ]);
 
-        return back()->with('success', 'Berhasil bergabung dengan tim!');
+        return back()->with('success', 'Berhasil bergabung dengan tim! Silakan lanjutkan pembayaran.');
+    }
+
+    public function markParticipantPaid(Matchs $match)
+    {
+        $participant = $match->participantEntries()->where('user_id', auth()->id())->first();
+
+        if (! $participant) {
+            abort(404);
+        }
+
+        if (! $participant->isWaiting()) {
+            return back()->with('error', 'Pembayaran tidak dapat diproses.');
+        }
+
+        $participant->update(['paid_at' => now()]);
+
+        return back()->with('success', 'Pembayaran berhasil dilaporkan. Tunggu konfirmasi host.');
+    }
+
+    public function confirmParticipantPayment(Matchs $match, MatchPlayer $participant)
+    {
+        if ($match->created_by !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($participant->match_id !== $match->id) {
+            abort(404);
+        }
+
+        if (! $participant->isWaiting()) {
+            return back()->with('error', 'Status peserta tidak dalam antrian konfirmasi.');
+        }
+
+        $participant->update([
+            'payment_status' => PaymentStatus::PAID,
+            'confirmed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Pembayaran peserta berhasil dikonfirmasi.');
+    }
+
+    public function rejectParticipantPayment(Matchs $match, MatchPlayer $participant)
+    {
+        if ($match->created_by !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($participant->match_id !== $match->id) {
+            abort(404);
+        }
+
+        if (! $participant->isWaiting()) {
+            return back()->with('error', 'Status peserta tidak dalam antrian konfirmasi.');
+        }
+
+        $participant->update([
+            'payment_status' => PaymentStatus::WAITING,
+            'paid_at' => null,
+            'confirmed_at' => null,
+        ]);
+
+        return back()->with('success', 'Pembayaran peserta dikembalikan ke status waiting.');
     }
 
     private function detectSport(string $value): string

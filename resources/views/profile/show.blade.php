@@ -4,9 +4,35 @@
     $username  = $user->username
         ? '@'.$user->username
         : '@'.strtolower(str_replace(' ', '', $userName));
-    $badge     = $user->playerBadge();
     $bio       = $user->bio ?: 'Hei! Saya suka olahraga dan senang bertemu teman baru.';
     $tags      = $user->sportTags();
+
+    /* Badge logic — sama persis dengan halaman Keahlian */
+    $badgeBookings = \App\Models\Booking::where('user_id', $user->id)
+        ->whereIn('status', ['selesai', 'confirmed', 'pending'])
+        ->count();
+    $badgeMatches = \Illuminate\Support\Facades\DB::table('match_players')
+        ->where('user_id', $user->id)
+        ->count();
+    $badgePoints = $badgeBookings + $badgeMatches;
+
+    $badgeDefs = [
+        ['name' => 'Pemula', 'range' => '1-5 Match', 'min' => 0, 'max' => 5, 'icon' => '👶', 'earned' => $badgePoints >= 1, 'color' => '#6b7280'],
+        ['name' => 'Aktif', 'range' => '6-20 Match', 'min' => 6, 'max' => 20, 'icon' => '🌱', 'earned' => $badgePoints >= 6, 'color' => '#1d6fcf'],
+        ['name' => 'Pro', 'range' => '>20 Match', 'min' => 21, 'max' => PHP_INT_MAX, 'icon' => '🌟', 'earned' => $badgePoints >= 21, 'color' => '#7c3aed'],
+    ];
+
+    $currentBadgeLevel = 'Pemula';
+    foreach ($badgeDefs as $bd) {
+        if ($badgePoints >= $bd['min']) { $currentBadgeLevel = $bd['name']; }
+    }
+
+    $badgeLabel = $currentBadgeLevel;
+    $badgeColor = match($currentBadgeLevel) {
+        'Pro' => '#7c3aed',
+        'Aktif' => '#1d6fcf',
+        default => '#6b7280',
+    };
     $playerChar = asset('assets/images/characters/player.png');
     $reviewChar = asset('assets/images/characters/review.png');
     $coverImg   = $user->cover_photo ? (str_starts_with($user->cover_photo, 'covers/') ? asset('storage/' . $user->cover_photo) : $user->cover_photo) : asset('assets/images/bg/Explore.png');
@@ -27,18 +53,6 @@
         ['label'=>'Pengaturan', 'icon'=>asset('assets/images/icons/pengaturan.png'), 'href'=>route('profile.edit')],
     ];
 
-    /* Badge indo label */
-    $badgeLabel = match($badge) {
-        'Pro Player'    => 'Pemain Pro',
-        'Active Player' => 'Pemain Aktif',
-        default         => 'Pemula',
-    };
-    /* Badge color */
-    $badgeColor = match($badge) {
-        'Pro Player'    => '#7c3aed',
-        'Active Player' => '#1d6fcf',
-        default         => '#1d6fcf',
-    };
 
     /* Helper: build match card data from DB record */
     $buildCard = function($m) {
@@ -194,9 +208,28 @@
             </div>
             @endif
 
-            {{-- Progress Points Component --}}
-            <div class="mt-8 mb-8">
-                <x-progress-points :user="$user" />
+            {{-- Badge Section — logika sama persis dengan Keahlian --}}
+            <div class="mt-8 mb-8" style="background: rgba(255,255,255,.94); border-radius: 20px; padding: 24px; box-shadow: 0 4px 18px rgba(0,0,0,.06); border: 1px solid rgba(0,0,77,.07);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px;">
+                    <div>
+                        <p style="margin: 0; font-size: .9rem; font-weight: 700; color: #64748b;">Total Aktivitas</p>
+                        <p style="margin: 2px 0 0; font-size: 1.8rem; font-weight: 900; color: #02025b;">{{ $badgePoints }}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin: 0; font-size: .9rem; font-weight: 700; color: #64748b;">Level Saat Ini</p>
+                        <span style="display: inline-block; margin-top: 4px; padding: 6px 16px; border-radius: 999px; font-size: .85rem; font-weight: 800; color: white; background: {{ $badgeColor }};">{{ $badgeLabel }}</span>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    @foreach($badgeDefs as $bd)
+                    <div style="text-align: center; padding: 20px 12px 16px; border-radius: 16px; border: 1.5px solid {{ $bd['earned'] ? $bd['color'].'44' : 'rgba(0,0,0,.08)' }}; background: {{ $bd['earned'] ? $bd['color'].'18' : '#f8fafc' }}; {{ !$bd['earned'] ? 'filter: saturate(.35);' : '' }}">
+                        <div style="font-size: 2rem; margin-bottom: 8px; line-height: 1;">{{ $bd['icon'] }}</div>
+                        <p style="margin: 0 0 2px; font-size: 1rem; font-weight: 800; color: {{ $bd['earned'] ? $bd['color'] : '#6b7280' }};">{{ $bd['name'] }}</p>
+                        <p style="margin: 0 0 12px; font-size: .75rem; font-weight: 600; color: #94a3b8;">{{ $bd['range'] }}</p>
+                        <span style="display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: .72rem; font-weight: 800; {{ $bd['earned'] ? 'background: #16a34a; color: white;' : 'background: rgba(0,0,77,.1); color: rgba(0,0,77,.5);' }}">{{ $bd['earned'] ? 'Diperoleh' : 'Terkunci' }}</span>
+                    </div>
+                    @endforeach
+                </div>
             </div>
 
             {{-- TABS --}}

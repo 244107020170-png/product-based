@@ -3,6 +3,24 @@
     $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
+
+    $statusLabels = [
+        'pending' => 'Menunggu',
+        'waiting_payment' => 'Menunggu Pembayaran',
+        'waiting_confirmation' => 'Menunggu Konfirmasi',
+        'paid' => 'Dibayar',
+        'confirmed' => 'Terkonfirmasi',
+        'completed' => 'Selesai',
+        'cancelled' => 'Dibatalkan',
+        'expired' => 'Kadaluarsa',
+        'rejected' => 'Ditolak',
+    ];
+
+    $bookings->each(function ($b) {
+        if ($b->status === 'waiting_payment' && $b->payment_deadline && now()->greaterThan($b->payment_deadline)) {
+            $b->status = 'expired';
+        }
+    });
     
     // Sidebar
     $sidebarItems = [
@@ -118,17 +136,11 @@
 
     <section style="padding: 20px; max-width: 1200px; margin: 0 auto;">
 
-        @if(session('success'))
-        <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
-            <span style="display:inline-flex;vertical-align:-3px;margin-right:6px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                    <path d="M8 12.5L10.8 15.2L16 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </span>
-            <span>{{ session('success') }}</span>
+        <div id="toast" style="position: fixed; top: 24px; right: 24px; z-index: 99999; padding: 16px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; color: white; display: none; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15); max-width: 400px; transform: translateX(120%); transition: transform .3s ease;">
+            <span id="toast-icon" style="font-size: 20px; flex-shrink: 0;"></span>
+            <span id="toast-msg" style="flex: 1;"></span>
+            <button onclick="closeToast()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; line-height: 1; opacity: .8;">&times;</button>
         </div>
-        @endif
 
         @if($bookings->isEmpty())
         <div style="text-align: center; padding: 60px 20px;">
@@ -184,16 +196,23 @@
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 14px; color: #666;">Total: <span style="font-weight: 800; color: #02025b;">Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</span></span>
                         <span style="display: inline-block; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 600;
-                            {{ $booking->status === 'confirmed' ? 'background: #d4edda; color: #155724;' : 'background: #fff3cd; color: #856404;' }}">
-                            {{ ucfirst($booking->status) }}
+                            {{ $booking->status === 'confirmed' ? 'background: #d4edda; color: #155724;' : ($booking->status === 'expired' ? 'background: #fee2e2; color: #991b1b;' : 'background: #fff3cd; color: #856404;') }}">
+                            {{ $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status)) }}
                         </span>
                     </div>
                     
-                    <div style="margin-top: auto; border-top: 1px dashed rgba(0,0,77,.1); padding-top: 16px;">
+                    <div style="margin-top: auto; border-top: 1px dashed rgba(0,0,77,.1); padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        @if($booking->status === 'expired')
+                        <a href="{{ route('booking.show', $booking->field_id) }}" class="booking-detail-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 0; background: #842029; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: .95rem; border: none; transition: all .2s ease;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                            Pesan Lapangan Lagi
+                        </a>
+                        @else
                         <a href="{{ route('booking.detail', $booking->id) }}" class="booking-detail-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 0; background: #f5f7fa; color: #02025b; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: .95rem; border: 1px solid rgba(0,0,77,.1); transition: all .2s ease;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             Lihat Detail Booking
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -212,5 +231,32 @@
     }
 </style>
 <script src="{{ asset('js/player-dashboard.js') }}"></script>
+<script>
+    var toastEl = document.getElementById('toast');
+    var toastMsg = document.getElementById('toast-msg');
+    var toastIcon = document.getElementById('toast-icon');
+    var toastTimer;
+
+    function showToast(msg, type) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastMsg.textContent = msg;
+        toastEl.style.background = type === 'error' ? '#dc2626' : '#16a34a';
+        toastIcon.textContent = type === 'error' ? '\u26A0' : '\u2714';
+        toastEl.style.display = 'flex';
+        setTimeout(function() { toastEl.style.transform = 'translateX(0)'; }, 10);
+        toastTimer = setTimeout(closeToast, 4000);
+    }
+
+    function closeToast() {
+        toastEl.style.transform = 'translateX(120%)';
+        setTimeout(function() { toastEl.style.display = 'none'; }, 300);
+    }
+
+    @if(session('success'))
+        showToast('{{ session('success') }}', 'success');
+    @elseif(session('error'))
+        showToast('{{ session('error') }}', 'error');
+    @endif
+</script>
 </body>
 </html>
