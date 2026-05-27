@@ -15,7 +15,7 @@ class MatchController extends Controller
         $user = auth()->user();
         
         // Only show upcoming public matches in "Cari tim" page, sorted by date
-        $matches = Matchs::with(['field', 'players'])
+        $matches = Matchs::with(['field', 'players', 'creator'])
             ->where('type', 'public')
             ->where('date', '>=', now()->toDateString())
             ->orderBy('date')
@@ -44,6 +44,7 @@ class MatchController extends Controller
                 'schedule' => $dateFormatted . ' jam ' . $timeFormatted,
                 'image' => $this->sportImage($sport),
                 'contributionPerPlayer' => $match->contribution_per_player,
+                'creator_gender' => $match->creator?->gender,
             ];
         })->values();
 

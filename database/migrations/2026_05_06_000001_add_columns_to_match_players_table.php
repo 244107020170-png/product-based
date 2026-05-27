@@ -8,19 +8,32 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $hasMatchId = Schema::hasColumn('match_players', 'match_id');
+        $hasUserId = Schema::hasColumn('match_players', 'user_id');
+
+        if ($hasMatchId && $hasUserId) {
+            return;
+        }
+
         // Tambah kolom match_id & user_id ke match_players yang sudah ada
-        Schema::table('match_players', function (Blueprint $table) {
-            $table->foreignId('match_id')
-                  ->after('id')
-                  ->constrained('matches')
-                  ->cascadeOnDelete();
+        Schema::table('match_players', function (Blueprint $table) use ($hasMatchId, $hasUserId) {
+            if (! $hasMatchId) {
+                $table->foreignId('match_id')
+                      ->after('id')
+                      ->constrained('matches')
+                      ->cascadeOnDelete();
+            }
 
-            $table->foreignId('user_id')
-                  ->after('match_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+            if (! $hasUserId) {
+                $table->foreignId('user_id')
+                      ->after('match_id')
+                      ->constrained('users')
+                      ->cascadeOnDelete();
+            }
 
-            $table->unique(['match_id', 'user_id']);
+            if (! $hasMatchId && ! $hasUserId) {
+                $table->unique(['match_id', 'user_id']);
+            }
         });
     }
 

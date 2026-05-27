@@ -6,6 +6,15 @@
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $profileAvatar = $user?->avatarUrl();
     $sportOptions = $cards->pluck('sport')->unique()->values();
+    $defaultSports = collect(['Futsal', 'Badminton', 'Basket', 'Voli', 'Tennis', 'Golf', 'Renang', 'Panahan', 'Lari', 'Sepeda', 'Tinju', 'Bela Diri', 'Yoga', 'Fitness', 'Hiking', 'Padel', 'Baseball', 'Rugby', 'Senam']);
+    $sportOptions = $sportOptions->merge($defaultSports)->unique()->values();
+    $sportEmojiMap = [
+        'Futsal' => '⚽',
+        'Badminton' => '🏸',
+        'Basket' => '🏀',
+        'Voli' => '🏐',
+        'Tennis' => '🎾',
+    ];
     
     // Helper function for sport color badges
     $sportColor = function($sport) {
@@ -41,513 +50,136 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Cari Tim – {{ config('app.name', 'Spies Sport') }}</title>
-    @vite(['resources/css/app.css', 'resources/css/player-dashboard.css', 'resources/js/player-dashboard.js'])
+    @vite(['resources/js/app.js', 'resources/css/app.css', 'resources/css/player-dashboard.css', 'resources/js/player-dashboard.js'])
     <style>
-        .redesign-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px 12px 40px;
-        }
-
-        .redesign-grid {
-            display: grid;
-            grid-template-columns: 280px 1fr 300px;
-            gap: 20px;
-            min-height: calc(100vh - 220px);
-        }
-
-        .redesign-col-left, .redesign-col-right {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .card-section {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid rgba(0, 0, 77, 0.08);
-            box-shadow: 0 4px 12px rgba(0, 0, 77, 0.06);
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: #11114b;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-        .btn-primary:hover {
-            background: #0b0b36;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(17, 17, 75, 0.2);
-        }
-
-        /* Filter Section */
-        .filter-section-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #02025b;
-            margin-bottom: 12px;
-        }
-
-        .filter-checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .filter-checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .filter-checkbox-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #11114b;
-        }
-
-        .filter-checkbox-item label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: #333;
-        }
-
-        /* Booking List */
-        .booking-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .booking-card {
-            padding: 12px;
-            border: 1px solid rgba(0, 0, 77, 0.1);
-            border-radius: 10px;
-            background: rgba(17, 17, 75, 0.03);
-            transition: all 0.2s ease;
-        }
-
-        .booking-card:hover {
-            border-color: rgba(17, 17, 75, 0.2);
-            background: rgba(17, 17, 75, 0.06);
-        }
-
-        .booking-card-sport {
-            display: inline-block;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-        }
-
-        .booking-card-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #02025b;
-            margin-bottom: 4px;
-        }
-
-        .booking-card-meta {
-            font-size: 0.8rem;
-            color: #666;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        /* Center Swipe Section */
-        .redesign-col-center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .swipe-container {
-            width: 100%;
-            max-width: 450px;
-            position: relative;
-        }
-
+        [x-cloak] { display: none !important; }
+        /* Modern Swipe Engine styles with bounce spring */
         .swipe-card-modern {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 12px 32px rgba(0, 0, 77, 0.15);
-            border: 1px solid rgba(0, 0, 77, 0.08);
-            position: relative;
-            z-index: 2;
             transform: translateX(0) rotate(0deg);
-            transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease;
-            touch-action: pan-y;
+            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.15), opacity 0.3s ease, box-shadow 0.3s ease;
+            touch-action: none;
         }
 
         .swipe-card-modern.is-swiping-left {
-            transform: translateX(calc(-100% - 160px)) rotate(-22deg) scale(0.95);
+            transform: translateX(-150%) rotate(-30deg) scale(0.9);
             opacity: 0;
-        }
-
-        .swipe-card-modern.is-swiping-right {
-            transform: translateX(calc(100% + 160px)) rotate(22deg) scale(0.95);
-            opacity: 0;
-        }
-
-        .swipe-card-modern--back {
-            position: absolute;
-            inset: 20px 0 auto 0;
-            z-index: 1;
-            transform: scale(0.97);
-            opacity: 0.65;
-            filter: saturate(0.85);
             pointer-events: none;
         }
 
-        .swipe-card-modern--back .swipe-actions { display: none; }
+        .swipe-card-modern.is-swiping-right {
+            transform: translateX(150%) rotate(30deg) scale(0.9);
+            opacity: 0;
+            pointer-events: none;
+        }
 
-        .swipe-image-container {
-            width: 100%;
-            height: 340px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-            overflow: hidden;
+        .swipe-card-modern--back {
+            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.15), opacity 0.3s ease;
+        }
+
+        /* Clean slim scrollbar for scroll areas */
+        .upcoming-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .upcoming-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .upcoming-scroll::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 99px;
+        }
+        .upcoming-scroll::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        /* Custom checkbox sizing */
+        .w-4\.5 {
+            width: 1.125rem;
+        }
+        .h-4\.5 {
+            height: 1.125rem;
+        }
+
+        /* Swipe card image gradient overlay for better text contrast */
+        .swipe-card-img-gradient::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.06) 100%);
+            pointer-events: none;
+        }
+
+        /* Ripple button effect */
+        .btn-ripple {
             position: relative;
-        }
-
-        .swipe-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .swipe-content {
-            padding: 20px;
-        }
-
-        .swipe-title {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: #02025b;
-            margin: 0 0 12px 0;
-            line-height: 1.2;
-        }
-
-        .swipe-meta-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .swipe-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .swipe-meta-item svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-
-        .swipe-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .swipe-action-btn {
-            padding: 12px 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .swipe-action-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .btn-skip {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-skip:hover:not(:disabled) {
-            background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
-        }
-
-        .btn-join {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-join:hover:not(:disabled) {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
-        }
-
-        .swipe-action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .swipe-empty-state {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .swipe-empty-state.is-visible {
-            display: flex;
-        }
-
-        .swipe-empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-        }
-
-        .swipe-empty-state-text {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #666;
-        }
-
-        /* Right Column - Badge & Teams */
-        .badge-card {
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 16px;
-            text-align: center;
-        }
-
-        .badge-level {
-            font-size: 2rem;
-            font-weight: 900;
-            margin-bottom: 8px;
-        }
-
-        .badge-text {
-            font-size: 0.9rem;
-            opacity: 0.95;
-            margin-bottom: 12px;
-        }
-
-        .badge-progress {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
             overflow: hidden;
-            margin-bottom: 8px;
+        }
+        .btn-ripple::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.15) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .btn-ripple:hover::after {
+            opacity: 1;
         }
 
-        .badge-progress-bar {
-            height: 100%;
-            background: white;
-            border-radius: 3px;
-            transition: width 0.3s ease;
+        /* Smooth number font for stats */
+        .numeral {
+            font-variant-numeric: tabular-nums;
         }
 
-        .badge-stats {
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
-
-        /* Teams List */
-        .teams-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .team-item {
-            padding: 12px;
-            border: 1px solid rgba(0, 0, 77, 0.1);
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-
-        .team-item:hover {
-            border-color: rgba(0, 0, 77, 0.2);
-            background: rgba(17, 17, 75, 0.02);
-        }
-
-        .team-item-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #02025b;
-            margin-bottom: 6px;
-        }
-
-        .team-item-meta {
-            font-size: 0.8rem;
-            color: #666;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .view-all-btn {
-            width: 100%;
-            padding: 10px;
-            background: rgba(17, 17, 75, 0.05);
-            color: #11114b;
-            border: 1px solid rgba(17, 17, 75, 0.2);
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .view-all-btn:hover {
-            background: rgba(17, 17, 75, 0.1);
-            border-color: rgba(17, 17, 75, 0.3);
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .redesign-grid {
-                grid-template-columns: 240px 1fr 260px;
-                gap: 16px;
+        @media (max-width: 640px) {
+            .swipe-card-modern.is-swiping-left {
+                transform: translateX(-100%) rotate(-20deg) scale(0.9);
             }
-
-            .swipe-card-modern {
-                max-width: 400px;
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .redesign-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .redesign-col-left, .redesign-col-right {
-                order: 2;
-            }
-
-            .redesign-col-center {
-                order: 1;
-            }
-
-            .redesign-container {
-                padding: 16px 12px 30px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .redesign-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-                min-height: auto;
-            }
-
-            .card-section {
-                padding: 16px;
-            }
-
-            .swipe-image-container {
-                height: 300px;
-            }
-
-            .swipe-title {
-                font-size: 1.3rem;
-            }
-
-            .redesign-container {
-                padding: 12px 8px 24px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .redesign-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .redesign-col-left {
-                order: 2;
-            }
-
-            .redesign-col-center {
-                order: 1;
-            }
-
-            .redesign-col-right {
-                order: 3;
-            }
-
-            .card-section {
-                padding: 14px;
-            }
-
-            .swipe-container {
-                max-width: 100%;
-            }
-
-            .swipe-image-container {
-                height: 260px;
-            }
-
-            .swipe-title {
-                font-size: 1.2rem;
-            }
-
-            .swipe-content {
-                padding: 16px;
-            }
-
-            .swipe-meta-item {
-                font-size: 0.9rem;
-            }
-
-            .swipe-actions {
-                gap: 10px;
-            }
-
-            .swipe-action-btn {
-                padding: 10px 12px;
-                font-size: 0.9rem;
+            .swipe-card-modern.is-swiping-right {
+                transform: translateX(100%) rotate(20deg) scale(0.9);
             }
         }
     </style>
+    <script>
+        window.matchesIndexFilter = function () {
+            return {
+                openFilterModal: false,
+                selectedSports: [],
+                selectedGender: '',
+                allSports: @json($sportOptions->values()->toArray()),
+                sportEmoji: @json($sportEmojiMap),
+                toggleSport(sport) {
+                    if (!sport) return;
+
+                    if (this.selectedSports.includes(sport)) {
+                        this.selectedSports = this.selectedSports.filter(s => s !== sport);
+                    } else {
+                        this.selectedSports = [...this.selectedSports, sport];
+                    }
+
+                    this.$nextTick(() => {
+                        if (window.buildDeck) window.buildDeck();
+                    });
+                },
+                resetFilters() {
+                    this.selectedSports = [];
+                    this.selectedGender = '';
+                    window.__genderFilter = '';
+
+                    this.$nextTick(() => {
+                        if (window.buildDeck) window.buildDeck();
+                    });
+                },
+                prioritizedSports() {
+                    const selected = this.allSports.filter(s => this.selectedSports.includes(s));
+                    const unselected = this.allSports.filter(s => !this.selectedSports.includes(s));
+                    return [...selected, ...unselected];
+                },
+            };
+        };
+    </script>
 </head>
 <body class="player-dashboard-page" style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">
-<div class="player-dashboard-shell">
+<div class="player-dashboard-shell" x-data="matchesIndexFilter()">
     <aside class="player-sidebar" data-sidebar>
         <div class="player-sidebar__inner">
             <div class="player-sidebar__header">
@@ -634,162 +266,475 @@
         </div>
         @endif
 
-        {{-- 3-COLUMN LAYOUT --}}
-        <section class="redesign-container">
-            <div class="redesign-grid">
+        {{-- HIGHLY RESPONSIVE 12-COLUMN LAYOUT --}}
+        <section class="max-w-[1340px] mx-auto px-4 py-6 md:py-8 font-afacad">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-extrabold font-archivo text-[#02025b] tracking-tight">Cari Lawan Main</h1>
+                <p class="text-sm md:text-base font-semibold text-slate-400 mt-1">Geser kartu untuk menemukan pertandingan seru!</p>
+            </div>
 
-                {{-- LEFT COLUMN --}}
-                <div class="redesign-col-left">
-                    {{-- Create Match Button --}}
-                    <a href="{{ route('matches.create') }}" class="btn-primary">
-                        <span>+</span> Buat Pertandingan
+            <div class="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-6 md:gap-8 items-stretch">
+                
+                {{-- LEFT COLUMN - FILTER & UPCOMING (md:col-span-4 / lg:col-span-3) --}}
+                <div class="order-2 md:order-1 md:col-span-4 lg:col-span-3 space-y-6 flex flex-col w-full">
+                    
+                    {{-- Button Buat Pertandingan --}}
+                    <a href="{{ route('matches.create') }}" class="flex items-center justify-center gap-2.5 w-full py-4 px-6 bg-[#11114b] hover:bg-[#02025b] text-white font-extrabold font-archivo rounded-2xl shadow-md shadow-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group active:translate-y-0">
+                        <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        <span>Buat Pertandingan</span>
                     </a>
 
                     {{-- Filter Section --}}
-                    <div class="card-section">
-                        <div class="filter-section-title">Pilih Olahraga</div>
-                        <div class="filter-checkbox-group" id="sport-filter-group">
+                    <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] space-y-4 flex-1">
+                        <h3 class="text-sm font-extrabold font-archivo text-[#02025b] uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                            <span>Pilih Olahraga</span>
+                        </h3>
+                        <div class="flex flex-col gap-2.5" id="sport-filter-group">
+                            <template x-for="(sport, index) in prioritizedSports()" :key="'v-' + sport">
+                                <label x-show="index < 5" class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-all duration-200 select-none group hover:shadow-sm"
+                                       :class="selectedSports.includes(sport) ? 'bg-indigo-50/80 border-indigo-200 text-indigo-700 font-bold shadow-sm' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-100'">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-lg group-hover:scale-110 transition-transform duration-200" x-text="sportEmoji[sport] || '🏆'"></span>
+                                        <span class="text-sm font-bold" x-text="sport"></span>
+                                    </div>
+                                    <input type="checkbox" :value="sport" class="w-5 h-5 rounded-md text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                                           :checked="selectedSports.includes(sport)"
+                                           @change="toggleSport(sport)">
+                                </label>
+                            </template>
+                        </div>
+
+                        {{-- Hidden checkboxes — always in DOM for buildDeck --}}
+                        <div class="hidden" aria-hidden="true">
                             @foreach($sportOptions as $sport)
-                            <div class="filter-checkbox-item">
-                                <input type="checkbox" id="sport-{{ Str::slug($sport) }}" value="{{ $sport }}" class="sport-checkbox">
-                                <label for="sport-{{ Str::slug($sport) }}">{{ $sport }}</label>
-                            </div>
+                                <input type="checkbox" value="{{ $sport }}" class="sport-checkbox"
+                                       :checked="selectedSports.includes($el.value)">
                             @endforeach
+                        </div>
+
+                        {{-- Gender Filter --}}
+                        <div class="pt-1 space-y-2.5">
+                            <h4 class="text-[10px] font-extrabold font-archivo text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                                <span>Filter Gender</span>
+                            </h4>
+                            <div class="flex gap-2">
+                                <button @click="selectedGender = ''; window.__genderFilter = ''; $nextTick(() => { if(window.buildDeck) window.buildDeck() })"
+                                        :class="selectedGender === '' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold shadow-sm' : 'bg-white border-slate-100 text-slate-500 hover:border-indigo-100'"
+                                        class="flex-1 text-[11px] font-extrabold font-archivo py-2.5 rounded-xl border transition-all duration-200">
+                                    Semua
+                                </button>
+                                <button @click="selectedGender = 'laki-laki'; window.__genderFilter = 'laki-laki'; $nextTick(() => { if(window.buildDeck) window.buildDeck() })"
+                                        :class="selectedGender === 'laki-laki' ? 'bg-blue-50 border-blue-200 text-blue-700 font-bold shadow-sm' : 'bg-white border-slate-100 text-slate-500 hover:border-blue-100'"
+                                        class="flex-1 text-[11px] font-extrabold font-archivo py-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center gap-1">
+                                    <span>♂</span> Pria
+                                </button>
+                                <button @click="selectedGender = 'perempuan'; window.__genderFilter = 'perempuan'; $nextTick(() => { if(window.buildDeck) window.buildDeck() })"
+                                        :class="selectedGender === 'perempuan' ? 'bg-rose-50 border-rose-200 text-rose-700 font-bold shadow-sm' : 'bg-white border-slate-100 text-slate-500 hover:border-rose-100'"
+                                        class="flex-1 text-[11px] font-extrabold font-archivo py-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center gap-1">
+                                    <span>♀</span> Wanita
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-1">
+                            @if($sportOptions->count() > 5)
+                                <button @click="openFilterModal = true" class="text-xs font-extrabold font-archivo text-indigo-600 hover:text-indigo-800 transition-colors select-none flex items-center gap-1 group">
+                                    <span>Selengkapnya</span>
+                                    <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                </button>
+                            @else
+                                <span></span>
+                            @endif
+                            <button @click="resetFilters()" class="text-[10px] font-extrabold font-archivo text-slate-400 hover:text-rose-500 transition-colors select-none flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
+                                <span>Reset Filter</span>
+                            </button>
                         </div>
                     </div>
 
-                    {{-- Upcoming Bookings --}}
-                    @if($upcomingBookings->isNotEmpty())
-                    <div class="card-section">
-                        <div class="filter-section-title">Pertandingan Mendatang</div>
-                        <div class="booking-list">
-                            @foreach($upcomingBookings as $booking)
-                            @php
-                                $sport = match(true) {
-                                    str_contains(strtolower($booking->field->name), 'futsal') => 'Futsal',
-                                    str_contains(strtolower($booking->field->name), 'badminton') || str_contains(strtolower($booking->field->name), 'bulu') => 'Badminton',
-                                    str_contains(strtolower($booking->field->name), 'basket') => 'Basket',
-                                    str_contains(strtolower($booking->field->name), 'voli') || str_contains(strtolower($booking->field->name), 'volley') => 'Voli',
-                                    str_contains(strtolower($booking->field->name), 'tenis') || str_contains(strtolower($booking->field->name), 'tennis') => 'Tennis',
-                                    default => 'Olahraga'
-                                };
-                            @endphp
-                            <div class="booking-card">
-                                <div class="booking-card-sport {{ $sportColor($sport) }}">{{ $sport }}</div>
-                                <div class="booking-card-title">{{ $booking->field->name }}</div>
-                                <div class="booking-card-meta">
-                                    <span>{{ \Carbon\Carbon::parse($booking->date)->locale('id')->format('d M Y') }}</span>
-                                    <span>{{ \Carbon\Carbon::createFromFormat('H:i:s', $booking->start_time)->format('H:i') }}</span>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
                 </div>
 
-                {{-- CENTER COLUMN - SWIPE CARD --}}
-                <div class="redesign-col-center">
-                    <div class="swipe-container">
+                {{-- CENTER COLUMN - SWIPE CARD (md:col-span-8 / lg:col-span-6) --}}
+                <div class="order-1 md:order-2 md:col-span-8 lg:col-span-6 flex flex-col items-center justify-center min-h-[580px] w-full self-start">
+                    <div class="swipe-container relative w-full max-w-[440px] h-[550px] flex items-center justify-center">
+                        
                         {{-- Back Card (Preview) --}}
-                        <div class="swipe-card-modern swipe-card-modern--back" data-swipe-card-back hidden>
-                            <div class="swipe-image-container">
-                                <img data-card-back-image src="" alt="Tim berikutnya">
+                        <div class="swipe-card-modern swipe-card-modern--back absolute w-full h-[530px] bg-white rounded-[32px] border border-slate-100 shadow-md overflow-hidden opacity-60 scale-95 pointer-events-none z-10" data-swipe-card-back hidden>
+                            <div class="relative w-full h-[250px] bg-slate-100 overflow-hidden">
+                                <img data-card-back-image src="" alt="Tim berikutnya" class="w-full h-full object-cover">
+                                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#11114b]/80 via-[#11114b]/30 to-transparent p-5 pt-10">
+                                    <span class="text-white text-base font-extrabold font-archivo leading-tight line-clamp-2 drop-shadow-lg" data-card-back-title-badge></span>
+                                </div>
                             </div>
-                            <div class="swipe-content">
-                                <h3 class="swipe-title" data-card-back-title></h3>
+                            <div class="p-6">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg border text-[9px] font-extrabold font-archivo tracking-wider uppercase" data-card-back-sport-tag></span>
                             </div>
                         </div>
 
                         {{-- Front Card --}}
-                        <div class="swipe-card-modern" data-swipe-card>
-                            <div class="swipe-image-container">
-                                <img data-card-image src="" alt="Tim olahraga">
+                        <div class="swipe-card-modern absolute w-full h-[530px] bg-white rounded-[32px] border border-slate-100 shadow-[0_20px_40px_-10px_rgba(17,17,75,0.12)] overflow-hidden z-20 cursor-grab active:cursor-grabbing select-none" data-swipe-card>
+                            <div class="relative w-full h-[250px] bg-slate-100 overflow-hidden">
+                                <img data-card-image src="" alt="Tim olahraga" class="w-full h-full object-cover pointer-events-none">
+                                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#11114b]/80 via-[#11114b]/30 to-transparent p-5 pt-10">
+                                    <span class="text-white text-base font-extrabold font-archivo leading-tight line-clamp-2 drop-shadow-lg" data-card-title-badge></span>
+                                </div>
                             </div>
-                            <div class="swipe-content">
-                                <h3 class="swipe-title" data-card-title></h3>
-                                <div class="swipe-meta-list">
-                                    <div class="swipe-meta-item">
-                                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 18.5 14.5 18.5 9.75C18.5 6.3 15.7 3.5 12.25 3.5C8.8 3.5 6 6.3 6 9.75C6 14.5 12 21 12 21Z" fill="#EA1E1E"/><circle cx="12.2" cy="9.7" r="2.1" fill="white"/></svg>
-                                        <span data-card-venue></span>
+                            <div class="p-6 flex flex-col justify-between h-[280px]">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg border text-[9px] font-extrabold font-archivo tracking-wider uppercase" data-card-sport-tag></span>
                                     </div>
-                                    <div class="swipe-meta-item">
-                                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" fill="#F28B1D"/><path d="M3.8 12H20.2" stroke="#111" stroke-width="1.5"/></svg>
-                                        <span data-card-sport></span>
-                                    </div>
-                                    <div class="swipe-meta-item">
-                                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#111" stroke-width="1.7"/><path d="M12 7.6V12.4L15.2 14.2" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                        <span data-card-schedule></span>
-                                    </div>
-                                    <div class="swipe-meta-item">
-                                        <svg viewBox="0 0 24 24" fill="none"><path d="M7 10.5C7 8.57 8.57 7 10.5 7C11.96 7 13.22 7.9 13.75 9.17C14.2 8.88 14.74 8.7 15.33 8.7C16.95 8.7 18.27 10.02 18.27 11.64C18.27 13.26 16.95 14.58 15.33 14.58H8.7C7.21 14.58 6 13.37 6 11.88C6 11.27 6.2 10.72 6.53 10.27" stroke="#111" stroke-width="1.7" stroke-linecap="round"/></svg>
-                                        <span data-card-needs></span>
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-3.5">
+                                        <!-- Schedule -->
+                                        <div class="flex items-start gap-2.5">
+                                            <div class="p-2 bg-blue-50/70 text-blue-600 rounded-xl flex-shrink-0 mt-0.5">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-[9px] font-extrabold font-archivo text-slate-400 uppercase tracking-wider">Jadwal</span>
+                                                <span class="text-xs font-bold text-slate-600 line-clamp-2 leading-tight" data-card-schedule></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Venue -->
+                                        <div class="flex items-start gap-2.5">
+                                            <div class="p-2 bg-rose-50/70 text-rose-600 rounded-xl flex-shrink-0 mt-0.5">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-[9px] font-extrabold font-archivo text-slate-400 uppercase tracking-wider">Lokasi</span>
+                                                <span class="text-xs font-bold text-slate-700 line-clamp-2 leading-tight" data-card-venue></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Needs (Slot Pemain) -->
+                                        <div class="flex items-start gap-2.5">
+                                            <div class="p-2 bg-amber-50/70 text-amber-600 rounded-xl flex-shrink-0 mt-0.5">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94-3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-[9px] font-extrabold font-archivo text-slate-400 uppercase tracking-wider">Slot Pemain</span>
+                                                <span class="text-xs font-bold text-slate-700 leading-tight" data-card-needs></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Contribution -->
+                                        <div class="flex items-start gap-2.5">
+                                            <div class="p-2 bg-emerald-50/70 text-emerald-600 rounded-xl flex-shrink-0 mt-0.5">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.251.11a3.375 3.375 0 003.497 0L13 15.006m-.25-8.205A3.375 3.375 0 009.25 5.655L9 5.714m3 12.728a3.375 3.375 0 01-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-[9px] font-extrabold font-archivo text-slate-400 uppercase tracking-wider">Kontribusi</span>
+                                                <span class="text-xs font-bold text-slate-700 leading-tight" data-card-contribution></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="swipe-actions">
-                                    <button type="button" class="swipe-action-btn btn-skip" data-swipe-skip>
-                                        <svg viewBox="0 0 24 24" fill="none"><path d="M6.5 6.5L17.5 17.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M17.5 6.5L6.5 17.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-                                        Lewati
+                                
+                                {{-- Sporty Rounded Action Buttons --}}
+                                <div class="grid grid-cols-2 gap-3 mt-auto">
+                                    <button type="button" class="flex items-center justify-center gap-2.5 py-3.5 bg-gradient-to-r from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100 text-rose-600 border border-rose-100 hover:border-rose-200 rounded-full shadow-sm hover:shadow-md hover:shadow-rose-100/50 text-sm font-extrabold font-archivo transition-all duration-200 group active:scale-[0.97]" data-swipe-skip>
+                                        <svg class="w-4.5 h-4.5 transition-transform group-hover:-rotate-12 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        <span>Lewati</span>
                                     </button>
-                                    <button type="button" class="swipe-action-btn btn-join" data-swipe-join>
-                                        <svg viewBox="0 0 24 24" fill="none"><path d="M12.6 20.2C12.26 20.36 11.86 20.36 11.52 20.2C8.52 18.76 5 15.8 5 11.94C5 8.95 7.42 6.53 10.4 6.53C11.57 6.53 12.67 6.9 13.58 7.59C14.49 6.9 15.59 6.53 16.76 6.53C19.74 6.53 22.16 8.95 22.16 11.94C22.16 15.8 18.64 18.76 15.64 20.2" fill="currentColor"/></svg>
-                                        Gabung
+                                    <button type="button" class="flex items-center justify-center gap-2.5 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-full shadow-md shadow-emerald-200/60 hover:shadow-lg hover:shadow-emerald-200/80 hover:-translate-y-0.5 text-sm font-extrabold font-archivo transition-all duration-200 group active:scale-[0.97]" data-swipe-join>
+                                        <svg class="w-4.5 h-4.5 transition-transform group-hover:scale-110 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        <span>Bergabung</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Empty State --}}
-                        <div class="swipe-empty-state" data-swipe-empty>
-                            <div class="swipe-empty-state-icon">🔍</div>
-                            <div class="swipe-empty-state-text">Tidak ada pertandingan untuk filter ini</div>
+                        {{-- Empty State with Interactive Reset CTA --}}
+                        <div class="swipe-empty-state flex flex-col items-center justify-center text-center p-8 bg-white border border-slate-100 rounded-[32px] shadow-sm w-full h-[530px] z-30 transition-all duration-300" data-swipe-empty hidden>
+                            <div class="w-20 h-20 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center text-3xl mb-4 border border-slate-100 shadow-sm animate-bounce">
+                                🔍
+                            </div>
+                            <h4 class="text-lg font-extrabold font-archivo text-[#02025b] mb-1">Pertandingan Habis</h4>
+                            <p class="text-sm font-semibold text-slate-400 max-w-[240px] mb-3">Tidak ada pertandingan aktif yang cocok dengan filter olahraga Anda.</p>
+                            <button @click="resetFilters()" class="px-5 py-2.5 bg-[#11114b] hover:bg-[#02025b] text-white font-extrabold font-archivo text-xs rounded-xl shadow-md transition-all">
+                                Reset Semua Filter
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                {{-- RIGHT COLUMN --}}
-                <div class="redesign-col-right">
+                {{-- RIGHT COLUMN - BADGE & TEAMS (md:col-span-12 / lg:col-span-3) --}}
+                {{-- Responsive tablet split wrapper: md:flex-row on tablet, lg:flex-col on desktop --}}
+                <div class="order-3 md:col-span-12 lg:col-span-3 flex flex-col md:flex-row lg:flex-col gap-6 md:gap-8 lg:gap-6 w-full">
+                    
                     {{-- Badge / Level Card --}}
-                    <div class="badge-card">
-                        <div class="badge-level">{{ $userSkill['level'] }}</div>
-                        <div class="badge-text">Lencana Pemain</div>
-                        <div class="badge-progress">
-                            <div class="badge-progress-bar" style="width: {{ (($userSkill['progress'] + 1) / 5) * 100 }}%"></div>
+                    <div class="bg-gradient-to-br from-[#11114b] to-[#262680] rounded-3xl p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden group flex-1 w-full">
+                        <div class="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="absolute -left-12 -bottom-12 w-28 h-28 bg-white/5 rounded-full blur-lg group-hover:scale-110 transition-transform duration-500"></div>
+                        
+                        <div class="flex items-center justify-between mb-5">
+                            <h3 class="text-[10px] font-extrabold font-archivo tracking-wider uppercase opacity-80">Lencana Pemain</h3>
+                            <span class="text-lg">🏆</span>
                         </div>
-                        <div class="badge-stats">
-                            {{ $userSkill['totalBookings'] + $userSkill['totalMatches'] }} aktivitas
+                        
+                        <div class="flex flex-col items-center text-center py-0.5">
+                            <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl mb-3 border border-white/20 shadow-inner group-hover:scale-105 transition-transform duration-300">
+                                🎖️
+                            </div>
+                            
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-base font-extrabold font-archivo tracking-wide">{{ $userSkill['level'] }}</span>
+                                <span class="px-2.5 py-0.5 bg-white/15 rounded-full text-[9px] font-bold font-archivo tracking-wider uppercase border border-white/10">Level</span>
+                            </div>
+                            
+                            <div class="w-full mt-5">
+                                <div class="flex justify-between items-center text-[9px] font-extrabold font-archivo tracking-wider uppercase opacity-75 mb-1.5">
+                                    <span>Progress</span>
+                                    <span>{{ $userSkill['progress'] }}/5</span>
+                                </div>
+                                <div class="w-full h-2.5 bg-white/15 rounded-full overflow-hidden border border-white/10">
+                                    <div class="h-full bg-gradient-to-r from-yellow-300 to-yellow-400 rounded-full transition-all duration-500 shadow-inner" style="width: {{ ($userSkill['progress'] / 5) * 100 }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-1.5 mt-4 text-[10px] font-semibold opacity-70 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <span>{{ $userSkill['totalBookings'] + $userSkill['totalMatches'] }} aktivitas</span>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- My Teams --}}
-                    @if($myTeams->isNotEmpty())
-                    <div class="card-section">
-                        <div class="filter-section-title">Tim Anda</div>
-                        <div class="teams-list">
-                            @foreach($myTeams->take(3) as $team)
-                            <div class="team-item">
-                                <div class="team-item-title">{{ $team->title }}</div>
-                                <div class="team-item-meta">
-                                    <span>{{ \Carbon\Carbon::parse($team->date)->locale('id')->format('d M') }}</span>
-                                    <span class="font-semibold">{{ $team->players->count() }}/{{ $team->max_player }}</span>
-                                </div>
+                    {{-- My Teams - Compact Mini Cards --}}
+                    <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] space-y-4 flex-1 w-full">
+                        <h3 class="text-sm font-extrabold font-archivo text-[#02025b] uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                            Tim Anda
+                        </h3>
+                        
+                        @if($myTeams->isNotEmpty())
+                            <div class="flex flex-col gap-2.5">
+                                @foreach($myTeams->take(2) as $team)
+                                    @php
+                                        $teamSport = match(true) {
+                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'futsal') => 'Futsal',
+                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'badminton') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'bulu') => 'Badminton',
+                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'basket') => 'Basket',
+                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'voli') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'volley') => 'Voli',
+                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'tenis') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'tennis') => 'Tennis',
+                                            default => 'Olahraga'
+                                        };
+
+                                        $teamSportEmoji = match($teamSport) {
+                                            'Futsal' => '⚽',
+                                            'Badminton' => '🏸',
+                                            'Basket' => '🏀',
+                                            'Voli' => '🏐',
+                                            'Tennis' => '🎾',
+                                            default => '🏆',
+                                        };
+                                        
+                                        $teamBadgeColor = match($teamSport) {
+                                            'Futsal' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                            'Badminton' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                            'Basket' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                            'Voli' => 'bg-purple-50 text-purple-600 border-purple-100',
+                                            'Tennis' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                            default => 'bg-slate-50 text-slate-600 border-slate-100',
+                                        };
+                                    @endphp
+                                    <a href="{{ route('matches.show', $team->id) }}" class="flex items-center gap-3 p-3 bg-white hover:bg-slate-50/80 border border-slate-100 hover:border-indigo-100/60 rounded-2xl transition-all duration-200 group shadow-sm hover:shadow-md">
+                                        <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-base group-hover:scale-110 transition-transform duration-200">
+                                            {{ $teamSportEmoji }}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="text-xs font-extrabold font-archivo text-[#02025b] group-hover:text-indigo-600 transition-colors truncate">{{ $team->title }}</h4>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-md border text-[8px] font-extrabold font-archivo tracking-wider uppercase {{ $teamBadgeColor }}">
+                                                    {{ $teamSport }}
+                                                </span>
+                                                <span class="text-[9px] font-bold text-slate-400">{{ \Carbon\Carbon::parse($team->date)->locale('id')->format('d M') }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0 text-center">
+                                            <div class="text-[10px] font-extrabold font-archivo text-indigo-700 bg-indigo-50/80 border border-indigo-100 px-2.5 py-1 rounded-xl">
+                                                {{ $team->players->count() }}/{{ $team->max_player }}
+                                            </div>
+                                        </div>
+                                    </a>
+                                @endforeach
                             </div>
-                            @endforeach
-                        </div>
-                        @if($myTeams->count() > 3)
-                        <button class="view-all-btn" onclick="alert('Feature: View all teams')">Lihat Semua</button>
+                            <a href="{{ route('matches.myTeams') }}" class="flex items-center justify-center gap-1.5 w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 hover:text-indigo-900 font-extrabold font-archivo text-xs rounded-xl transition-all border border-indigo-100 hover:border-indigo-200 group">
+                                <span>Lihat Semua</span>
+                                <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                            </a>
+                        @else
+                            <div class="flex flex-col items-center justify-center text-center p-6 bg-slate-50/50 border border-slate-100 rounded-2xl">
+                                <span class="text-2xl mb-1.5">⚽</span>
+                                <h4 class="text-xs font-extrabold font-archivo text-[#02025b] mb-0.5">Belum ada tim</h4>
+                                <p class="text-[11px] font-semibold text-slate-400">Anda belum pernah mempublikasikan pertandingan Anda.</p>
+                            </div>
                         @endif
                     </div>
-                    @else
-                    <div class="card-section" style="text-align: center; color: #999; padding: 24px;">
-                        <div style="font-size: 2rem; margin-bottom: 8px;">⚽</div>
-                        <div style="font-size: 0.95rem; font-weight: 600;">Belum ada tim</div>
-                    </div>
-                    @endif
                 </div>
 
             </div>
+
+            {{-- PERTANDINGAN MENDATANG - Full Width Landscape Section --}}
+            <div class="mt-8 bg-white rounded-3xl border border-slate-100 p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] space-y-5 w-full">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-extrabold font-archivo text-[#02025b] uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                        <span>Pertandingan Mendatang</span>
+                    </h3>
+                    @if($upcomingBookings->isNotEmpty())
+                    <span class="text-[11px] font-bold text-slate-400">{{ $upcomingBookings->count() }} pertandingan</span>
+                    @endif
+                </div>
+                @if($upcomingBookings->isNotEmpty())
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    @foreach($upcomingBookings as $booking)
+                        @php
+                            $sport = match(true) {
+                                str_contains(strtolower($booking->field->name), 'futsal') => 'Futsal',
+                                str_contains(strtolower($booking->field->name), 'badminton') || str_contains(strtolower($booking->field->name), 'bulu') => 'Badminton',
+                                str_contains(strtolower($booking->field->name), 'basket') => 'Basket',
+                                str_contains(strtolower($booking->field->name), 'voli') || str_contains(strtolower($booking->field->name), 'volley') => 'Voli',
+                                str_contains(strtolower($booking->field->name), 'tenis') || str_contains(strtolower($booking->field->name), 'tennis') => 'Tennis',
+                                default => 'Olahraga'
+                            };
+                            
+                            $sportEmoji = match($sport) {
+                                'Futsal' => '⚽',
+                                'Badminton' => '🏸',
+                                'Basket' => '🏀',
+                                'Voli' => '🏐',
+                                'Tennis' => '🎾',
+                                default => '🏆',
+                            };
+
+                            $sportBadgeColor = match($sport) {
+                                'Futsal' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                'Badminton' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                'Basket' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                'Voli' => 'bg-purple-50 text-purple-600 border-purple-100',
+                                'Tennis' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                default => 'bg-slate-50 text-slate-600 border-slate-100',
+                            };
+                        @endphp
+                        <div class="group flex items-start gap-3 p-3.5 bg-white hover:bg-slate-50/80 border border-slate-100 hover:border-indigo-100/60 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md">
+                            <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-base group-hover:scale-110 transition-transform duration-200">
+                                {{ $sportEmoji }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5 mb-0.5">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-md border text-[8px] font-extrabold font-archivo tracking-wider uppercase {{ $sportBadgeColor }}">
+                                        {{ $sport }}
+                                    </span>
+                                    <span class="text-[8px] font-extrabold text-emerald-600 bg-emerald-50/70 border border-emerald-100 px-1.5 py-0.5 rounded-md ml-auto flex-shrink-0">
+                                        Confirmed
+                                    </span>
+                                </div>
+                                <h4 class="text-xs font-extrabold font-archivo text-[#02025b] group-hover:text-indigo-600 transition-colors leading-snug truncate">{{ $booking->field->name }}</h4>
+                                <div class="flex items-center gap-x-2.5 mt-1 text-[10px] font-bold text-slate-400">
+                                    <span class="flex items-center gap-1 text-slate-500">
+                                        <svg class="w-2.5 h-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                                        {{ \Carbon\Carbon::parse($booking->date)->locale('id')->translatedFormat('j M') }}
+                                    </span>
+                                    <span class="flex items-center gap-1 text-slate-500">
+                                        <svg class="w-2.5 h-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        {{ \Carbon\Carbon::createFromFormat('H:i:s', $booking->start_time)->format('H:i') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="flex flex-col items-center justify-center text-center py-8 px-4 bg-slate-50/30 border border-slate-100 rounded-2xl">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-2xl mb-3">
+                        📅
+                    </div>
+                    <h4 class="text-sm font-extrabold font-archivo text-[#02025b] mb-1">Belum ada pertandingan mendatang</h4>
+                    <p class="text-[11px] font-semibold text-slate-400">Yuk buat pertandingan atau gabung dengan tim lain!</p>
+                </div>
+                @endif
+            </div>
         </section>
+
+        {{-- ALPINEJS MODAL POPUP - Glassmorphic Premium --}}
+        <div x-show="openFilterModal" x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-[#11114b]/50 backdrop-blur-md z-[999] flex items-center justify-center p-4" 
+             @click.self="openFilterModal = false"
+             @keydown.escape.window="openFilterModal = false">
+            
+            <div class="bg-white rounded-[32px] w-full max-w-[500px] p-8 shadow-2xl border border-slate-100 flex flex-col gap-6 relative"
+                 x-show="openFilterModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="scale-90 translate-y-6 opacity-0"
+                 x-transition:enter-end="scale-100 translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="scale-100 translate-y-0 opacity-100"
+                 x-transition:leave-end="scale-90 translate-y-6 opacity-0">
+                
+                <button @click="openFilterModal = false" class="absolute top-6 right-6 p-2 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all hover:scale-105">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 flex items-center justify-center text-lg">
+                            🏅
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold font-archivo text-[#02025b]">Semua Olahraga</h3>
+                            <p class="text-xs font-semibold text-slate-400">Pilih kategori untuk memfilter pertandingan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 max-h-[320px] overflow-y-auto pr-1 upcoming-scroll">
+                    @foreach($sportOptions as $sport)
+                        @php
+                            $emoji = match($sport) {
+                                'Futsal' => '⚽',
+                                'Badminton' => '🏸',
+                                'Basket' => '🏀',
+                                'Voli' => '🏐',
+                                'Tennis' => '🎾',
+                                default => '🏆',
+                            };
+                        @endphp
+                        <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-all duration-200 select-none group hover:shadow-sm"
+                               data-sport="{{ $sport }}"
+                               :class="selectedSports.includes($el.dataset.sport) ? 'bg-indigo-50/80 border-indigo-200 text-indigo-700 font-bold shadow-sm' : 'bg-white border-slate-100 text-slate-700 hover:border-indigo-100'">
+                            <div class="flex items-center gap-2.5">
+                                <span class="text-base group-hover:scale-110 transition-transform duration-200">{{ $emoji }}</span>
+                                <span class="text-xs font-bold">{{ $sport }}</span>
+                            </div>
+                            <input type="checkbox" value="{{ $sport }}" 
+                                   class="w-4.5 h-4.5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                                   :checked="selectedSports.includes($el.value)"
+                                   @change="toggleSport($el.value)">
+                        </label>
+                    @endforeach
+                </div>
+
+                <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                    <button @click="resetFilters()" class="flex items-center gap-1.5 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 font-bold font-archivo text-xs rounded-xl transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
+                        <span>Reset</span>
+                    </button>
+                    <button @click="openFilterModal = false" class="flex items-center gap-1.5 px-6 py-2.5 bg-gradient-to-r from-[#11114b] to-[#262680] hover:from-[#02025b] hover:to-[#1a1a6e] text-white font-bold font-archivo text-xs rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.97]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <span>Terapkan</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -801,15 +746,15 @@
     const emptyEl = document.querySelector('[data-swipe-empty]');
     const skipBtn = document.querySelector('[data-swipe-skip]');
     const joinBtn = document.querySelector('[data-swipe-join]');
-    const titleEl = document.querySelector('[data-card-title]');
-    const backTitleEl = document.querySelector('[data-card-back-title]');
+    const titleBadgeEl = document.querySelector('[data-card-title-badge]');
+    const backTitleBadgeEl = document.querySelector('[data-card-back-title-badge]');
     const imageEl = document.querySelector('[data-card-image]');
     const backImageEl = document.querySelector('[data-card-back-image]');
     const venueEl = document.querySelector('[data-card-venue]');
-    const sportEl = document.querySelector('[data-card-sport]');
+    const sportTagEl = document.querySelector('[data-card-sport-tag]');
+    const backSportTagEl = document.querySelector('[data-card-back-sport-tag]');
     const needsEl = document.querySelector('[data-card-needs]');
     const scheduleEl = document.querySelector('[data-card-schedule]');
-    const sportCheckboxes = document.querySelectorAll('.sport-checkbox');
 
     if (!cardEl || !emptyEl || !skipBtn || !joinBtn) {
         return;
@@ -828,23 +773,58 @@
     let dragShiftX = 0;
     let isAnimating = false;
 
-    // Build deck based on selected sports
+    // Automatic local sports image mapper
+    const getSportImage = (sport) => {
+        const s = String(sport || '').toLowerCase();
+        if (s.includes('badminton') || s.includes('bulu')) return "{{ asset('assets/images/sports/badminton.jpg') }}";
+        if (s.includes('futsal')) return "{{ asset('assets/images/sports/futsal.jpg') }}";
+        if (s.includes('basket')) return "{{ asset('assets/images/sports/basket.jpg') }}";
+        if (s.includes('voli') || s.includes('volley')) return "{{ asset('assets/images/sports/volley.jpg') }}";
+        return "{{ asset('assets/images/sports/default.jpg') }}";
+    };
+
+    // Format Contribution currency nicely
+    const formatContribution = (val) => {
+        const num = Number(val);
+        if (!isNaN(num) && num > 0) {
+            return 'Rp ' + num.toLocaleString('id-ID') + ' / Player';
+        }
+        return 'Gratis / Free';
+    };
+
+    // Sport tag color mapping
+    const getSportTagClass = (sport) => {
+        const s = String(sport || '').toLowerCase();
+        if (s.includes('futsal')) return 'bg-blue-50 text-blue-600 border-blue-100';
+        if (s.includes('badminton') || s.includes('bulu')) return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+        if (s.includes('basket')) return 'bg-orange-50 text-orange-600 border-orange-100';
+        if (s.includes('voli') || s.includes('volley')) return 'bg-purple-50 text-purple-600 border-purple-100';
+        if (s.includes('tenis') || s.includes('tennis')) return 'bg-rose-50 text-rose-600 border-rose-100';
+        return 'bg-slate-50 text-slate-600 border-slate-100';
+    };
+
+    // Build deck based on selected sports & gender
     const buildDeck = () => {
-        const selectedSports = Array.from(sportCheckboxes)
+        const selectedSports = Array.from(document.querySelectorAll('.sport-checkbox'))
             .filter(cb => cb.checked)
             .map(cb => cb.value);
 
+        const selectedGender = window.__genderFilter || '';
+
         let available = allCards.filter(item => {
             const matchesSport = selectedSports.length === 0 || selectedSports.includes(item.sport);
+            const matchesGender = !selectedGender || item.creator_gender === selectedGender;
             const notSwiped = !swipedKeys.has(item._swipeKey);
-            return matchesSport && notSwiped;
+            return matchesSport && matchesGender && notSwiped;
         });
 
         // Auto-recycle if all swiped
         if (!available.length && allCards.length > 0) {
-            const validCards = allCards.filter(item => 
-                selectedSports.length === 0 || selectedSports.includes(item.sport)
-            );
+            const validCards = allCards.filter(item => {
+                const matchesSport = selectedSports.length === 0 || selectedSports.includes(item.sport);
+                const matchesGender = !selectedGender || item.creator_gender === selectedGender;
+                return matchesSport && matchesGender;
+            });
             swipedKeys.forEach(key => {
                 if (validCards.some(c => c._swipeKey === key)) {
                     swipedKeys.delete(key);
@@ -856,6 +836,7 @@
         deck = available;
         renderCard();
     };
+    window.buildDeck = buildDeck;
 
     const resetCardTransform = () => {
         cardEl.classList.remove('is-swiping-left', 'is-swiping-right');
@@ -867,7 +848,7 @@
         if (!deck.length) {
             cardEl.style.display = 'none';
             if (backCardEl) backCardEl.hidden = true;
-            emptyEl.classList.add('is-visible');
+            emptyEl.classList.remove('hidden');
             skipBtn.disabled = true;
             joinBtn.disabled = true;
             isAnimating = false;
@@ -877,26 +858,45 @@
         const current = deck[0];
         cardEl.style.display = 'block';
         resetCardTransform();
-        emptyEl.classList.remove('is-visible');
+        emptyEl.classList.add('hidden');
         skipBtn.disabled = false;
         joinBtn.disabled = false;
 
-        imageEl.src = current.image;
+        const currentImg = getSportImage(current.sport);
+        imageEl.src = currentImg;
         imageEl.alt = `Tim ${current.sport}`;
-        titleEl.textContent = current.title;
+
+        // Badge on image = match title, sport tag = small badge metadata
+        if (titleBadgeEl) titleBadgeEl.textContent = current.title;
+        if (sportTagEl) {
+            sportTagEl.textContent = current.sport.toUpperCase();
+            sportTagEl.className = `inline-flex items-center px-2.5 py-1 rounded-lg border text-[9px] font-extrabold font-archivo tracking-wider uppercase ${getSportTagClass(current.sport)}`;
+        }
+
         venueEl.textContent = current.venue;
-        sportEl.textContent = current.sport;
-        needsEl.textContent = `Butuh ${current.neededPlayers} pemain`;
+        needsEl.textContent = `Butuh ${current.neededPlayers} Pemain`;
         scheduleEl.textContent = current.schedule;
 
+        // Active contribution mapping
+        const contributionEl = document.querySelector('[data-card-contribution]');
+        if (contributionEl) {
+            contributionEl.textContent = formatContribution(current.contributionPerPlayer);
+        }
+
         // Show back card preview
-        if (backCardEl && backImageEl && backTitleEl) {
+        if (backCardEl && backImageEl && backTitleBadgeEl) {
             const next = deck[1];
             if (next) {
                 backCardEl.hidden = false;
-                backImageEl.src = next.image;
+                const nextImg = getSportImage(next.sport);
+                backImageEl.src = nextImg;
                 backImageEl.alt = `Tim ${next.sport}`;
-                backTitleEl.textContent = next.title;
+                backTitleBadgeEl.textContent = next.title;
+
+                if (backSportTagEl) {
+                    backSportTagEl.textContent = next.sport.toUpperCase();
+                    backSportTagEl.className = `inline-flex items-center px-2.5 py-1 rounded-lg border text-[9px] font-extrabold font-archivo tracking-wider uppercase ${getSportTagClass(next.sport)}`;
+                }
             } else {
                 backCardEl.hidden = true;
             }
@@ -928,10 +928,8 @@
     skipBtn?.addEventListener('click', () => swipe('left'));
     joinBtn?.addEventListener('click', () => swipe('right'));
 
-    // Sport filter - rebuild deck on change
-    sportCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', buildDeck);
-    });
+    // Sport filter - handled by Alpine toggleSport + buildDeck
+    // (no redundant JS listener needed)
 
     // Touch/pointer swipe gesture
     cardEl?.addEventListener('pointerdown', (event) => {
@@ -955,6 +953,13 @@
         if (dragShiftX < -90) swipe('left');
         else if (dragShiftX > 90) swipe('right');
         else cardEl.style.transform = '';
+    });
+
+    cardEl?.addEventListener('pointerdown', (e) => {
+        // Prevent pointer gesture conflicts on skip/join buttons
+        if (e.target.closest('[data-swipe-skip]') || e.target.closest('[data-swipe-join]')) {
+            pointerStartX = null;
+        }
     });
 
     cardEl?.addEventListener('pointercancel', () => {
