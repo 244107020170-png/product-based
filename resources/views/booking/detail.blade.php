@@ -69,6 +69,12 @@
         ['label'=>'Bantuan',    'icon'=>asset('assets/images/icons/bantuan.png'),    'href'=>route('preview.help')],
         ['label'=>'Pengaturan', 'icon'=>asset('assets/images/icons/pengaturan.png'), 'href'=>route('profile.edit')],
     ];
+
+    $referer = request()->headers->get('referer');
+    $previousUrl = url()->previous();
+    $currentUrl = url()->current();
+    $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
+    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('booking.index');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -155,8 +161,8 @@
     <section style="padding: 24px; max-width: 900px; margin: 0 auto;">
         
         <div style="margin-bottom: 20px;">
-            <a href="{{ route('booking.index') }}" style="display: inline-flex; align-items: center; padding: 0 20px; height: 40px; background: rgba(255,255,255,.76); color: #11114b; font-size: .95rem; font-weight: 700; text-decoration: none; border-radius: 10px; transition: all .2s ease; border: 1.8px solid #14144a;">
-                &larr; Kembali ke Daftar Booking
+            <a href="{{ $backUrl }}" style="display: inline-flex; align-items: center; padding: 0 20px; height: 40px; background: rgba(255,255,255,.76); color: #11114b; font-size: .95rem; font-weight: 700; text-decoration: none; border-radius: 10px; transition: all .2s ease; border: 1.8px solid #14144a;">
+                &larr; Kembali
             </a>
         </div>
 

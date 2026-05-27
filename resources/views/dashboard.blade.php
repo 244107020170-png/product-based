@@ -230,20 +230,6 @@
                     </div>
 
                     <div class="player-dashboard-title__actions">
-                        <div class="player-filter" data-filter-root>
-                            <button type="button" class="player-filter__button" data-filter-button aria-expanded="false">
-                                <span data-filter-label>Per Hari</span>
-                                <span class="player-filter__chevron"></span>
-                            </button>
-
-                            <div class="player-filter__menu" data-filter-menu hidden>
-                                <button type="button" class="player-filter__option is-active" data-filter-option="all">Per Hari</button>
-                                <button type="button" class="player-filter__option" data-filter-option="today">Hari ini</button>
-                                <button type="button" class="player-filter__option" data-filter-option="tomorrow">Besok</button>
-                                <button type="button" class="player-filter__option" data-filter-option="status">Status</button>
-                            </div>
-                        </div>
-
                         <a href="{{ url('/matches') }}" class="player-primary-button">Buat Pertandingan Baru</a>
                     </div>
                 </section>
@@ -404,7 +390,7 @@
                         <div class="player-dashboard-card__heading player-dashboard-card__heading--split">
                             <div class="player-dashboard-card__title-with-icon">
                                 <img src="{{ asset('assets/images/icons/rekomendasi.png') }}" alt="" class="player-section-icon">
-                                <h2>Rekomendasi Match</h2>
+                                <h2>Rekomendasi</h2>
                             </div>
                             <a href="{{ url('/matches') }}" class="player-link-button">Lihat semua</a>
                         </div>

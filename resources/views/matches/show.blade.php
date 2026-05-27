@@ -4,6 +4,12 @@
     $userName = $user?->name ?: 'Pecinta Olahraga';
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $profileAvatar = $user?->avatarUrl();
+
+    $referer = request()->headers->get('referer');
+    $previousUrl = url()->previous();
+    $currentUrl = url()->current();
+    $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
+    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('matches.myTeams');
     
     $sidebarItems = [
         ['label'=>'Beranda', 'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'), 'active'=>false],
@@ -155,7 +161,7 @@
         </header>
 
         <section class="match-detail-main">
-            <a href="{{ route('matches.myTeams') }}" class="btn-back">&larr; Kembali</a>
+            <a href="{{ $backUrl }}" class="btn-back">&larr; Kembali</a>
 
             @if(session('error'))
                 <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">

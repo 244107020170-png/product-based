@@ -22,13 +22,21 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
         ['label' => 'Pengaturan','icon' => asset('assets/images/icons/pengaturan.png'), 'href' => route('profile.edit')],
     ];
 
-    // Status map for display — hanya 3 status
+    // Status map for display
     $statusMap = [
-        'selesai'   => ['label' => 'Selesai',      'class' => 'history-status--selesai', 'filter' => 'selesai'],
-        'confirmed' => ['label' => 'Akan Datang',  'class' => 'history-status--akan',    'filter' => 'akan_datang'],
-        'pending'   => ['label' => 'Akan Datang',  'class' => 'history-status--akan',    'filter' => 'akan_datang'],
-        'cancelled' => ['label' => 'Dibatalkan',   'class' => 'history-status--dibatal', 'filter' => 'dibatalkan'],
+        'selesai'             => ['label' => 'Selesai',              'class' => 'history-status--selesai', 'filter' => 'selesai'],
+        'completed'           => ['label' => 'Selesai',              'class' => 'history-status--selesai', 'filter' => 'selesai'],
+        'confirmed'           => ['label' => 'Akan Datang',          'class' => 'history-status--akan',    'filter' => 'akan_datang'],
+        'pending'             => ['label' => 'Menunggu Konfirmasi',  'class' => 'history-status--pending',  'filter' => 'akan_datang'],
+        'waiting_payment'     => ['label' => 'Menunggu Pembayaran',  'class' => 'history-status--pending',  'filter' => 'akan_datang'],
+        'waiting_confirmation'=> ['label' => 'Menunggu Konfirmasi',  'class' => 'history-status--pending',  'filter' => 'akan_datang'],
+        'paid'                => ['label' => 'Dibayar',              'class' => 'history-status--akan',    'filter' => 'akan_datang'],
+        'cancelled'           => ['label' => 'Dibatalkan',           'class' => 'history-status--dibatal', 'filter' => 'dibatalkan'],
+        'expired'             => ['label' => 'Kadaluarsa',           'class' => 'history-status--dibatal', 'filter' => 'dibatalkan'],
+        'rejected'            => ['label' => 'Ditolak',              'class' => 'history-status--dibatal', 'filter' => 'dibatalkan'],
     ];
+
+    $nonSelesaiStatuses = ['cancelled', 'expired', 'rejected'];
 @endphp
 
 <!DOCTYPE html>
@@ -37,7 +45,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Histori Booking - {{ config('app.name', 'Spies Sport') }}</title>
+    <title>Histori Pemesanan - {{ config('app.name', 'Spies Sport') }}</title>
 
     @vite([
         'resources/css/app.css',
@@ -159,14 +167,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
             {{-- ======= HISTORY PAGE ======= --}}
             <div class="history-page">
 
-                {{-- Hidden form for filter submission --}}
-                <form method="GET" action="{{ route('history.index') }}" data-history-form id="history-filter-form">
-                    <input type="hidden" name="status"     value="{{ $statusFilter }}">
-                    <input type="hidden" name="sort_waktu" value="{{ $sortWaktu }}">
-                    <input type="hidden" name="sort_harga" value="{{ $sortHarga }}">
-                </form>
-
-                <h1 class="history-page__title">Histori Booking</h1>
+                <h1 class="history-page__title">Histori Pemesanan</h1>
 
                 {{-- ── Stats ── --}}
                 <div class="history-stats">
@@ -208,52 +209,21 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                 </div>
 
                 {{-- ── Toolbar ── --}}
-                <div class="history-toolbar">
-                    <div class="history-filters">
-
-                        {{-- Waktu dropdown --}}
-                        <div class="hfilter" data-hfilter="sort_waktu">
-                            <button type="button" class="hfilter__btn" data-hfilter-btn aria-expanded="false">
-                                <span data-hfilter-label>Waktu</span>
-                                <span class="hfilter__chevron"></span>
-                            </button>
-                            <div class="hfilter__tags">
-                                <button type="button" class="hfilter__tag{{ $sortWaktu === 'terbaru' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="terbaru">Terbaru</button>
-                                <button type="button" class="hfilter__tag{{ $sortWaktu === 'terlama' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="terlama">Terlama</button>
-                            </div>
-                            <div class="hfilter__menu" data-hfilter-menu hidden>
-                                <button type="button" class="hfilter__option{{ $sortWaktu === 'terbaru' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="terbaru">Terbaru</button>
-                                <button type="button" class="hfilter__option{{ $sortWaktu === 'terlama' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="terlama">Terlama</button>
-                            </div>
+                <form method="GET" action="{{ route('history.index') }}" data-history-form id="history-filter-form">
+                    <input type="hidden" name="status" value="{{ $statusFilter }}">
+                    <div class="history-toolbar">
+                        <div class="history-filters">
+                            <select name="sort_waktu" class="hfilter-select" onchange="this.form.submit()">
+                                <option value="terbaru" {{ $sortWaktu === 'terbaru' ? 'selected' : '' }}>Terbaru</option>
+                                <option value="terlama" {{ $sortWaktu === 'terlama' ? 'selected' : '' }}>Terlama</option>
+                            </select>
+                            <select name="sort_harga" class="hfilter-select" onchange="this.form.submit()">
+                                <option value="teratas" {{ $sortHarga === 'teratas' ? 'selected' : '' }}>Teratas</option>
+                                <option value="terbawah" {{ $sortHarga === 'terbawah' ? 'selected' : '' }}>Terbawah</option>
+                            </select>
                         </div>
 
-                        {{-- Harga dropdown --}}
-                        <div class="hfilter" data-hfilter="sort_harga">
-                            <button type="button" class="hfilter__btn" data-hfilter-btn aria-expanded="false">
-                                <span data-hfilter-label>Harga</span>
-                                <span class="hfilter__chevron"></span>
-                            </button>
-                            <div class="hfilter__tags">
-                                <button type="button" class="hfilter__tag{{ $sortHarga === 'teratas' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="teratas">Teratas</button>
-                                <button type="button" class="hfilter__tag{{ $sortHarga === 'terbawah' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="terbawah">Terbawah</button>
-                            </div>
-                            <div class="hfilter__menu" data-hfilter-menu hidden>
-                                <button type="button" class="hfilter__option{{ $sortHarga === 'teratas' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="teratas">Teratas</button>
-                                <button type="button" class="hfilter__option{{ $sortHarga === 'terbawah' ? ' is-active' : '' }}"
-                                    data-hfilter-tag="terbawah">Terbawah</button>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {{-- Total Pengeluaran --}}
+                        {{-- Total Pengeluaran --}}
                     <div class="history-total-card" aria-label="Total pengeluaran">
                         <span class="history-total-card__icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
@@ -272,6 +242,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                         <span class="history-total-card__arrow" aria-hidden="true"></span>
                     </div>
                 </div>
+                </form>
 
                 {{-- ── Booking List ── --}}
                 <div class="history-list" id="history-booking-list">
@@ -280,6 +251,18 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                         @php
                             $field       = $booking->field;
                             $statusKey   = $booking->status ?? 'pending';
+
+                            // Auto-Selesai: if date has passed and not cancelled/expired/rejected
+                            $isPast = false;
+                            if (!in_array($statusKey, $nonSelesaiStatuses)) {
+                                $bookingDate = \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
+                                $bookingEnd = \Carbon\Carbon::parse($bookingDate.' '.$booking->end_time);
+                                $isPast = $bookingEnd->isPast();
+                            }
+                            if ($isPast) {
+                                $statusKey = 'selesai';
+                            }
+
                             $statusInfo  = $statusMap[$statusKey] ?? ['label' => ucfirst($statusKey), 'class' => 'history-status--pending', 'filter' => $statusKey];
 
                             $bookingDate = \Carbon\Carbon::parse($booking->date)->locale('id')->translatedFormat('j M Y');
@@ -355,9 +338,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                     </span>
 
                                     <div class="history-card__actions">
-                                        <a href="{{ url('/fields') }}" class="hbtn hbtn--outline" id="detail-booking-{{ $booking->id }}">
-                                            Detail
-                                        </a>
+                                        <a href="{{ route('booking.detail', $booking->id) }}" class="hbtn hbtn--outline">Rincian</a>
                                         <a href="{{ url('/fields') }}" class="hbtn hbtn--primary" id="rebook-booking-{{ $booking->id }}">
                                             Pesan Lagi
                                         </a>
@@ -367,7 +348,80 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                         </article>
 
                     @empty
-                        {{-- Tidak ada booking sama sekali di DB → tampil langsung --}}
+                    @endforelse
+
+                    {{-- Confirmed match joins --}}
+                    @if(isset($matchJoins))
+                    @foreach($matchJoins as $mj)
+                    @php
+                        $cm = $mj->match;
+                        if (!$cm) continue;
+                        $isPastMatch = \Carbon\Carbon::parse($cm->date . ' ' . ($cm->time ?? '00:00'))->isPast();
+                        $mStatusKey = $isPastMatch ? 'selesai' : 'confirmed';
+                        $mStatusInfo = $statusMap[$mStatusKey] ?? ['label' => 'Selesai', 'class' => 'history-status--selesai', 'filter' => 'selesai'];
+                        $mDate = \Carbon\Carbon::parse($cm->date)->locale('id')->translatedFormat('j M Y');
+                        $mTime = $cm->time ? substr($cm->time, 0, 5) . ' WIB' : '-';
+                    @endphp
+                    <article class="history-card"
+                        data-booking-status="{{ $mStatusInfo['filter'] ?? 'selesai' }}"
+                        data-booking-id="match-{{ $mj->id }}">
+                        <div class="history-card__image">
+                            <div class="history-card__image-placeholder" aria-hidden="true" style="background: #f0fdf4;">
+                                <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+                                    <path d="M17 10H7M17 14H7M12 2L15 8H9L12 2Z" stroke="#166534" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <rect x="4" y="8" width="16" height="13" rx="2" stroke="#166534" stroke-width="1.8"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="history-card__body">
+                            <div class="history-card__header">
+                                <div>
+                                    <div class="history-card__title">
+                                        <span class="history-card__pin" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
+                                                <circle cx="12" cy="12" r="10" fill="#166534" stroke="#166534" stroke-width="1.2"/>
+                                                <path d="M12 6V12L16 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                            </svg>
+                                        </span>
+                                        <h2 class="history-card__name">{{ $cm->title }}</h2>
+                                    </div>
+                                    <p class="history-card__location">{{ $cm->field?->name ?? 'Lapangan' }}{{ $cm->field?->location ? ' - ' . $cm->field->location : '' }}</p>
+                                </div>
+                                <span class="history-status {{ $mStatusInfo['class'] }}">
+                                    {{ $mStatusInfo['label'] }}
+                                </span>
+                            </div>
+                            <div class="history-card__meta">
+                                <span class="history-card__meta-item">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <rect x="3.5" y="5.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+                                        <path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                                    </svg>
+                                    {{ $mDate }}
+                                </span>
+                                <span class="history-card__meta-item">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/>
+                                        <path d="M12 7.5V12.5L15 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    {{ $mTime }}
+                                </span>
+                            </div>
+                            <div class="history-card__footer">
+                                <span class="history-card__price">
+                                    <span style="color: #166534; font-weight: 700;">Public Match</span>
+                                </span>
+                                <div class="history-card__actions">
+                                    <a href="{{ route('matches.show', $cm->id) }}" class="hbtn hbtn--outline">Rincian</a>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                    @endforeach
+                    @endif
+
+                    @if($bookings->isEmpty() && (!isset($matchJoins) || $matchJoins->isEmpty()))
+                        {{-- Both empty → show main empty state --}}
                         <div class="history-empty">
                             <span class="history-empty__icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none">
@@ -375,14 +429,14 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                     <path d="M8 7H16M8 11H16M8 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </span>
-                            <p class="history-empty__text">Belum ada histori booking</p>
-                            <p class="history-empty__sub">Mulai booking lapangan pertamamu sekarang!</p>
-                            <a href="{{ url('/fields') }}" class="hbtn hbtn--primary">Booking Sekarang</a>
+                            <p class="history-empty__text">Belum ada histori pemesanan</p>
+                            <p class="history-empty__sub">Mulai pesan lapangan atau gabung pertandingan sekarang!</p>
+                            <a href="{{ url('/fields') }}" class="hbtn hbtn--primary">Pesan Sekarang</a>
                         </div>
-                    @endforelse
+                    @endif
 
                     {{-- Empty state khusus JS: muncul hanya saat filter tab menghasilkan 0 kartu --}}
-                    @if($bookings->count() > 0)
+                    @if($bookings->count() > 0 || (isset($matchJoins) && $matchJoins->count() > 0))
                     <div class="history-empty" data-history-empty hidden>
                         <span class="history-empty__icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
@@ -390,7 +444,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                 <path d="M16.5 16.5L20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </span>
-                        <p class="history-empty__text">Tidak ada booking di kategori ini</p>
+                        <p class="history-empty__text">Tidak ada pemesanan di kategori ini</p>
                         <p class="history-empty__sub">Coba pilih kategori lain.</p>
                     </div>
                     @endif

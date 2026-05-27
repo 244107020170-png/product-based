@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Booking;
+use App\Models\MatchPlayer;
 
 class HistoryController extends Controller
 {
@@ -22,9 +23,9 @@ class HistoryController extends Controller
         if ($statusFilter && $statusFilter !== 'semua') {
             // Map label → DB value(s)
             $map = [
-                'selesai'     => ['selesai'],
-                'akan_datang' => ['confirmed', 'pending'],
-                'dibatalkan'  => ['cancelled'],
+                'selesai'     => ['selesai', 'completed'],
+                'akan_datang' => ['confirmed', 'pending', 'waiting_payment', 'waiting_confirmation', 'paid'],
+                'dibatalkan'  => ['cancelled', 'expired', 'rejected'],
             ];
             if (isset($map[$statusFilter])) {
                 $query->whereIn('status', $map[$statusFilter]);
@@ -39,7 +40,6 @@ class HistoryController extends Controller
 
         // Filter by sort (harga)
         $sortHarga = $request->get('sort_harga', 'teratas');
-        // We'll sort by field price after loading if needed – for now keep DB default
 
         $bookings = $query->get();
 
@@ -50,26 +50,42 @@ class HistoryController extends Controller
             $bookings = $bookings->sortBy(fn($b) => optional($b->field)->price_per_hour ?? 0)->values();
         }
 
-        // Stats — hanya 3 status: selesai, akan datang (confirmed+pending), dibatalkan
-        $allBookings  = Booking::where('user_id', $user->id)->get();
-        $totalSemua   = $allBookings->count();
-        $totalSelesai = $allBookings->where('status', 'selesai')->count();
-        $totalAkan    = $allBookings->whereIn('status', ['confirmed', 'pending'])->count();
-        $totalDibatal = $allBookings->where('status', 'cancelled')->count();
+        // Fetch confirmed match joins (paid, confirmed by host)
+        $matchJoins = MatchPlayer::where('user_id', $user->id)
+            ->where('payment_status', \App\Enums\PaymentStatus::PAID)
+            ->whereHas('match')
+            ->with('match.field')
+            ->orderByDesc('confirmed_at')
+            ->get();
 
-        // Total pengeluaran (selesai + confirmed + pending)
-        $totalPengeluaran = $allBookings
-            ->whereIn('status', ['selesai', 'confirmed', 'pending'])
+        // Stats — include match joins in counts
+        $allBookings  = Booking::where('user_id', $user->id)->get();
+        $totalSemua   = $allBookings->count() + $matchJoins->count();
+        $totalSelesai = $allBookings->whereIn('status', ['selesai', 'completed'])->count()
+            + $matchJoins->filter(function ($mp) {
+                return $mp->match && $mp->match->date < now()->toDateString();
+            })->count();
+        $totalAkan    = $allBookings->whereIn('status', ['confirmed', 'pending', 'waiting_payment', 'waiting_confirmation', 'paid'])->count()
+            + $matchJoins->filter(function ($mp) {
+                return $mp->match && $mp->match->date >= now()->toDateString();
+            })->count();
+        $totalDibatal = $allBookings->whereIn('status', ['cancelled', 'expired', 'rejected'])->count();
+
+        // Total pengeluaran — responsive to active filter
+        $totalPengeluaran = $bookings
+            ->reject(fn($b) => in_array($b->status, ['cancelled', 'expired', 'rejected']))
             ->sum(function ($booking) {
-                if (!$booking->field) return 0;
+                $field = $booking->field;
+                if (!$field) return 0;
                 $start = \Carbon\Carbon::parse($booking->start_time);
                 $end   = \Carbon\Carbon::parse($booking->end_time);
                 $hours = max(1, $start->diffInHours($end));
-                return $booking->field->price_per_hour * $hours;
+                return $field->price_per_hour * $hours;
             });
 
         return view('history.index', compact(
             'bookings',
+            'matchJoins',
             'totalSemua',
             'totalSelesai',
             'totalAkan',

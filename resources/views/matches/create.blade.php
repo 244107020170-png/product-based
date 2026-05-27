@@ -431,7 +431,7 @@
 
             var items = dropdown.querySelectorAll('.sport-item');
             for (var k = 0; k < items.length; k++) {
-                items[k].addEventListener('click', function () {
+                items[k].addEventListener('mousedown', function () {
                     selectItem(this);
                 });
             }

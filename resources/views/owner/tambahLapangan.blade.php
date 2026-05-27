@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ isset($field) ? 'Edit Lapangan' : 'Tambah Lapangan' }}</title>
 
+    @php
+        $referer = request()->headers->get('referer');
+        $previousUrl = url()->previous();
+        $currentUrl = url()->current();
+        $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
+        $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : '/owner/kelolaLapangan';
+    @endphp
+
     <!-- Panggil file CSS baru di sini -->
     @vite([
         'resources/css/owner-dashboard.css', 
@@ -54,7 +62,7 @@
                 <p>Isi informasi detail mengenai lapangan olahraga di bawah ini.</p>
             </div>
             
-            <a href="/owner/kelolaLapangan" class="add-btn btn-secondary">
+            <a href="{{ $backUrl }}" class="add-btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
         </div>

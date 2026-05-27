@@ -351,6 +351,12 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
       </label>
     </div>
     <div class="player-dashboard-topbar__right">
+      <div class="player-dashboard-topbar__date">
+        <span class="player-inline-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        <span>{{ $currentDate }}</span>
+      </div>
       <div style="position: relative;">
         @include('partials.notification-bell')
       </div>

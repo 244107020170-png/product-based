@@ -1,5 +1,6 @@
 @php
     use Carbon\Carbon;
+    use App\Models\Field;
 
     $user = auth()->user();
     $userName = $user?->name ?: 'Pecinta Olahraga';
@@ -15,18 +16,25 @@
         'Voli' => '🏐',
         'Tennis' => '🎾',
     ];
-    
-    // Helper function for sport color badges
-    $sportColor = function($sport) {
-        return match($sport) {
-            'Futsal' => 'bg-blue-50 text-blue-700 border-blue-200',
-            'Badminton' => 'bg-green-50 text-green-700 border-green-200',
-            'Basket' => 'bg-orange-50 text-orange-700 border-orange-200',
-            'Voli' => 'bg-purple-50 text-purple-700 border-purple-200',
-            'Tennis' => 'bg-red-50 text-red-700 border-red-200',
-            default => 'bg-gray-50 text-gray-700 border-gray-200',
-        };
-    };
+
+    $allFields = Field::with('owner')->get();
+    $fullSportEmoji = [
+        'Futsal'=>'⚽','Badminton'=>'🏸','Basket'=>'🏀','Voli'=>'🏐','Tennis'=>'🎾',
+        'Golf'=>'🏌️','Renang'=>'🏊','Panahan'=>'🏹','Lari'=>'🏃','Sepeda'=>'🚴',
+        'Tinju'=>'🥊','Bela Diri'=>'🥋','Yoga'=>'🧘','Fitness'=>'🏋️','Hiking'=>'🥾',
+        'Padel'=>'🎾','Baseball'=>'⚾','Rugby'=>'🏉','Senam'=>'🤸',
+    ];
+    function fieldImg($f) {
+        if (!$f->image) return asset('assets/images/bg/Explore.png');
+        return asset('storage/' . $f->image);
+    }
+
+    $fieldJson = json_encode($allFields->map(fn($f) => [
+        'id' => $f->id, 'name' => $f->name, 'location' => $f->location,
+        'type' => $f->type, 'rating' => $f->rating, 'image' => fieldImg($f),
+    ])->values()->toArray());
+    $sportOptionsJson = json_encode($sportOptions->values()->toArray());
+    $sportEmojiMapJson = json_encode($sportEmojiMap);
 
     $sidebarItems = [
         ['label' => 'Beranda', 'icon' => asset('assets/images/icons/dashboard.png'), 'href' => route('dashboard'), 'active' => false],
@@ -140,14 +148,19 @@
         }
     </style>
     <script>
-        window.matchesIndexFilter = function () {
-            return {
-                openFilterModal: false,
-                openPrivateSportModal: false,
-                selectedSports: [],
-                selectedGender: '',
-                allSports: @json($sportOptions->values()->toArray()),
-                sportEmoji: @json($sportEmojiMap),
+        window.__allFields = {!! $fieldJson !!};
+    </script>
+    <script>
+    window.matchesIndexFilter = function () {
+        return {
+            openFilterModal: false,
+            openPrivateSportModal: false,
+            openFieldModal: false,
+            selectedPrivateSport: '',
+            selectedSports: [],
+            selectedGender: '',
+            allSports: {!! $sportOptionsJson !!},
+            sportEmoji: {!! $sportEmojiMapJson !!},
                 toggleSport(sport) {
                     if (!sport) return;
 
@@ -174,6 +187,23 @@
                     const selected = this.allSports.filter(s => this.selectedSports.includes(s));
                     const unselected = this.allSports.filter(s => !this.selectedSports.includes(s));
                     return [...selected, ...unselected];
+                },
+                selectPrivateSport(sport) {
+                    this.selectedPrivateSport = sport;
+                    this.openPrivateSportModal = false;
+                    this.openFieldModal = true;
+                },
+                filteredFields() {
+                    if (!this.selectedPrivateSport) return [];
+                    return (window.__allFields || []).filter(f => f.type === this.selectedPrivateSport);
+                },
+                fieldSearchQuery: '',
+                get filteredFieldList() {
+                    const q = this.fieldSearchQuery.toLowerCase().trim();
+                    return this.filteredFields().filter(f => {
+                        if (!q) return true;
+                        return f.name.toLowerCase().includes(q) || (f.location && f.location.toLowerCase().includes(q));
+                    });
                 },
             };
         };
@@ -789,17 +819,92 @@
                         ];
                     @endphp
                     @foreach($sportOptions as $sport)
-                        <a href="{{ route('dashboard', ['sport' => $sport]) }}" 
-                           class="flex flex-col items-center justify-center gap-1.5 p-3 border-2 border-slate-100 rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-200 hover:shadow-sm bg-white text-slate-700 hover:bg-indigo-50/30 no-underline">
+                        <button @click="selectPrivateSport('{{ $sport }}')" 
+                           class="flex flex-col items-center justify-center gap-1.5 p-3 border-2 border-slate-100 rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-200 hover:shadow-sm bg-white text-slate-700 hover:bg-indigo-50/30 w-full">
                             <span class="text-xl">{{ $privateSportEmoji[$sport] ?? '🏆' }}</span>
                             <span class="text-[9px] font-extrabold font-archivo uppercase tracking-wider text-center leading-tight">{{ $sport }}</span>
-                        </a>
+                        </button>
                     @endforeach
                 </div>
 
                 <div class="flex justify-center pt-2 border-t border-slate-100">
                     <button @click="openPrivateSportModal = false" class="flex items-center gap-1.5 px-6 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 font-bold font-archivo text-xs rounded-xl transition-all">
                         <span>Nanti dulu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Private Match: Field List --}}
+        <div x-show="openFieldModal" x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-[#11114b]/50 backdrop-blur-md z-[999] flex items-center justify-center p-4"
+             @click.self="openFieldModal = false"
+             @keydown.escape.window="openFieldModal = false">
+
+            <div class="bg-white rounded-[32px] w-full max-w-[600px] max-h-[85vh] shadow-2xl border border-slate-100 flex flex-col relative overflow-hidden"
+                 x-show="openFieldModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="scale-90 translate-y-6 opacity-0"
+                 x-transition:enter-end="scale-100 translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="scale-100 translate-y-0 opacity-100"
+                 x-transition:leave-end="scale-90 translate-y-6 opacity-0"
+                 @click.away="openFieldModal = false">
+
+                <div class="p-6 pb-4 border-b border-slate-100 flex-shrink-0">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-extrabold font-archivo text-[#02025b]">Pilih Lapangan</h3>
+                            <p class="text-sm text-slate-400 font-semibold mt-0.5">
+                                <span x-text="'Cari lapangan ' + selectedPrivateSport"></span>
+                            </p>
+                        </div>
+                        <button @click="openFieldModal = false" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                    <input type="text" x-model="fieldSearchQuery" placeholder="Cari lapangan atau lokasi..."
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-700 outline-none focus:border-indigo-300 focus:bg-white transition-all">
+                </div>
+
+                <div class="p-4 px-6 overflow-y-auto flex-1">
+                    <template x-if="filteredFieldList.length === 0">
+                        <div class="text-center py-12 text-slate-400 text-sm font-semibold">
+                            Tidak ada lapangan <span x-text="selectedPrivateSport"></span> yang tersedia
+                        </div>
+                    </template>
+                    <div class="grid grid-cols-1 gap-3">
+                        <template x-for="f in filteredFieldList" :key="f.id">
+                            <a :href="'/booking/' + f.id + '?sport=' + encodeURIComponent(selectedPrivateSport)"
+                               class="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-white hover:border-indigo-200 hover:shadow-sm transition-all no-underline text-inherit group">
+                                <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+                                    <img :src="f.image" :alt="f.name" class="w-full h-full object-cover">
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="text-sm font-extrabold text-[#02025b] truncate" x-text="f.name"></h4>
+                                    <p class="text-xs text-slate-500 mt-0.5 truncate" x-text="f.location || 'Lokasi tidak tersedia'"></p>
+                                    <p class="text-xs text-slate-400 mt-1">
+                                        <span class="text-amber-500">&#9733;</span>
+                                        <span x-text="f.rating || '4.8'"></span>
+                                        <span class="mx-1">&middot;</span>
+                                        <span x-text="f.type"></span>
+                                    </p>
+                                </div>
+                                <span class="text-slate-300 group-hover:text-indigo-400 transition-colors text-lg">&rarr;</span>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="p-4 pt-3 border-t border-slate-100 flex justify-center flex-shrink-0">
+                    <button @click="openFieldModal = false" class="px-6 py-2 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 font-bold font-archivo text-xs rounded-xl transition-all">
+                        Batal
                     </button>
                 </div>
             </div>

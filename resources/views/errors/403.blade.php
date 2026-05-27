@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $referer = request()->headers->get('referer');
+    $previousUrl = url()->previous();
+    $currentUrl = url()->current();
+    $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
+    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('dashboard');
+@endphp
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFEF0] to-[#FFF6D7] p-4">
     <div class="text-center max-w-md">
         <!-- Error Icon -->
@@ -27,9 +34,9 @@
 
         <!-- Action Buttons -->
         <div class="space-y-3">
-            <a href="{{ route('dashboard') }}" 
+            <a href="{{ $backUrl }}" 
                class="inline-block bg-[#EB5436] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#d93d2a] transition-colors duration-300 shadow-md hover:shadow-lg w-full">
-                Kembali ke Dashboard
+                Kembali
             </a>
             
             <a href="{{ route('home') }}" 

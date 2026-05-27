@@ -3,15 +3,26 @@
     use Carbon\Carbon;
 
     $selectedSport = request('sport');
-    $fieldsQuery = Field::with('owner');
-    if ($selectedSport) {
-        $fieldsQuery->where('type', $selectedSport);
-    }
-    $fields = $fieldsQuery->get();
+    $allFields = Field::with('owner')->get();
+    $fields = $selectedSport ? $allFields->where('type', $selectedSport) : $allFields;
+
+    $sportList = ['Futsal','Badminton','Basket','Voli','Tennis','Golf','Renang','Panahan','Lari','Sepeda','Tinju','Bela Diri','Yoga','Fitness','Hiking','Padel','Baseball','Rugby','Senam'];
+    $sportEmoji = [
+        'Futsal'=>'⚽','Badminton'=>'🏸','Basket'=>'🏀','Voli'=>'🏐','Tennis'=>'🎾',
+        'Golf'=>'🏌️','Renang'=>'🏊','Panahan'=>'🏹','Lari'=>'🏃','Sepeda'=>'🚴',
+        'Tinju'=>'🥊','Bela Diri'=>'🥋','Yoga'=>'🧘','Fitness'=>'🏋️','Hiking'=>'🥾',
+        'Padel'=>'🎾','Baseball'=>'⚾','Rugby'=>'🏉','Senam'=>'🤸',
+    ];
+    $uniqueSports = $allFields->pluck('type')->unique()->sort()->values()->toArray();
+    $availableSports = array_values(array_unique(array_merge($sportList, $uniqueSports)));
+    sort($availableSports);
+
     $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $bookingNotifs = Auth::user()->bookings()->with('field')->latest()->get();
+    $confirmedMatchNotifs = isset($confirmedMatchNotifs) ? $confirmedMatchNotifs : collect();
+    $upcomingJoin = isset($upcomingJoin) ? $upcomingJoin : null;
     $myTeams = \App\Models\Matchs::with('field')->where('created_by', Auth::id())->latest()->take(4)->get();
     function fieldImg($f) {
         if (!$f->image) return asset('assets/images/bg/Explore.png');
@@ -179,9 +190,6 @@
         <div class="dashboard-header-flex">
             <h1 style="font-size: 28px; font-weight: 800; color: #02025b; margin: 0;">Dashboard</h1>
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <select style="padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(0,0,77,.1); outline: none; font-weight: 600; color: #02025b; background: white;">
-                    <option>Per Hari</option>
-                </select>
                 <a href="javascript:void(0)" onclick="showCreateModal()" style="background: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background .2s; display: inline-block;">
                     Buat Pertandingan Baru
                 </a>
@@ -192,12 +200,12 @@
         <div class="hero-section">
             <!-- Hero Banner -->
             <div style="position: relative;">
-                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 10px; bottom: 20px; height: 110%; max-height: 320px; z-index: 3; object-fit: contain;">
+                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 10px; bottom: 20px; height: 320px; z-index: 3; object-fit: contain;">
                 <style>
                     @media (max-width: 768px) {
                         .hero-char-img {
                             opacity: 0.2;
-                            height: 90% !important;
+                            height: 260px !important;
                             bottom: 10px !important;
                             right: -20px !important;
                         }
@@ -207,7 +215,7 @@
                         box-shadow: 0 12px 24px rgba(0,0,0,0.15);
                     }
                 </style>
-                <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); position: relative; z-index: 1; min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
+                <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); position: relative; z-index: 1; min-height: 280px; display: flex; flex-direction: column; justify-content: center;">
                     <div class="hero-content-inner" style="max-width: 60%;">
                         <h2 style="font-size: 32px; font-weight: 900; color: #02025b; margin: 0 0 20px 0;">Hai, {{ Auth::user()->name ?? 'Pecinta Olahraga' }}!</h2>
                         
@@ -235,7 +243,7 @@
                     <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #02025b;">Notifikasi</h3>
                     <a href="#" style="font-size: 13px; color: #666; text-decoration: none; font-weight: 600;">Lihat semua</a>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 200px;">
+                <div style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 280px;">
                     @forelse($bookingNotifs as $notif)
                     @php
                         $notifField = $notif->field;
@@ -270,13 +278,79 @@
                         @endif
                     </div>
                     @empty
-                    <p style="text-align: center; color: #999; font-size: 13px; padding: 20px 0;">Belum ada notifikasi.</p>
                     @endforelse
+
+                    {{-- Confirmed match joins --}}
+                    @foreach($confirmedMatchNotifs as $cmp)
+                    @php
+                        $cm = $cmp->match;
+                    @endphp
+                    @if($cm)
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0;">
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div style="width: 32px; height: 32px; background: #166534; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">
+                                {{ strtoupper(substr($cm->title, 0, 1)) }}
+                            </div>
+                            <div>
+                                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #166534;">Bergabung di {{ $cm->title }}</p>
+                                <p style="margin: 2px 0 0 0; font-size: 12px; color: #666;">
+                                    <span style="background: #bbf7d0; color: #166534; padding: 1px 6px; border-radius: 4px; font-weight: 600;">Dikonfirmasi</span>
+                                    {{ $cm->field?->name ?? 'Lapangan' }} &middot; {{ \Carbon\Carbon::parse($cm->date)->locale('id')->translatedFormat('j F Y') }}
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ route('matches.show', $cm->id) }}" style="display: inline-flex; text-decoration: none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        </a>
+                    </div>
+                    @endif
+                    @endforeach
+
+                    @if($bookingNotifs->isEmpty() && $confirmedMatchNotifs->isEmpty())
+                    <p style="text-align: center; color: #999; font-size: 13px; padding: 20px 0;">Belum ada notifikasi.</p>
+                    @endif
                 </div>
             </div>
         </div>
 
         <!-- 4 WIDGETS -->
+        @php
+            // Determine the nearest upcoming event for the countdown widget
+            $nearestUpcoming = null; // will be object with ->type, ->label, ->desc, ->date, ->time, ->endTime, ->detailUrl, ->ts
+            $nearestTs = null;
+            if (isset($upcomingBooking) && $upcomingBooking) {
+                $d = \Carbon\Carbon::parse($upcomingBooking->date->format('Y-m-d') . ' ' . $upcomingBooking->start_time);
+                $nearestUpcoming = (object)[
+                    'type' => 'booking',
+                    'label' => $upcomingBooking->field->name ?? 'Booking',
+                    'desc' => $upcomingBooking->field->location ?? '',
+                    'date' => $upcomingBooking->date,
+                    'time' => $upcomingBooking->start_time,
+                    'endTime' => $upcomingBooking->end_time,
+                    'detailUrl' => route('booking.detail', $upcomingBooking->id),
+                    'ts' => $d->timestamp,
+                ];
+                $nearestTs = $d->timestamp;
+            }
+            if (isset($upcomingJoin) && $upcomingJoin && $upcomingJoin->match) {
+                $m = $upcomingJoin->match;
+                $dt = \Carbon\Carbon::parse($m->date . ' ' . $m->time);
+                $mt = $dt->timestamp;
+                if (!$nearestUpcoming || $mt < $nearestTs) {
+                    $nearestUpcoming = (object)[
+                        'type' => 'match',
+                        'label' => $m->title,
+                        'desc' => ($m->field->name ?? 'Lapangan') . ($m->field->location ? ' - ' . $m->field->location : ''),
+                        'date' => $m->date,
+                        'time' => $m->time,
+                        'endTime' => null,
+                        'detailUrl' => route('matches.show', $m->id),
+                        'ts' => $mt,
+                    ];
+                    $nearestTs = $mt;
+                }
+            }
+        @endphp
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px;">
             <!-- Upcoming Match -->
             <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); display: flex; flex-direction: column;">
@@ -285,38 +359,42 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#02025b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Mendatang</h4>
                     </div>
-                    @if($upcomingBooking)
-                        <span style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ \Carbon\Carbon::parse($upcomingBooking->date)->format('d M') }}</span>
+                    @if($nearestUpcoming)
+                        <span style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ \Carbon\Carbon::parse($nearestUpcoming->date)->format('d M') }}</span>
                     @else
                         <span style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">-</span>
                     @endif
                 </div>
-                @if($upcomingBooking)
-                    @php
-                        $startDt = \Carbon\Carbon::parse($upcomingBooking->date->format('Y-m-d') . ' ' . $upcomingBooking->start_time);
-                        $cdTarget = $startDt->timestamp;
-                    @endphp
-                    <h3 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; color: #02025b;">{{ $upcomingBooking->field->name ?? 'Booking' }}</h3>
-                    <p style="margin: 0 0 4px 0; font-size: 13px; color: #666;">{{ $upcomingBooking->field->location ?? '' }}</p>
-                    <p style="margin: 0 0 12px 0; font-size: 12px; color: #888;">{{ \Carbon\Carbon::parse($upcomingBooking->date)->format('d M Y') }}, {{ substr($upcomingBooking->start_time, 0, 5) }} - {{ substr($upcomingBooking->end_time, 0, 5) }}</p>
-                    <div id="upcoming-countdown" style="display: flex; gap: 12px; margin-bottom: 16px;" data-target="{{ $cdTarget }}">
+                @if($nearestUpcoming)
+                    <h3 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; color: #02025b;">{{ $nearestUpcoming->label }}</h3>
+                    <p style="margin: 0 0 4px 0; font-size: 13px; color: #666;">{{ $nearestUpcoming->desc }}</p>
+                    <p style="margin: 0 0 12px 0; font-size: 12px; color: #888;">
+                        {{ \Carbon\Carbon::parse($nearestUpcoming->date)->format('d M Y') }},
+                        {{ substr($nearestUpcoming->time, 0, 5) }}
+                        @if($nearestUpcoming->endTime)
+                            - {{ substr($nearestUpcoming->endTime, 0, 5) }}
+                        @else
+                            WIB
+                        @endif
+                    </p>
+                    <div id="upcoming-countdown" style="display: flex; gap: 12px; margin-bottom: 16px;" data-target="{{ $nearestUpcoming->ts }}">
                         <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-days">00</span><span style="font-size: 11px; color: #888;">Hari</span></div>
                         <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-hours">00</span><span style="font-size: 11px; color: #888;">Jam</span></div>
                         <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-minutes">00</span><span style="font-size: 11px; color: #888;">Menit</span></div>
                         <div style="text-align: center;"><span style="display: block; font-size: 24px; font-weight: 900; color: #02025b;" id="cd-seconds">00</span><span style="font-size: 11px; color: #888;">Detik</span></div>
                     </div>
-                    <a href="{{ route('booking.detail', $upcomingBooking->id) }}" style="margin-top: auto; background: #e11d48; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none;">Lihat Detail</a>
+                    <a href="{{ $nearestUpcoming->detailUrl }}" style="margin-top: auto; background: #e11d48; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none;">Lihat Detail</a>
                 @else
                     <p style="margin: 0; color: #888; font-size: 14px;">Belum ada jadwal.</p>
                 @endif
             </div>
 
-            <!-- Rekomendasi Match -->
+            <!-- Rekomendasi -->
             <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Rekomendasi Match</h4>
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Rekomendasi</h4>
                     </div>
                     <a href="{{ route('matches.index') }}" style="font-size: 12px; color: #666; font-weight: 600; text-decoration: none;">Lihat semua</a>
                 </div>
@@ -585,7 +663,7 @@
                 <span style="font-weight:800; font-size:16px; color:#02025b;">Publik</span>
                 <span style="font-size:12px; color:#666;">Cari pemain lain</span>
             </a>
-            <a href="javascript:void(0)" onclick="hideCreateModal();showFieldModal()" style="flex:1; min-width:140px; padding:20px 16px; border-radius:12px; border:2px solid #02025b; text-decoration:none; transition:all .2s; background:#fff; display:flex; flex-direction:column; align-items:center; gap:8px;" onmouseover="this.style.background='#f5f5ff'" onmouseout="this.style.background='#fff'">
+            <a href="javascript:void(0)" onclick="hideCreateModal();showSportModal()" style="flex:1; min-width:140px; padding:20px 16px; border-radius:12px; border:2px solid #02025b; text-decoration:none; transition:all .2s; background:#fff; display:flex; flex-direction:column; align-items:center; gap:8px;" onmouseover="this.style.background='#f5f5ff'" onmouseout="this.style.background='#fff'">
                 <span style="font-size:36px;">🔒</span>
                 <span style="font-weight:800; font-size:16px; color:#02025b;">Pribadi</span>
                 <span style="font-size:12px; color:#666;">Booking lapangan langsung</span>
@@ -594,7 +672,31 @@
         <button onclick="hideCreateModal()" style="margin-top:20px; background:none; border:none; color:#999; font-size:14px; cursor:pointer; font-weight:600;">Batal</button>
     </div>
 </div>
-<div id="fieldListModal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)hideFieldModal()">
+<div id="sportSelectModal" style="display:none; position:fixed; inset:0; z-index:10001; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)hideSportModal()">
+    <div style="background:#fff; border-radius:24px; max-width:420px; width:92%; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25); padding:28px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div>
+                <h2 style="margin:0; font-size:18px; font-weight:800; color:#02025b;">Mau olahraga apa hari ini?</h2>
+                <p style="margin:4px 0 0; font-size:13px; color:#666;">Pilih olahraga untuk mencari lapangan yang cocok</p>
+            </div>
+            <button onclick="hideSportModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#999; padding:4px;">&times;</button>
+        </div>
+        <input id="sportSearchInput" type="text" placeholder="Cari olahraga..." oninput="filterSports()" style="width:100%; padding:10px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.15); background:#f5f5f5; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:16px;">
+        <div id="sportGrid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+            @foreach($availableSports as $sport)
+            <button type="button" data-sport="{{ $sport }}" onclick="selectSport('{{ addslashes($sport) }}')" style="padding:14px 8px; border-radius:14px; border:2px solid #e2e8f0; background:#fff; cursor:pointer; transition:all .2s; display:flex; flex-direction:column; align-items:center; gap:6px; font-family:inherit;" onmouseover="this.style.borderColor='#6366f1';this.style.background='#eef2ff'" onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#fff'">
+                <span style="font-size:24px;">{{ $sportEmoji[$sport] ?? '🏆' }}</span>
+                <span style="font-size:10px; font-weight:800; color:#02025b; text-transform:uppercase; letter-spacing:0.5px; text-align:center; line-height:1.2;">{{ $sport }}</span>
+            </button>
+            @endforeach
+        </div>
+        <div id="sportNoResult" style="display:none; text-align:center; padding:24px 0; color:#94a3b8; font-size:14px;">Olahraga tidak ditemukan</div>
+        <div style="display:flex; justify-content:center; margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
+            <button onclick="hideSportModal()" style="padding:8px 24px; background:#f1f5f9; border:none; border-radius:10px; color:#64748b; font-size:13px; font-weight:700; cursor:pointer;">Nanti dulu</button>
+        </div>
+    </div>
+</div>
+<div id="fieldListModal" style="display:none; position:fixed; inset:0; z-index:10002; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)hideFieldModal()">
     <div style="background:#fff; border-radius:16px; max-width:600px; width:92%; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25);">
         <div style="position:sticky; top:0; background:#fff; border-radius:16px 16px 0 0; padding:24px 24px 16px; border-bottom:1px solid rgba(0,0,77,.08); z-index:1;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -608,8 +710,8 @@
         </div>
         <div style="padding:16px 24px 24px;">
             <div id="fieldListGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
-                @foreach($fields as $f)
-                <a href="{{ route('booking.show', array_filter(['field' => $f->id, 'sport' => $selectedSport])) }}" data-field-name="{{ strtolower($f->name) }}" data-field-location="{{ strtolower($f->location ?? '') }}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:14px; padding:14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); transition:all .2s; background:#fafafa;" onmouseover="this.style.borderColor='#02025b';this.style.background='#fff'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='#fafafa'">
+                @foreach($allFields as $f)
+                <a href="{{ route('booking.show', $f->id) }}" data-field-name="{{ strtolower($f->name) }}" data-field-location="{{ strtolower($f->location ?? '') }}" data-field-sport="{{ $f->type }}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:14px; padding:14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); transition:all .2s; background:#fafafa;" onmouseover="this.style.borderColor='#02025b';this.style.background='#fff'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='#fafafa'">
                     <div style="width:56px; height:56px; border-radius:10px; overflow:hidden; flex-shrink:0; background:#e2e8f0;">
                         <img src="{{ fieldImg($f) }}" alt="" style="width:100%; height:100%; object-fit:cover;">
                     </div>
@@ -625,7 +727,7 @@
                                 {{ $f->rating ?? '4.8' }}
                             </span>
                             &middot;
-                            <span>{{ $f->sport ?? 'Olahraga' }}</span>
+                            <span>{{ $f->type ?? 'Olahraga' }}</span>
                         </p>
                     </div>
                     <span style="font-size:18px; color:#ccc;">&rarr;</span>
@@ -636,11 +738,17 @@
     </div>
 </div>
 <script>
+var _selectedSport = '';
 function showCreateModal(){document.getElementById('createMatchModal').style.display='flex';}
 function hideCreateModal(){document.getElementById('createMatchModal').style.display='none';}
-function showFieldModal(){document.getElementById('fieldListModal').style.display='flex';setTimeout(function(){document.getElementById('fieldSearchInput').focus();},100);}
+function showSportModal(){document.getElementById('sportSelectModal').style.display='flex';setTimeout(function(){document.getElementById('sportSearchInput').focus();},100);document.getElementById('sportSearchInput').value='';filterSports();}
+function hideSportModal(){document.getElementById('sportSelectModal').style.display='none';}
+function showFieldModal(){var m=document.getElementById('fieldListModal');m.style.display='flex';applyFieldSportFilter();setTimeout(function(){document.getElementById('fieldSearchInput').focus();},100);}
 function hideFieldModal(){document.getElementById('fieldListModal').style.display='none';}
 function filterFields(){var q=document.getElementById('fieldSearchInput').value.toLowerCase(),cards=document.querySelectorAll('#fieldListGrid > a');for(var i=0;i<cards.length;i++){var card=cards[i];card.style.display=(card.getAttribute('data-field-name').includes(q)||card.getAttribute('data-field-location').includes(q))?'flex':'none';}}
+function filterSports(){var q=document.getElementById('sportSearchInput').value.toLowerCase(),btns=document.querySelectorAll('#sportGrid > button'),found=0;for(var i=0;i<btns.length;i++){var s=btns[i].getAttribute('data-sport').toLowerCase();if(!q||s.indexOf(q)!==-1){btns[i].style.display='flex';found++;}else{btns[i].style.display='none';}}document.getElementById('sportNoResult').style.display=found?'none':'block';}
+function selectSport(s){_selectedSport=s;hideSportModal();showFieldModal();}
+function applyFieldSportFilter(){var cards=document.querySelectorAll('#fieldListGrid > a');for(var i=0;i<cards.length;i++){var card=cards[i];if(!_selectedSport||card.getAttribute('data-field-sport')===_selectedSport){card.style.display='flex';card.href=card.href.split('?')[0]+'?sport='+encodeURIComponent(_selectedSport);}else{card.style.display='none';}}}
 </script>
 </body>
 </html>

@@ -45,6 +45,25 @@ Route::get('/dashboard', function () {
             ->orderBy('start_time')
             ->with('field')
             ->first();
+
+        $upcomingJoin = \App\Models\MatchPlayer::where('match_players.user_id', $user->id)
+            ->where('match_players.payment_status', \App\Enums\PaymentStatus::PAID)
+            ->whereHas('match', function ($q) {
+                $q->where('date', '>=', now()->toDateString());
+            })
+            ->with('match.field')
+            ->join('matches', 'match_players.match_id', '=', 'matches.id')
+            ->orderBy('matches.date')
+            ->orderBy('matches.time')
+            ->select('match_players.*')
+            ->first();
+
+        $confirmedMatchNotifs = \App\Models\MatchPlayer::where('user_id', $user->id)
+            ->where('payment_status', \App\Enums\PaymentStatus::PAID)
+            ->whereHas('match')
+            ->with('match.field')
+            ->latest('confirmed_at')
+            ->get();
         
         $recommendedMatches = \App\Models\Matchs::with('field')->where('date', '>=', now()->toDateString())->inRandomOrder()->limit(3)->get();
 
@@ -70,7 +89,7 @@ Route::get('/dashboard', function () {
 
         $favoriteFields = \App\Models\Favorite::with('field')->where('user_id', $user->id)->limit(3)->get();
         
-        return view('fields.index', compact('fields', 'upcomingBooking', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields', 'previousFieldIds')); // player dashboard now shows available fields
+        return view('fields.index', compact('fields', 'upcomingBooking', 'upcomingJoin', 'confirmedMatchNotifs', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields', 'previousFieldIds')); // player dashboard now shows available fields
     }
 })->middleware(['auth'])->name('dashboard');
 

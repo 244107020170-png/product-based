@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Models\MatchPlayer;
 use App\Models\Matchs;
 use App\Notifications\PaymentClaimed;
+use App\Notifications\PaymentConfirmed;
 use Carbon\Carbon;
 
 class MatchController extends Controller
@@ -222,6 +223,8 @@ class MatchController extends Controller
             'payment_status' => PaymentStatus::PAID,
             'confirmed_at' => now(),
         ]);
+
+        $participant->user->notify(new PaymentConfirmed($match));
 
         auth()->user()->notifications()
             ->where('data->match_id', $match->id)
