@@ -5,6 +5,12 @@
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $profileAvatar = $user?->avatarUrl();
 
+    $referer = request()->headers->get('referer');
+    $previousUrl = url()->previous();
+    $currentUrl = url()->current();
+    $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
+    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('dashboard');
+
     $sidebarItems = [
         ['label' => 'Beranda',  'icon' => asset('assets/images/icons/dashboard.png'),  'href' => route('dashboard'),      'active' => false],
         ['label' => 'Aktivitas',  'icon' => asset('assets/images/icons/aktivitas.png'),  'href' => url('/matches'),         'active' => false],
@@ -102,7 +108,7 @@
         </header>
 
         <section class="tm-main">
-            <a href="{{ route('dashboard') }}" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: #02025b; font-weight: 600; font-size: 14px; margin-bottom: 12px;">&larr; Kembali</a>
+            <a href="{{ $backUrl }}" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: #02025b; font-weight: 600; font-size: 14px; margin-bottom: 12px;">&larr; Kembali</a>
             <h1 class="tm-title">Tim Saya</h1>
 
             @if($teams->isEmpty())

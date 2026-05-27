@@ -1,7 +1,13 @@
 @php
     use App\Models\Field;
     use Carbon\Carbon;
-    $fields = Field::with('owner')->get();
+
+    $selectedSport = request('sport');
+    $fieldsQuery = Field::with('owner');
+    if ($selectedSport) {
+        $fieldsQuery->where('type', $selectedSport);
+    }
+    $fields = $fieldsQuery->get();
     $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
@@ -474,6 +480,26 @@
                 </svg>
                 <span>Lapangan Tersedia</span>
             </h2>
+            @if($selectedSport)
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; margin-bottom: 8px;">
+                <span style="font-size: 16px;">
+                    @php
+                        $filterEmoji = match($selectedSport) {
+                            'Futsal' => '⚽', 'Badminton' => '🏸', 'Basket' => '🏀',
+                            'Voli' => '🏐', 'Tennis' => '🎾', 'Golf' => '🏌️',
+                            'Renang' => '🏊', 'Panahan' => '🏹', 'Lari' => '🏃',
+                            'Sepeda' => '🚴', 'Tinju' => '🥊', 'Bela Diri' => '🥋',
+                            'Yoga' => '🧘', 'Fitness' => '🏋️', 'Hiking' => '🥾',
+                            'Padel' => '🎾', 'Baseball' => '⚾', 'Rugby' => '🏉',
+                            'Senam' => '🤸', default => '🏆',
+                        };
+                    @endphp
+                    {{ $filterEmoji }}
+                </span>
+                <span style="font-size: 13px; font-weight: 700; color: #4338ca;">{{ $selectedSport }}</span>
+                <a href="{{ route('dashboard') }}" style="font-size: 11px; font-weight: 600; color: #6366f1; text-decoration: none; margin-left: 4px; hover:text-decoration: underline;">&times; Hapus filter</a>
+            </div>
+            @endif
             <p style="color: #666;">Pilih lapangan yang ingin kamu booking</p>
         </div>
 
@@ -485,7 +511,7 @@
         @else
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
             @foreach($fields as $field)
-            <a href="{{ route('booking.show', $field->id) }}" class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease;">
+            <a href="{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}" class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease;">
                 <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column;">
                     <div style="position: relative; height: 200px; overflow: hidden;">
                         <img src="{{ fieldImg($field) }}" 
@@ -583,7 +609,7 @@
         <div style="padding:16px 24px 24px;">
             <div id="fieldListGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
                 @foreach($fields as $f)
-                <a href="{{ route('booking.show', $f->id) }}" data-field-name="{{ strtolower($f->name) }}" data-field-location="{{ strtolower($f->location ?? '') }}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:14px; padding:14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); transition:all .2s; background:#fafafa;" onmouseover="this.style.borderColor='#02025b';this.style.background='#fff'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='#fafafa'">
+                <a href="{{ route('booking.show', array_filter(['field' => $f->id, 'sport' => $selectedSport])) }}" data-field-name="{{ strtolower($f->name) }}" data-field-location="{{ strtolower($f->location ?? '') }}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:14px; padding:14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); transition:all .2s; background:#fafafa;" onmouseover="this.style.borderColor='#02025b';this.style.background='#fff'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='#fafafa'">
                     <div style="width:56px; height:56px; border-radius:10px; overflow:hidden; flex-shrink:0; background:#e2e8f0;">
                         <img src="{{ fieldImg($f) }}" alt="" style="width:100%; height:100%; object-fit:cover;">
                     </div>

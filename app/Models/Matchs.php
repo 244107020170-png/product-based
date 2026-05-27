@@ -10,6 +10,7 @@ class Matchs extends Model
 
     protected $fillable = [
         'title',
+        'sport',
         'field_id',
         'date',
         'time',

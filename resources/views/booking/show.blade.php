@@ -425,6 +425,7 @@
 <script>
 function bookingApp() {
     return {
+        privateSport: '{{ $privateSport ?? '' }}',
         selectedField: @json($selectedFieldJson),
         allFields: @json($allFieldsJson),
         
@@ -560,6 +561,7 @@ function bookingApp() {
                     date: this.selectedDate,
                     start_time: this.selectedTimeSlot.start,
                     end_time: this.selectedTimeSlot.end,
+                    sport: this.privateSport || undefined,
                 })
             })
             .then(r => r.json())

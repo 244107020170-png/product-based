@@ -143,6 +143,7 @@
         window.matchesIndexFilter = function () {
             return {
                 openFilterModal: false,
+                openPrivateSportModal: false,
                 selectedSports: [],
                 selectedGender: '',
                 allSports: @json($sportOptions->values()->toArray()),
@@ -279,10 +280,16 @@
                 <div class="order-2 md:order-1 md:col-span-4 lg:col-span-3 space-y-6 flex flex-col w-full">
                     
                     {{-- Button Buat Pertandingan --}}
-                    <a href="{{ route('matches.create') }}" class="flex items-center justify-center gap-2.5 w-full py-4 px-6 bg-[#11114b] hover:bg-[#02025b] text-white font-extrabold font-archivo rounded-2xl shadow-md shadow-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group active:translate-y-0">
-                        <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                        <span>Buat Pertandingan</span>
-                    </a>
+                    <div class="flex gap-3">
+                        <a href="{{ route('matches.create') }}" class="flex-1 flex items-center justify-center gap-2.5 py-4 px-6 bg-[#11114b] hover:bg-[#02025b] text-white font-extrabold font-archivo rounded-2xl shadow-md shadow-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group active:translate-y-0">
+                            <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                            <span>Buat Publik</span>
+                        </a>
+                        <button @click="openPrivateSportModal = true" class="flex-1 flex items-center justify-center gap-2.5 py-4 px-6 bg-white hover:bg-slate-50 text-[#11114b] font-extrabold font-archivo rounded-2xl border-2 border-[#11114b] shadow-md shadow-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group active:translate-y-0">
+                            <svg class="w-5 h-5 transition-transform group-hover:scale-110 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                            <span>Buat Pribadi</span>
+                        </button>
+                    </div>
 
                     {{-- Filter Section --}}
                     <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] space-y-4 flex-1">
@@ -731,6 +738,68 @@
                     <button @click="openFilterModal = false" class="flex items-center gap-1.5 px-6 py-2.5 bg-gradient-to-r from-[#11114b] to-[#262680] hover:from-[#02025b] hover:to-[#1a1a6e] text-white font-bold font-archivo text-xs rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.97]">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                         <span>Terapkan</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Private Match: "Mau olahraga apa hari ini?" --}}
+        <div x-show="openPrivateSportModal" x-cloak
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-[#11114b]/50 backdrop-blur-md z-[999] flex items-center justify-center p-4" 
+             @click.self="openPrivateSportModal = false"
+             @keydown.escape.window="openPrivateSportModal = false">
+            
+            <div class="bg-white rounded-[32px] w-full max-w-[420px] p-8 shadow-2xl border border-slate-100 flex flex-col gap-6 relative"
+                 x-show="openPrivateSportModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="scale-90 translate-y-6 opacity-0"
+                 x-transition:enter-end="scale-100 translate-y-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="scale-100 translate-y-0 opacity-100"
+                 x-transition:leave-end="scale-90 translate-y-6 opacity-0">
+                
+                <button @click="openPrivateSportModal = false" class="absolute top-6 right-6 p-2 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all hover:scale-105">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+
+                <div class="space-y-2 text-center">
+                    <div class="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 flex items-center justify-center text-2xl">
+                        🤔
+                    </div>
+                    <h3 class="text-xl font-extrabold font-archivo text-[#02025b]">Mau olahraga apa hari ini?</h3>
+                    <p class="text-sm font-semibold text-slate-400">Pilih olahraga untuk mencari lapangan yang cocok</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2.5 max-h-[280px] overflow-y-auto pr-1 upcoming-scroll">
+                    @php
+                        $privateSportEmoji = [
+                            'Futsal' => '⚽', 'Badminton' => '🏸', 'Basket' => '🏀',
+                            'Voli' => '🏐', 'Tennis' => '🎾', 'Golf' => '🏌️',
+                            'Renang' => '🏊', 'Panahan' => '🏹', 'Lari' => '🏃',
+                            'Sepeda' => '🚴', 'Tinju' => '🥊', 'Bela Diri' => '🥋',
+                            'Yoga' => '🧘', 'Fitness' => '🏋️', 'Hiking' => '🥾',
+                            'Padel' => '🎾', 'Baseball' => '⚾', 'Rugby' => '🏉',
+                            'Senam' => '🤸',
+                        ];
+                    @endphp
+                    @foreach($sportOptions as $sport)
+                        <a href="{{ route('dashboard', ['sport' => $sport]) }}" 
+                           class="flex flex-col items-center justify-center gap-1.5 p-3 border-2 border-slate-100 rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-200 hover:shadow-sm bg-white text-slate-700 hover:bg-indigo-50/30 no-underline">
+                            <span class="text-xl">{{ $privateSportEmoji[$sport] ?? '🏆' }}</span>
+                            <span class="text-[9px] font-extrabold font-archivo uppercase tracking-wider text-center leading-tight">{{ $sport }}</span>
+                        </a>
+                    @endforeach
+                </div>
+
+                <div class="flex justify-center pt-2 border-t border-slate-100">
+                    <button @click="openPrivateSportModal = false" class="flex items-center gap-1.5 px-6 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 font-bold font-archivo text-xs rounded-xl transition-all">
+                        <span>Nanti dulu</span>
                     </button>
                 </div>
             </div>

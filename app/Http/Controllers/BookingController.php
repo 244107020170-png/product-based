@@ -25,11 +25,13 @@ class BookingController extends Controller
     {
         $allFields = Field::with('owner')->get();
         $availableTimes = $this->getAvailableTimes($field, $request->input('date', today()->toDateString()));
+        $privateSport = $request->input('sport');
         
         return view('booking.show', [
             'field' => $field,
             'allFields' => $allFields,
             'availableTimes' => $availableTimes,
+            'privateSport' => $privateSport,
         ]);
     }
 
@@ -87,6 +89,24 @@ class BookingController extends Controller
             if ($pendingMatch) {
                 session()->forget('pending_match');
                 $match = Matchs::create($pendingMatch);
+            }
+
+            // Private match creation from sport filter
+            $privateSport = $request->input('sport');
+            if ($privateSport && !$pendingMatch) {
+                $field = Field::find($request->input('field_id'));
+                if ($field) {
+                    Matchs::create([
+                        'title' => 'Pertandingan ' . $privateSport . ' Pribadi',
+                        'sport' => $privateSport,
+                        'field_id' => $field->id,
+                        'date' => $request->input('date'),
+                        'time' => $request->input('start_time'),
+                        'max_player' => 10,
+                        'created_by' => auth()->id(),
+                        'type' => 'private',
+                    ]);
+                }
             }
 
             if ($this->isJsonRequest($request)) {

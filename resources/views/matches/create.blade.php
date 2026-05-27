@@ -6,6 +6,12 @@
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $profileAvatar = $user?->avatarUrl();
 
+    $referer = request()->headers->get('referer');
+    $previousUrl = url()->previous();
+    $currentUrl = url()->current();
+    $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
+    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('matches.index');
+
     $sidebarItems = [
         ['label' => 'Beranda', 'icon' => asset('assets/images/icons/dashboard.png'), 'href' => route('dashboard'), 'active' => false],
         ['label' => 'Aktivitas', 'icon' => asset('assets/images/icons/aktivitas.png'), 'href' => route('activity.index'), 'active' => false],
@@ -103,24 +109,107 @@
             border-color: #11114b;
         }
 
-        .btn-submit {
+        .btn-primary {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
+            flex: 1;
             padding: 14px 20px;
             border-radius: 12px;
             background: #43a680;
             color: #fff;
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 800;
             border: none;
             cursor: pointer;
-            transition: background .2s;
-            margin-top: 10px;
+            transition: all .2s;
         }
-        .btn-submit:hover {
+        .btn-primary:hover {
             background: #368d6a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(67,166,128,0.3);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: #e11d48;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: all .2s;
+            text-decoration: none;
+        }
+        .btn-danger:hover {
+            background: #be123c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(225,29,72,0.3);
+        }
+        .btn-danger:active {
+            transform: translateY(0);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .sport-search-wrap {
+            position: relative;
+        }
+        .sport-search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            margin-top: 4px;
+            max-height: 220px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+        }
+        .sport-search-dropdown.open {
+            display: block;
+        }
+        .sport-search-dropdown .sport-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: .95rem;
+            color: #1e293b;
+            transition: background .15s;
+        }
+        .sport-search-dropdown .sport-item:hover,
+        .sport-search-dropdown .sport-item.highlighted {
+            background: #f1f5f9;
+        }
+        .sport-search-dropdown .sport-item.selected {
+            background: #eef2ff;
+            color: #4338ca;
+            font-weight: 700;
+        }
+        .sport-search-dropdown .sport-item .match-em {
+            background: #fef08a;
+            font-style: normal;
+        }
+        .sport-search-dropdown .no-result {
+            padding: 14px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: .9rem;
         }
 
         @media (max-width: 768px) {
@@ -129,6 +218,9 @@
             .create-match-card { padding: 24px; }
             .form-grid { grid-template-columns: 1fr; gap: 16px; }
             .form-group--full { grid-column: span 1; }
+        }
+        @media (max-width: 480px) {
+            .btn-row { flex-direction: column; }
         }
     </style>
 </head>
@@ -206,8 +298,8 @@
                 </div>
 
                 <div style="margin-top: 16px;">
-                    <a href="{{ route('dashboard') }}" class="btn-back">
-                        &larr; Kembali ke Dashboard
+                    <a href="{{ $backUrl }}" class="btn-back">
+                        &larr; Kembali
                     </a>
                 </div>
             </div>
@@ -232,6 +324,19 @@
                 <form action="{{ route('matches.store') }}" method="POST" class="form-grid">
                     @csrf
                     <input type="hidden" name="type" value="public">
+
+                    <div class="form-group form-group--full" id="sport-search-group">
+                        <label class="form-label">Kategori Olahraga</label>
+                        <div class="sport-search-wrap">
+                            <input type="text" class="form-control sport-search-input"
+                                   placeholder="Cari kategori…" value="{{ old('sport') }}"
+                                   autocomplete="off">
+                            <input type="hidden" name="sport" value="{{ old('sport') }}" required>
+                            <div class="sport-search-dropdown"></div>
+                        </div>
+                        @error('sport') <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                    </div>
+
                     <div class="form-group form-group--full">
                         <label class="form-label">Nama Pertandingan</label>
                         <input type="text" name="title" class="form-control" placeholder="Contoh: Futsal Santai Bareng" value="{{ old('title') }}" required>
@@ -267,13 +372,166 @@
                         @error('max_player') <span style="color: #dc2626; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-group form-group--full" style="margin-top: 8px;">
-                        <button type="submit" class="btn-submit">Buat Pertandingan Sekarang</button>
+                    <div class="btn-row form-group--full">
+                        <a href="{{ route('matches.index') }}" class="btn-danger">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            Batal
+                        </a>
+                        <button type="submit" class="btn-primary">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                            Buat
+                        </button>
                     </div>
                 </form>
             </div>
         </section>
     </main>
 </div>
+<script>
+    (function () {
+        var sports = [
+            @foreach($sportOptions as $s)
+                '{{ addslashes($s) }}',
+            @endforeach
+        ];
+        var wrap = document.getElementById('sport-search-group');
+        if (!wrap) return;
+        var input = wrap.querySelector('.sport-search-input');
+        var hidden = wrap.querySelector('input[name="sport"]');
+        var dropdown = wrap.querySelector('.sport-search-dropdown');
+        var highlightedIdx = -1;
+
+        function render(filter) {
+            var q = (filter || '').toLowerCase().trim();
+            var html = '';
+            var filtered = [];
+            for (var i = 0; i < sports.length; i++) {
+                var s = sports[i];
+                if (!q || s.toLowerCase().indexOf(q) !== -1) {
+                    filtered.push({ idx: i, name: s });
+                }
+            }
+            if (filtered.length === 0) {
+                html = '<div class="no-result">Tidak ditemukan</div>';
+            } else {
+                for (var j = 0; j < filtered.length; j++) {
+                    var name = filtered[j].name;
+                    var display = name;
+                    if (q) {
+                        var re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                        display = name.replace(re, '<span class="match-em">$1</span>');
+                    }
+                    var selectedAttr = (name === hidden.value) ? ' selected' : '';
+                    html += '<div class="sport-item' + selectedAttr + '" data-value="' + name.replace(/"/g, '&quot;') + '">' + display + '</div>';
+                }
+            }
+            dropdown.innerHTML = html;
+            dropdown.classList.add('open');
+            highlightedIdx = -1;
+
+            var items = dropdown.querySelectorAll('.sport-item');
+            for (var k = 0; k < items.length; k++) {
+                items[k].addEventListener('click', function () {
+                    selectItem(this);
+                });
+            }
+        }
+
+        function selectItem(el) {
+            var val = el.getAttribute('data-value');
+            input.value = val;
+            hidden.value = val;
+            dropdown.classList.remove('open');
+            input.setCustomValidity('');
+        }
+
+        input.addEventListener('input', function () {
+            hidden.value = '';
+            var q = this.value.trim();
+            if (q === '') {
+                dropdown.classList.remove('open');
+                return;
+            }
+            render(q);
+        });
+
+        input.addEventListener('focus', function () {
+            var q = this.value.trim();
+            if (q !== '') render(q);
+        });
+
+        input.addEventListener('blur', function () {
+            setTimeout(function () {
+                dropdown.classList.remove('open');
+            }, 180);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            var items = dropdown.querySelectorAll('.sport-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlightedIdx = Math.min(highlightedIdx + 1, items.length - 1);
+                highlightItem(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlightedIdx = Math.max(highlightedIdx - 1, -1);
+                highlightItem(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (highlightedIdx >= 0 && items[highlightedIdx]) {
+                    selectItem(items[highlightedIdx]);
+                }
+            } else if (e.key === 'Escape') {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        function highlightItem(items) {
+            for (var i = 0; i < items.length; i++) {
+                items[i].classList.remove('highlighted');
+            }
+            if (highlightedIdx >= 0 && items[highlightedIdx]) {
+                items[highlightedIdx].classList.add('highlighted');
+                items[highlightedIdx].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!wrap.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        if (hidden.value) {
+            var matched = false;
+            for (var m = 0; m < sports.length; m++) {
+                if (sports[m] === hidden.value) {
+                    matched = true; break;
+                }
+            }
+            if (!matched) hidden.value = '';
+        }
+
+        var form = wrap.closest('form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                if (!hidden.value) {
+                    e.preventDefault();
+                    input.focus();
+                    input.setCustomValidity('Pilih kategori olahraga');
+                    input.reportValidity();
+                }
+            });
+            input.addEventListener('invalid', function () {
+                if (!hidden.value) {
+                    input.setCustomValidity('Pilih kategori olahraga');
+                }
+            });
+            input.addEventListener('input', function () {
+                input.setCustomValidity('');
+            });
+        }
+    })();
+</script>
 </body>
 </html>

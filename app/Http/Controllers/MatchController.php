@@ -24,14 +24,14 @@ class MatchController extends Controller
 
         $cards = $matches->map(function (Matchs $match) {
             $fieldName = $match->field?->name ?? 'Lapangan';
-            $sport = $this->detectSport($match->title . ' ' . $fieldName);
+            $sport = $match->sport ?: $this->detectSport($match->title . ' ' . $fieldName);
             $playersJoined = $match->players->count();
             $neededPlayers = max(0, (int) $match->max_player - $playersJoined);
 
             $dateFormatted = \Carbon\Carbon::parse($match->date)
                 ->locale('id')
                 ->translatedFormat('l, j F Y');
-            $timeFormatted = \Carbon\Carbon::createFromFormat('H:i:s', $match->time)->format('H.i');
+            $timeFormatted = $this->formatMatchTime($match->time);
 
             return [
                 'id' => $match->id,
@@ -106,7 +106,8 @@ class MatchController extends Controller
     public function create()
     {
         $fields = \App\Models\Field::all();
-        return view('matches.create', compact('fields'));
+        $sportOptions = collect(['Futsal', 'Badminton', 'Basket', 'Voli', 'Tennis', 'Golf', 'Renang', 'Panahan', 'Lari', 'Sepeda', 'Tinju', 'Bela Diri', 'Yoga', 'Fitness', 'Hiking', 'Padel', 'Baseball', 'Rugby', 'Senam']);
+        return view('matches.create', compact('fields', 'sportOptions'));
     }
 
     public function store(\Illuminate\Http\Request $request)
@@ -120,6 +121,7 @@ class MatchController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'sport' => 'required|string|max:100',
             'field_id' => 'required|exists:fields,id',
             'date' => 'required|date|after_or_equal:today',
             'time' => 'required|date_format:H:i',
@@ -145,7 +147,7 @@ class MatchController extends Controller
     public function show(Matchs $match)
     {
         $match->load(['field', 'creator', 'players', 'participantEntries.user']);
-        $sport = $this->detectSport($match->title . ' ' . ($match->field?->name ?? ''));
+        $sport = $match->sport ?: $this->detectSport($match->title . ' ' . ($match->field?->name ?? ''));
         $image = $this->sportImage($sport);
         
         $hasJoined = $match->players->contains(auth()->id());
@@ -270,6 +272,27 @@ class MatchController extends Controller
         if (str_contains($text, 'tenis') || str_contains($text, 'tennis')) return 'Tennis';
 
         return 'Olahraga';
+    }
+
+    private function formatMatchTime(?string $time): string
+    {
+        if (! $time) {
+            return '--.--';
+        }
+
+        foreach (['H:i:s', 'H:i'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, $time)->format('H.i');
+            } catch (\Throwable) {
+                //
+            }
+        }
+
+        try {
+            return Carbon::parse($time)->format('H.i');
+        } catch (\Throwable) {
+            return '--.--';
+        }
     }
 
     private function sportImage(string $sport): string
