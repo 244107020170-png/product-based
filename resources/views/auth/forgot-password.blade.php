@@ -16,11 +16,13 @@
         <div class="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md items-center justify-center">
             <div class="w-full">
                 <div class="mb-6 flex justify-center">
-                    <img
-                        src="{{ asset('assets/images/logo/logo.png') }}"
-                        alt="Logo"
-                        class="h-auto w-36 sm:w-40"
-                    >
+                    <a href="{{ route('home') }}">
+                        <img
+                            src="{{ asset('assets/images/logo/logo.png') }}"
+                            alt="Logo"
+                            class="h-auto w-36 sm:w-40"
+                        >
+                    </a>
                 </div>
 
                 <div class="rounded-[28px] border border-stone-300 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.12)] sm:p-8" style="background-color: #FFF6D7;">

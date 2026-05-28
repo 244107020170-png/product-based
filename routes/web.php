@@ -101,6 +101,34 @@ Route::get('/preview-help', function () {
     return view('pages.help');
 })->name('preview.help');
 
+Route::get('/lapangan', function () {
+    return view('pages.lapangan');
+})->name('lapangan');
+
+Route::get('/komunitas', function () {
+    return view('pages.komunitas');
+})->name('komunitas');
+
+Route::get('/bantuan', function () {
+    return view('pages.welp');
+})->name('bantuan');
+
+Route::get('/tentang-kami', function () {
+    return view('pages.about');
+})->name('about');
+
+Route::get('/ketentuan-layanan', function () {
+    return view('pages.layanan');
+})->name('layanan');
+
+Route::get('/hubungi-kami', function () {
+    return view('pages.contact');
+})->name('contact');
+
+Route::get('/kebijakan-privasi', function () {
+    return view('pages.kebijakanpriv');
+})->name('kebijakanpriv');
+
 
 Route::middleware('auth')->group(function () {
 

@@ -16,6 +16,7 @@ export default defineConfig({
                 'resources/css/owner-form-field.css',
                 'resources/css/owner-bookings.css',
                 'resources/css/pemeliharaanDanKontrol.css',
+                'resources/css/pages.css',
                 'resources/js/app.js',
                 'resources/js/player-dashboard.js',
                 'resources/js/player-history.js',

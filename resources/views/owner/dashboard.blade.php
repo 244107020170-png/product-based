@@ -32,6 +32,9 @@
             </div>
 
             <div class="topbar-right">
+                <button class="notif-btn" onclick="window.location.href='#'" type="button" style="display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-headset"></i>
+                </button>
                 <button class="notif-btn">
                     <i class="fa-solid fa-bell"></i>
                 </button>

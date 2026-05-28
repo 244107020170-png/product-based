@@ -15,7 +15,7 @@
 
     <!-- TITLE -->
     <h1 class="title">
-        Kamu daftar sebagai apa nih?
+        Kamu masuk sebagai apa nih pas daftar?
     </h1>
 
     <!-- ROLE CONTAINER -->
@@ -29,7 +29,7 @@
             </div>
 
             <img 
-                src="{{ asset('assets/images/characters/player.png') }}" {{-- GANTI GAMBAR --}}
+                src="{{ asset('assets/images/characters/player.png') }}" 
                 alt="Pemain"
                 class="role-image"
             >
@@ -43,7 +43,7 @@
             </div>
 
             <img 
-                src="{{ asset('assets/images/characters/owner.png') }}" {{-- GANTI GAMBAR --}}
+                src="{{ asset('assets/images/characters/owner.png') }}" 
                 alt="Pemilik"
                 class="role-image"
             >

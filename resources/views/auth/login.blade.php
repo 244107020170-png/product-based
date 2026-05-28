@@ -21,7 +21,9 @@
 
             <!-- TOP -->
             <div class="flex justify items-center">
-                <img src="{{ asset('assets/images/logo/logo.png') }}" class="w-33">
+                <a href="{{ route('home') }}">
+                    <img src="{{ asset('assets/images/logo/logo.png') }}" class="w-33">
+                </a>
 
                 <div class="flex gap-3 text-[12px] text-indigo-950 text-allign-right ml-auto">
                     <a href="{{ route('explore') }}" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Jelajahi</a>

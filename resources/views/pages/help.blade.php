@@ -119,10 +119,10 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body
-        class="min-h-screen bg-cover bg-center bg-no-repeat text-[#00004d]"
-        style="background-image: url('{{ asset('assets/images/bg/bg-daftar.png') }}');"
+        class="min-h-screen text-[#00004d]"
+        style="background: #FFF6D7;"
     >
-        <div class="min-h-screen bg-[rgba(255,246,215,0.72)] px-4 py-6 sm:px-6 lg:px-10">
+        <div class="min-h-screen px-4 py-6 sm:px-6 lg:px-10">
             <div class="mx-auto max-w-6xl">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <a

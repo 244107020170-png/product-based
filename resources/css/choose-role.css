@@ -1,7 +1,7 @@
 /* PAGE */
 .choose-role-page {
     min-height: 100vh;
-    background-image: url('/public/assets/images/bg/bg-daftar.png');
+    background-image: url('/public/assets/images/bg/choose.png');
     background-size: cover;
     display: flex;
     flex-direction: column;
@@ -11,10 +11,16 @@
 
 /* TITLE */
 .title {
-    font-size: 32px;
+    font-size: 40px;
     font-weight: bold;
     color: #0D1B4C;
     margin-bottom: 50px;
+    animation: titleIn 0.8s ease-out both;
+}
+
+@keyframes titleIn {
+    0%   { opacity: 0; transform: translateY(-30px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 /* CONTAINER */
@@ -38,13 +44,13 @@
 
 /* BUTTON BOX */
 .role-box {
-    background: #E8D9B5;
+    background: #ffffff;
     padding: 20px 100px;
     border-radius: 25px;
     font-size: 24px;
     font-weight: bold;
     color: #0D1B4C;
-    box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+    box-shadow: 0 7px 0 rgba(0,0,0,0.2);
     margin-bottom: 20px;
     transition: all 0.2s ease;
 }
@@ -59,9 +65,23 @@
     transform: scale(1.05);
 }
 
+/* PEMAIN hover */
+.role-container > a:first-child:hover .role-box {
+    background: #db5136;
+    color: #ffffff;
+}
+
+/* PEMILIK hover */
+.role-container > a:last-child:hover .role-box {
+    background: #b02c2c;
+    color: #FFFFFF;
+}
+
 /* IMAGE */
 .role-image {
-    width: 220px; /* SESUAIKAN */
+    width: 280px;
+    height: 280px;
+    object-fit: contain;
     animation: float 3s ease-in-out infinite;
 }
 

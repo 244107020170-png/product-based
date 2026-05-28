@@ -75,10 +75,10 @@ body.register-page {
     left: 58%;
     bottom: 7%;
     transform: translateX(-50%);
-    width: min(88%, 470px);
+    width: min(95%, 560px);
     max-width: none;
     z-index: 1;
-    animation: register-float 3.8s ease-in-out infinite;
+    animation: register-float 6s ease-in-out infinite;
     filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.14));
 }
 
@@ -138,7 +138,7 @@ body.register-page {
 
 .register-title {
     margin: 4px 0 18px;
-    font-size: clamp(2.5rem, 3.5vw, 3.5rem);
+    font-size: clamp(2.5rem, 3.0vw, 3.5rem);
     line-height: 1.1;
     font-weight: 500;
     letter-spacing: -0.04em;
@@ -160,7 +160,12 @@ body.register-page {
     position: relative;
 }
 
-.register-field--select::after {
+.register-password-wrap,
+.register-select-wrap {
+    position: relative;
+}
+
+.register-select-wrap::after {
     content: "";
     position: absolute;
     top: 50%;
@@ -202,6 +207,19 @@ body.register-page {
 .register-input--select {
     appearance: none;
     padding-right: 48px;
+    color: var(--register-blue);
+}
+
+.register-input--select:invalid {
+    color: var(--register-placeholder);
+}
+
+.register-input--select option {
+    color: var(--register-blue);
+}
+
+.register-input--select option:disabled {
+    color: var(--register-placeholder);
 }
 
 .register-input[type="password"]::-ms-reveal,
