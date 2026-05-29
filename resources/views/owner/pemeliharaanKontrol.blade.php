@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pemeliharaan Kontrol</title>
 
-    @vite(['resources/css/pemeliharaanDanKontrol.css'])
+    @vite(['resources/css/app.css', 'resources/css/pemeliharaanDanKontrol.css'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,6 +37,9 @@
                     <i class="fa-solid fa-bell"></i>
                 </button>
 
+                <button class="notif-btn" onclick="toggleFaqPopup()">
+                    <i class="fa-solid fa-headset"></i>
+                </button>
                 <button class="notif-btn question">
                     <i class="fa-solid fa-circle-question"></i>
                 </button>
@@ -44,12 +47,22 @@
                 <div class="profile-box">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
-                        <p>Owner Profile</p>
+                        <p>Profil Pemilik</p>
                     </div>
 
                     <img src="https://i.pravatar.cc/100" alt="Profile">
                 </div>
             </div>
+        </div>
+
+        <div class="welcome-section">
+            <div>
+                <h1>Pemeliharaan & Kontrol</h1>
+                <p>Pantau dan kelola perawatan lapangan olahraga Anda.</p>
+            </div>
+            <a href="javascript:void(0)" class="add-btn">
+                <i class="fa-solid fa-plus"></i> Laporan Baru
+            </a>
         </div>
 
          @php
@@ -112,7 +125,7 @@
 
         <div>
           <h2>{{ $overdueTasks }}</h2>
-          <p>Overdue</p>
+          <p>Terlambat</p>
         </div>
       </div>
 
@@ -611,5 +624,6 @@
 
 </script>
 
+@include('owner.faq-popup')
 </body>
 </html>

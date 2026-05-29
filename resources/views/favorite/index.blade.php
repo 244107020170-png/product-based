@@ -380,15 +380,11 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                 <button type="button" class="fav-card__remove" data-remove="{{ $field->id }}" title="Hapus dari favorit">✕</button>
 
                 {{-- Image --}}
-                @if(!empty($field->image))
-                  <img src="{{ asset('storage/'.$field->image) }}"
-                       alt="{{ $field->name }}"
-                       class="fav-card__img"
-                       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                  <div class="fav-card__img-placeholder" style="background:{{ $gradient }};display:none">{!! $sportEmoji !!}</div>
-                @else
-                  <div class="fav-card__img-placeholder" style="background:{{ $gradient }}">{!! $sportEmoji !!}</div>
-                @endif
+                <img src="{{ $field->image_url }}"
+                     alt="{{ $field->name }}"
+                     class="fav-card__img"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="fav-card__img-placeholder" style="background:{{ $gradient }};display:none">{!! $sportEmoji !!}</div>
 
                 {{-- Meta --}}
                 <div class="fav-card__meta">

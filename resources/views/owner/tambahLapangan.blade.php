@@ -15,6 +15,7 @@
 
     <!-- Panggil file CSS baru di sini -->
     @vite([
+        'resources/css/app.css',
         'resources/css/owner-dashboard.css', 
         'resources/css/owner-bookings.css',
         'resources/css/owner-form-field.css'
@@ -44,11 +45,12 @@
 
             <div class="topbar-right">
                 <button class="notif-btn"><i class="fa-solid fa-bell"></i></button>
+                <button class="notif-btn" onclick="toggleFaqPopup()"><i class="fa-solid fa-headset"></i></button>
                 <button class="notif-btn question"><i class="fa-solid fa-circle-question"></i></button>
                 <div class="profile-box">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
-                        <p>Owner Profile</p>
+                        <p>Profil Pemilik</p>
                     </div>
                     <img src="https://i.pravatar.cc/100" alt="Profile">
                 </div>
@@ -244,5 +246,6 @@
     });
 </script>
 
+@include('owner.faq-popup')
 </body>
 </html>

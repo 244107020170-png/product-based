@@ -13,6 +13,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
+                sans: ['Poppins', ...defaultTheme.fontFamily.sans],
                 afacad: ['Afacad', 'sans-serif'],
                 archivo: ['Archivo', 'sans-serif'],
                 "label-md": ["Plus Jakarta Sans", "sans-serif"],

@@ -1,19 +1,27 @@
 {{-- NAVBAR / SIDEBAR OWNER --}}
 
+{{-- MOBILE SIDEBAR TOGGLE --}}
+<button id="sidebarToggle" class="sidebar-toggle-btn" onclick="toggleOwnerSidebar()" aria-label="Toggle sidebar">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+{{-- SIDEBAR OVERLAY --}}
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleOwnerSidebar()"></div>
+
 <aside class="sidebar">
     
     {{-- LOGO --}}
     <div>
         <div class="sidebar-logo">
             <img src="{{ asset('assets/images/logo/logo.png') }}" alt="Logo">
-            <p>Owner Portal</p>
+            <p>Portal Pemilik</p>
         </div>
 
         <nav class="sidebar-menu">
 
             <a href="/owner/dashboard" class="menu-item {{ Request::is('owner/dashboard*') ? 'active' : '' }}">
                 <i class="fa-solid fa-table-columns"></i>
-                <span>Dashboard</span>
+                <span>Beranda</span>
             </a>
 
             <a href="/owner/kelolaLapangan" class="menu-item {{ Request::is('owner/kelolaLapangan*') ? 'active' : '' }}">
@@ -28,7 +36,7 @@
 
             <a href="/owner/kelolaBooking" class="menu-item {{ Request::is('owner/kelolaBooking*') ? 'active' : '' }}">
                 <i class="fa-solid fa-ticket"></i>
-                <span>Pengelolaan Booking</span>
+                <span>Kelola Pesanan</span>
             </a>
 
             <a href="/owner/promosiDiskon" class="menu-item {{ Request::is('owner/promosiDiskon*') ? 'active' : '' }}">
@@ -58,9 +66,16 @@
         </form>
         <a href="#" class="menu-item logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="fa-solid fa-right-from-bracket"></i>
-            <span>Log Out</span>
+            <span>Keluar</span>
         </a>
 
     </div>
 
 </aside>
+
+<script>
+function toggleOwnerSidebar() {
+    document.querySelector('.sidebar').classList.toggle('is-open');
+    document.getElementById('sidebarOverlay').classList.toggle('is-visible');
+}
+</script>

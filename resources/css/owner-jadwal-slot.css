@@ -249,8 +249,6 @@ body{
 
 .welcome-section{
     margin-top: 28px;
-    margin-bottom: 24px;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -262,10 +260,9 @@ body{
 }
 
 .welcome-section p{
-    margin-top: 6px;
-
     font-size: 14px;
     color: #888;
+    margin-top: 6px;
 }
 
 /* BUTTON */
@@ -781,14 +778,62 @@ body{
     }
 }
 
+/* =========================
+   SIDEBAR TOGGLE
+========================= */
+
+.sidebar-toggle-btn {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1001;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: none;
+    background: white;
+    color: #ff4d4d;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 @media(max-width: 992px){
+
+    .sidebar-toggle-btn {
+        display: flex;
+    }
 
     .sidebar{
         transform: translateX(-100%);
     }
 
+    .sidebar.is-open {
+        transform: translateX(0);
+    }
+
     .main-content{
         margin-left: 0;
+        padding-top: 70px;
     }
 
     .topbar{
@@ -798,12 +843,6 @@ body{
 
     .search-box{
         width: 100%;
-    }
-
-    .welcome-section{
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
     }
 
     .schedule-nav-card{
@@ -835,5 +874,13 @@ body{
     .week-label{
         flex: 1;
         text-align: center;
+    }
+}
+
+@media(max-width: 560px){
+    .welcome-section{
+        flex-direction: column;
+        align-items: start;
+        gap: 16px;
     }
 }

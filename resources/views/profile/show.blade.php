@@ -82,7 +82,7 @@
             'name'     => $f->name,
             'location' => $f->location ?? 'Lokasi tidak tersedia',
             'rating'   => $f->rating ?? '4.8',
-            'image'    => $f->image ? asset('storage/' . $f->image) : asset('assets/images/bg/Explore.png'),
+            'image'    => $f->image_url,
         ];
     })->filter();
 @endphp

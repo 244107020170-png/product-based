@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Lapangan</title>
 
-    @vite(['resources/css/owner-dashboard.css'])
+    @vite(['resources/css/app.css', 'resources/css/owner-dashboard.css'])
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +36,9 @@
                     <i class="fa-solid fa-bell"></i>
                 </button>
 
+                <button class="notif-btn">
+                    <i class="fa-solid fa-headset"></i>
+                </button>
                 <button class="notif-btn question">
                     <i class="fa-solid fa-circle-question"></i>
                 </button>
@@ -43,7 +46,7 @@
                 <div class="profile-box">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
-                        <p>Owner Profile</p>
+                        <p>Profil Pemilik</p>
                     </div>
 
                     <img src="https://i.pravatar.cc/100" alt="Profile">
@@ -55,7 +58,8 @@
         {{-- WELCOME SECTION --}}
         <div class="welcome-section">
             <div>
-                <h1>Selamat datang kembali, {{ auth()->user()->name }}!</h1>
+                <h1>Ayo tambahkan lapangan mu!</h1>
+                <p>Kelola lapangan olahraga di sini.</p>
             </div>
 
             <a href="{{ route('owner.tambahLapangan') }}" class="add-btn">
@@ -103,7 +107,7 @@
 
             <div class="stats-card">
                 <div>
-                    <p>Telah Dibooking</p>
+                    <p>Telah Dipesan</p>
                     <h2 class="red-text">5</h2>
                 </div>
 
@@ -138,7 +142,7 @@
             <div class="field-card">
 
                 <div class="field-image">
-                    <img src="{{ $field->image ? asset('storage/'.$field->image) : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop' }}" alt="{{ $field->name }}">
+                    <img src="{{ $field->image_url }}" alt="{{ $field->name }}" onerror="this.style.display='none'">
 
                     <span class="badge">{{ $field->type ?? 'Olahraga' }}</span>
                 </div>
@@ -198,5 +202,6 @@
 
 </div>
 
+@include('owner.faq-popup')
 </body>
 </html>

@@ -3,8 +3,12 @@
     use Carbon\Carbon;
 
     $selectedSport = request('sport');
+
+    // All fields (unfiltered) — for sport selector modal + sport list
     $allFields = Field::with('owner')->get();
-    $fields = $selectedSport ? $allFields->where('type', $selectedSport) : $allFields;
+
+    // Filter displayed fields by sport (preserves controller's nearby filter on $fields)
+    $fields = $selectedSport ? $fields->where('type', $selectedSport) : $fields;
 
     $sportList = ['Futsal','Badminton','Basket','Voli','Tennis','Golf','Renang','Panahan','Lari','Sepeda','Tinju','Bela Diri','Yoga','Fitness','Hiking','Padel','Baseball','Rugby','Senam'];
     $sportEmoji = [
@@ -24,10 +28,6 @@
     $confirmedMatchNotifs = isset($confirmedMatchNotifs) ? $confirmedMatchNotifs : collect();
     $upcomingJoin = isset($upcomingJoin) ? $upcomingJoin : null;
     $myTeams = \App\Models\Matchs::with('field')->where('created_by', Auth::id())->latest()->take(4)->get();
-    function fieldImg($f) {
-        if (!$f->image) return asset('assets/images/bg/Explore.png');
-        return asset('storage/' . $f->image);
-    }
     
     // Sidebar
     $sidebarItems = [
@@ -150,7 +150,7 @@
             </div>
             <a href="{{ route('profile.show') }}" class="player-profile-pill">
                 <span class="player-profile-pill__avatar">
-                    <img src="{{ $userAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile">
+                    <img src="{{ $userAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile" onerror="this.src='{{ asset('assets/images/characters/' . (Auth::user()->gender === 'perempuan' ? 'profil2.png' : 'profil1.png')) }}'">
                 </span>
                 <span class="player-profile-pill__name">{{ $userName }}</span>
             </a>
@@ -272,10 +272,15 @@
                             ? 'https://www.google.com/maps/search/?api=1&query='.urlencode($notifField->location)
                             : 'https://maps.google.com';
                         $statusLabels = [
-                            'confirmed' => ['label' => 'Terkonfirmasi', 'color' => '#166534', 'bg' => '#bbf7d0'],
-                            'selesai'   => ['label' => 'Selesai',       'color' => '#166534', 'bg' => '#bbf7d0'],
-                            'cancelled' => ['label' => 'Dibatalkan',    'color' => '#991b1b', 'bg' => '#fecaca'],
-                            'pending'   => ['label' => 'Menunggu',      'color' => '#92400e', 'bg' => '#fef3c7'],
+                            'pending'             => ['label' => 'Menunggu',           'color' => '#92400e', 'bg' => '#fef3c7'],
+                            'waiting_payment'     => ['label' => 'Menunggu Pembayaran','color' => '#92400e', 'bg' => '#fef3c7'],
+                            'waiting_confirmation'=> ['label' => 'Menunggu Konfirmasi','color' => '#92400e', 'bg' => '#fef3c7'],
+                            'paid'                => ['label' => 'Dibayar',            'color' => '#1e40af', 'bg' => '#dbeafe'],
+                            'confirmed'           => ['label' => 'Terkonfirmasi',      'color' => '#166534', 'bg' => '#bbf7d0'],
+                            'completed'           => ['label' => 'Selesai',            'color' => '#166534', 'bg' => '#bbf7d0'],
+                            'cancelled'           => ['label' => 'Dibatalkan',         'color' => '#991b1b', 'bg' => '#fecaca'],
+                            'expired'             => ['label' => 'Kedaluwarsa',        'color' => '#991b1b', 'bg' => '#fecaca'],
+                            'rejected'            => ['label' => 'Ditolak',            'color' => '#991b1b', 'bg' => '#fecaca'],
                         ];
                         $status = $statusLabels[$notif->status] ?? ['label' => 'Unknown', 'color' => '#666', 'bg' => '#e5e7eb'];
                     @endphp
@@ -336,28 +341,30 @@
 
         <!-- 4 WIDGETS -->
         @php
-            // Determine the nearest upcoming event for the countdown widget
-            $nearestUpcoming = null; // will be object with ->type, ->label, ->desc, ->date, ->time, ->endTime, ->detailUrl, ->ts
+            $nowTs = \Carbon\Carbon::now()->timestamp;
+            $nearestUpcoming = null;
             $nearestTs = null;
             if (isset($upcomingBooking) && $upcomingBooking) {
                 $d = \Carbon\Carbon::parse($upcomingBooking->date->format('Y-m-d') . ' ' . $upcomingBooking->start_time);
-                $nearestUpcoming = (object)[
-                    'type' => 'booking',
-                    'label' => $upcomingBooking->field->name ?? 'Booking',
-                    'desc' => $upcomingBooking->field->location ?? '',
-                    'date' => $upcomingBooking->date,
-                    'time' => $upcomingBooking->start_time,
-                    'endTime' => $upcomingBooking->end_time,
-                    'detailUrl' => route('booking.detail', $upcomingBooking->id),
-                    'ts' => $d->timestamp,
-                ];
-                $nearestTs = $d->timestamp;
+                if ($d->timestamp > $nowTs) {
+                    $nearestUpcoming = (object)[
+                        'type' => 'booking',
+                        'label' => $upcomingBooking->field->name ?? 'Booking',
+                        'desc' => $upcomingBooking->field->location ?? '',
+                        'date' => $upcomingBooking->date,
+                        'time' => $upcomingBooking->start_time,
+                        'endTime' => $upcomingBooking->end_time,
+                        'detailUrl' => route('booking.detail', $upcomingBooking->id),
+                        'ts' => $d->timestamp,
+                    ];
+                    $nearestTs = $d->timestamp;
+                }
             }
             if (isset($upcomingJoin) && $upcomingJoin && $upcomingJoin->match) {
                 $m = $upcomingJoin->match;
                 $dt = \Carbon\Carbon::parse($m->date . ' ' . $m->time);
                 $mt = $dt->timestamp;
-                if (!$nearestUpcoming || $mt < $nearestTs) {
+                if ($mt > $nowTs && (!$nearestUpcoming || $mt < $nearestTs)) {
                     $nearestUpcoming = (object)[
                         'type' => 'match',
                         'label' => $m->title,
@@ -406,7 +413,11 @@
                     </div>
                     <a href="{{ $nearestUpcoming->detailUrl }}" style="margin-top: auto; background: #e11d48; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none;">Lihat Detail</a>
                 @else
-                    <p style="margin: 0; color: #888; font-size: 14px;">Belum ada jadwal.</p>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; text-align:center;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#02025b" stroke-width="1.5" opacity=".3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <p style="margin:0; font-size:14px; color:#888;">Belum ada jadwal mendatang.</p>
+                        <a href="{{ route('dashboard') }}" style="background:#02025b; color:white; padding:10px 20px; border-radius:10px; font-weight:700; font-size:13px; text-decoration:none;">Booking Sekarang</a>
+                    </div>
                 @endif
             </div>
 
@@ -499,7 +510,6 @@
             </div>
         </div>
 
-        @if($myTeams->isNotEmpty())
         <!-- Tim Saya -->
         <div style="margin-bottom: 40px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -507,7 +517,7 @@
                 <a href="{{ route('matches.myTeams') }}" style="font-size: 13px; color: #666; font-weight: 600; text-decoration: none;">Lihat semua</a>
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
-                @foreach($myTeams as $tm)
+                @forelse($myTeams as $tm)
                 <a href="{{ route('matches.show', $tm->id) }}" style="text-decoration: none; color: inherit; display: block; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); transition: all .3s ease;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                         <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #02025b;">{{ $tm->title }}</h4>
@@ -540,22 +550,25 @@
                         <span style="background: #02025b; color: #fff; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;">Detail</span>
                     </div>
                 </a>
-                @endforeach
+                @empty
+                <div style="grid-column:1/-1; text-align:center; padding:32px 20px; background:#f8fafc; border-radius:16px;">
+                    <p style="margin:0 0 12px; font-size:14px; color:#888;">Belum punya tim. Buat tim pertama kamu!</p>
+                    <a href="{{ route('matches.create') }}" style="display:inline-block; background:#e11d48; color:white; padding:10px 24px; border-radius:10px; font-weight:700; font-size:13px; text-decoration:none;">Buat Pertandingan Baru</a>
+                </div>
+                @endforelse
             </div>
         </div>
-        @endif
 
-        @if($pesanLagiFields->isNotEmpty())
         <!-- Pesan Lagi -->
         <div style="margin-bottom: 40px;">
             <h2 style="font-size: 24px; font-weight: 800; color: #02025b; margin-bottom: 16px;">Pesan lagi</h2>
             <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05);">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
-                    @foreach($pesanLagiFields as $plf)
+                    @forelse($pesanLagiFields as $plf)
                     <a href="{{ route('booking.show', $plf->id) }}" style="text-decoration: none; color: inherit; display: block;">
                         <div style="border-radius: 12px; overflow: hidden; height: 160px; margin-bottom: 12px; position: relative;">
                             <span style="position: absolute; top: 10px; left: 10px; background: #02025b; color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; z-index: 2;">Sebelumnya</span>
-                            <img src="{{ fieldImg($plf) }}" alt="{{ $plf->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="{{ $plf->image_url }}" alt="{{ $plf->name }}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
                         </div>
                         <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 800; color: #02025b;">{{ $plf->name }}</h4>
                         <div style="display: flex; gap: 8px; align-items: center;">
@@ -563,11 +576,15 @@
                             <span style="font-size: 12px; font-weight: 600; color: #666;">{{ $plf->location ?: 'Lokasi tidak tersedia' }}</span>
                         </div>
                     </a>
-                    @endforeach
+                    @empty
+                    <div style="grid-column:1/-1; text-align:center; padding:32px 20px;">
+                        <p style="margin:0 0 12px; font-size:14px; color:#888;">Belum ada riwayat booking. Yuk booking lapangan!</p>
+                        <a href="{{ route('dashboard') }}#lapangan" style="display:inline-block; background:#02025b; color:white; padding:10px 24px; border-radius:10px; font-weight:700; font-size:13px; text-decoration:none;">Cari Lapangan</a>
+                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>
-        @endif
         @endif
 
         <!-- LAPANGAN TERSEDIA (Original Section) -->
@@ -636,14 +653,15 @@
             @php $isFav = in_array($field->id, $favoriteIds ?? []); @endphp
             <div class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; cursor:pointer;" onclick="window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'">
                 <div style="position: relative; height: 200px; overflow: hidden;">
-                    <img src="{{ fieldImg($field) }}" 
+                    <img src="{{ $field->image_url }}" 
                          alt="{{ $field->name }}"
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                    <div style="position: absolute; top: 12px; left: 12px; display:flex; gap:6px;">
-                        <span onclick="event.stopPropagation();toggleFavorite({{ $field->id }}, this)" style="background:rgba(0,0,0,0.6); color:{{ $isFav ? '#EB5436' : 'white' }}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; font-size:18px;" data-fav="{{ $isFav ? '1' : '0' }}">
-                            {{ $isFav ? '❤️' : '🤍' }}
-                        </span>
-                    </div>
+                         style="width: 100%; height: 100%; object-fit: cover;"
+                     onerror="this.style.display='none'">
+                     <div style="position: absolute; top: 12px; left: 12px; display:flex; gap:6px;">
+                         <span onclick="event.stopPropagation();toggleFavorite({{ $field->id }}, this)" style="background:rgba(0,0,0,0.6); color:{{ $isFav ? '#EB5436' : 'white' }}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; font-size:18px;" data-fav="{{ $isFav ? '1' : '0' }}">
+                             {{ $isFav ? '❤️' : '🤍' }}
+                         </span>
+                     </div>
                     <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600;">
                         <span style="display:inline-flex;vertical-align:-2px;margin-right:4px;">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -677,6 +695,7 @@
     var cdEl = document.getElementById('upcoming-countdown');
     if (!cdEl) return;
     var target = parseInt(cdEl.dataset.target) * 1000;
+    if (isNaN(target)) { cdEl.style.display = 'none'; return; }
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
     function update() {
         var diff = target - Date.now();
@@ -761,7 +780,7 @@
                 @foreach($allFields as $f)
                 <a href="{{ route('booking.show', $f->id) }}" data-field-name="{{ strtolower($f->name) }}" data-field-location="{{ strtolower($f->location ?? '') }}" data-field-sport="{{ $f->type }}" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:14px; padding:14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); transition:all .2s; background:#fafafa;" onmouseover="this.style.borderColor='#02025b';this.style.background='#fff'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='#fafafa'">
                     <div style="width:56px; height:56px; border-radius:10px; overflow:hidden; flex-shrink:0; background:#e2e8f0;">
-                        <img src="{{ fieldImg($f) }}" alt="" style="width:100%; height:100%; object-fit:cover;">
+                        <img src="{{ $f->image_url }}" alt="" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">
                     </div>
                     <div style="min-width:0; flex:1;">
                         <h4 style="margin:0 0 2px; font-size:14px; font-weight:800; color:#02025b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $f->name }}</h4>

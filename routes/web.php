@@ -90,7 +90,11 @@ Route::get('/dashboard', function () {
         $upcomingJoin = \App\Models\MatchPlayer::where('match_players.user_id', $user->id)
             ->where('match_players.payment_status', \App\Enums\PaymentStatus::PAID)
             ->whereHas('match', function ($q) {
-                $q->where('date', '>=', now()->toDateString());
+                $q->where('date', '>', now()->toDateString())
+                  ->orWhere(function($q2) {
+                      $q2->where('date', '=', now()->toDateString())
+                         ->where('time', '>', now()->toTimeString());
+                  });
             })
             ->with('match.field')
             ->join('matches', 'match_players.match_id', '=', 'matches.id')
@@ -308,8 +312,68 @@ Route::middleware('auth')->group(function () {
         })->name('owner.kelolaBooking');
 
         Route::get('/promosiDiskon', function () {
-            return view('owner.promosiDiskon');
+            $user = auth()->user();
+            $discounts = \App\Models\Discount::where('owner_id', $user->id)
+                ->with('field')->orderBy('created_at', 'desc')->get();
+            $activePromos = \App\Models\Discount::where('owner_id', $user->id)
+                ->active()->with('field')->get();
+            $totalClaims = \App\Models\Discount::where('owner_id', $user->id)->sum('usage_count');
+            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
+            return view('owner.promosiDiskon', compact('discounts', 'activePromos', 'totalClaims', 'fields'));
         })->name('owner.promosiDiskon');
+
+        Route::post('/discounts/store', function () {
+            $data = request()->validate([
+                'field_id'          => 'nullable|exists:fields,id',
+                'name'              => 'required|string|max:255',
+                'code'              => 'nullable|string|max:50|unique:discounts,code',
+                'description'       => 'nullable|string',
+                'type'              => 'required|in:percentage,fixed',
+                'value'             => 'required|numeric|min:0',
+                'min_booking_amount'=> 'nullable|numeric|min:0',
+                'usage_limit'       => 'nullable|integer|min:0',
+                'start_date'        => 'required|date',
+                'end_date'          => 'required|date|after_or_equal:start_date',
+            ]);
+            $data['owner_id'] = auth()->id();
+            $discount = \App\Models\Discount::create($data);
+            return redirect()->route('owner.promosiDiskon')->with('success', 'Promo berhasil dibuat!');
+        })->name('owner.discounts.store');
+
+        Route::get('/discounts/{discount}/edit', function (\App\Models\Discount $discount) {
+            if ($discount->owner_id !== auth()->id()) abort(403);
+            return response()->json($discount);
+        })->name('owner.discounts.edit');
+
+        Route::put('/discounts/{discount}/update', function (\App\Models\Discount $discount) {
+            if ($discount->owner_id !== auth()->id()) abort(403);
+            $data = request()->validate([
+                'field_id'          => 'nullable|exists:fields,id',
+                'name'              => 'required|string|max:255',
+                'code'              => 'nullable|string|max:50|unique:discounts,code,'.$discount->id,
+                'description'       => 'nullable|string',
+                'type'              => 'required|in:percentage,fixed',
+                'value'             => 'required|numeric|min:0',
+                'min_booking_amount'=> 'nullable|numeric|min:0',
+                'usage_limit'       => 'nullable|integer|min:0',
+                'start_date'        => 'required|date',
+                'end_date'          => 'required|date|after_or_equal:start_date',
+            ]);
+            $discount->update($data);
+            return redirect()->route('owner.promosiDiskon')->with('success', 'Promo berhasil diperbarui!');
+        })->name('owner.discounts.update');
+
+        Route::delete('/discounts/{discount}', function (\App\Models\Discount $discount) {
+            if ($discount->owner_id !== auth()->id()) abort(403);
+            $discount->delete();
+            return redirect()->route('owner.promosiDiskon')->with('success', 'Promo berhasil dihapus!');
+        })->name('owner.discounts.destroy');
+
+        Route::post('/discounts/{discount}/toggle', function (\App\Models\Discount $discount) {
+            if ($discount->owner_id !== auth()->id()) abort(403);
+            $discount->update(['is_active' => !$discount->is_active]);
+            return response()->json(['success' => true, 'is_active' => $discount->fresh()->is_active]);
+        })->name('owner.discounts.toggle');
 
         // ── FIELD CRUD ────────────────────────────────────────────
 

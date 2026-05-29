@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jadwal Dan Slot</title>
 
-    @vite(['resources/css/owner-jadwal-slot.css'])
+    @vite(['resources/css/app.css', 'resources/css/owner-jadwal-slot.css'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,6 +37,9 @@
                     <i class="fa-solid fa-bell"></i>
                 </button>
 
+                <button class="notif-btn" onclick="toggleFaqPopup()">
+                    <i class="fa-solid fa-headset"></i>
+                </button>
                 <button class="notif-btn question">
                     <i class="fa-solid fa-circle-question"></i>
                 </button>
@@ -44,7 +47,7 @@
                 <div class="profile-box">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
-                        <p>Owner Profile</p>
+                        <p>Profil Pemilik</p>
                     </div>
 
                     <img src="https://i.pravatar.cc/100" alt="Profile">
@@ -507,5 +510,6 @@
     });
 </script>
 
+@include('owner.faq-popup')
 </body>
 </html>

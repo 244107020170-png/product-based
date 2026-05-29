@@ -1,193 +1,277 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Owner</title>
-
-    @vite(['resources/css/owner-dashboard.css', 'resources/css/owner-bookings.css'])
-
+    <title>Beranda Pemilik</title>
+    @vite(['resources/css/app.css', 'resources/css/owner-dashboard.css'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 </head>
 <body>
 
 <div class="dashboard-layout">
 
-    {{-- MOBILE SIDEBAR TOGGLE --}}
-    <button id="sidebarToggle" class="sidebar-toggle-btn" onclick="toggleOwnerSidebar()" aria-label="Toggle sidebar">
-        <i class="fa-solid fa-bars"></i>
-    </button>
-
-    {{-- SIDEBAR OVERLAY --}}
-    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleOwnerSidebar()"></div>
-
-    {{-- SIDEBAR --}}
     @include('owner.navbar')
 
-    {{-- MAIN CONTENT --}}
     <main class="main-content">
 
-        {{-- TOPBAR --}}
         <div class="topbar">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" placeholder="Search bookings, customers...">
             </div>
-
             <div class="topbar-right">
-                <button class="notif-btn" onclick="window.location.href='#'" type="button" style="display: inline-flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-headset"></i>
-                </button>
-                <button class="notif-btn">
-                    <i class="fa-solid fa-bell"></i>
-                </button>
-
-                <button class="notif-btn question" onclick="document.getElementById('ownerFaqModal').style.display='flex'">
-                    <i class="fa-solid fa-circle-question"></i>
-                </button>
-
+                <button class="notif-btn"><i class="fa-solid fa-bell"></i></button>
+                <button class="notif-btn" onclick="toggleFaqPopup()"><i class="fa-solid fa-headset"></i></button>
+                <button class="notif-btn question"><i class="fa-solid fa-circle-question"></i></button>
                 <div class="profile-box">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
-                        <p>Owner Profile</p>
+                        <p>Profil Pemilik</p>
                     </div>
-
                     <img src="https://i.pravatar.cc/100" alt="Profile">
                 </div>
             </div>
         </div>
 
-        {{-- WELCOME SECTION --}}
         <div class="welcome-section">
             <div>
                 <h1>Selamat datang kembali, {{ auth()->user()->name }}!</h1>
-                <p>Kelola lapangan dan booking Anda dengan mudah.</p>
+                <p>Berikut ringkasan performa fasilitas olahraga Anda.</p>
             </div>
-
             <a href="{{ route('owner.tambahLapangan') }}" class="add-btn">
-                <i class="fa-solid fa-plus"></i>
-                Tambah Lapangan
+                <i class="fa-solid fa-plus"></i> Tambah Lapangan
             </a>
         </div>
 
-        {{-- STATISTIC CARDS --}}
         <div class="stats-grid">
-
             <div class="stats-card">
                 <div>
                     <p>Total Lapangan</p>
                     <h2 class="blue-text">{{ $fieldCount ?? 0 }}</h2>
                 </div>
-
-                <div class="stats-icon blue">
-                    <i class="fa-regular fa-futbol"></i>
-                </div>
+                <div class="stats-icon blue"><i class="fa-regular fa-futbol"></i></div>
             </div>
-
             <div class="stats-card">
                 <div>
-                    <p>Total Booking</p>
+                    <p>Total Pesanan</p>
                     <h2 class="green-text">{{ $bookingCount ?? 0 }}</h2>
                 </div>
-
-                <div class="stats-icon green">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+                <div class="stats-icon green"><i class="fa-solid fa-circle-check"></i></div>
             </div>
-
             <div class="stats-card">
                 <div>
-                    <p>Booking Hari Ini</p>
+                    <p>Pesanan Hari Ini</p>
                     <h2 class="yellow-text">{{ $todayBooking ?? 0 }}</h2>
                 </div>
-
-                <div class="stats-icon yellow">
-                    <i class="fa-solid fa-calendar-days"></i>
-                </div>
+                <div class="stats-icon yellow"><i class="fa-solid fa-calendar-days"></i></div>
             </div>
-
             <div class="stats-card">
                 <div>
                     <p>Pendapatan Bulan Ini</p>
                     <h2 class="red-text">Rp {{ number_format($monthlyRevenue ?? 0, 0, ',', '.') }}</h2>
                 </div>
-
-                <div class="stats-icon red">
-                    <i class="fa-solid fa-dollar-sign"></i>
-                </div>
+                <div class="stats-icon red"><i class="fa-solid fa-dollar-sign"></i></div>
             </div>
-
         </div>
 
-        {{-- QUICK ACTIONS --}}
-        <div class="quick-actions">
-            <h3>Akses Cepat</h3>
-            <div class="actions-grid">
-                <a href="{{ route('owner.kelolaLapangan') }}" class="action-card">
-                    <i class="fa-solid fa-list"></i>
-                    <span>Kelola Lapangan</span>
-                </a>
-                <a href="{{ route('owner.kelolaBooking') }}" class="action-card">
-                    <i class="fa-solid fa-calendar-check"></i>
-                    <span>Kelola Booking</span>
-                </a>
-                <a href="{{ route('owner.jadwalDanSlot') }}" class="action-card">
-                    <i class="fa-solid fa-clock"></i>
-                    <span>Jadwal & Slot</span>
-                </a>
-                <a href="{{ route('owner.promosiDiskon') }}" class="action-card">
-                    <i class="fa-solid fa-tag"></i>
-                    <span>Promo & Diskon</span>
-                </a>
+        <div class="flex flex-col lg:flex-row gap-6 mt-8">
+
+            <div class="flex-1 min-w-0 space-y-6">
+
+                {{-- Recent Bookings --}}
+                <div class="bg-white rounded-2xl p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">Pesanan Terbaru</h3>
+                        <a href="{{ route('owner.kelolaBooking') }}" class="text-sm font-semibold text-red-500 hover:underline">Kelola Semua</a>
+                    </div>
+                    @php
+                        $recentBookings = \App\Models\Booking::whereHas('field', fn($q) => $q->where('owner_id', auth()->id()))
+                            ->with(['user', 'field'])
+                            ->orderBy('created_at', 'desc')
+                            ->take(5)
+                            ->get();
+                    @endphp
+                    @if($recentBookings->count())
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-gray-500 text-xs font-semibold uppercase border-b border-gray-100">
+                                    <th class="pb-3 pr-4">Penyewa</th>
+                                    <th class="pb-3 pr-4">Lapangan</th>
+                                    <th class="pb-3 pr-4">Tanggal</th>
+                                    <th class="pb-3 pr-4">Waktu</th>
+                                    <th class="pb-3 pr-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                @foreach($recentBookings as $b)
+                                @php
+                                    $statusClass = match($b->status) {
+                                        'confirmed', 'completed', 'paid' => 'text-green-700 bg-green-50',
+                                        'pending', 'waiting_confirmation', 'waiting_payment' => 'text-yellow-700 bg-yellow-50',
+                                        'cancelled', 'rejected', 'expired' => 'text-red-700 bg-red-50',
+                                        default => 'text-gray-700 bg-gray-50',
+                                    };
+                                @endphp
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 pr-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-xs font-bold text-red-600">
+                                                {{ strtoupper(substr($b->user?->name ?? '?', 0, 1)) }}
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-800">{{ $b->user?->name ?? 'N/A' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 pr-4 text-sm text-gray-600">{{ $b->field?->name ?? 'N/A' }}</td>
+                                    <td class="py-3 pr-4 text-sm text-gray-600">{{ $b->date?->format('d M Y') }}</td>
+                                    <td class="py-3 pr-4 text-sm text-gray-600">
+                                        {{ \Carbon\Carbon::parse($b->start_time)->format('H.i') }} - {{ \Carbon\Carbon::parse($b->end_time)->format('H.i') }}
+                                    </td>
+                                    <td class="py-3 pr-4">
+                                        @php
+                                            $statusLabel = match($b->status) {
+                                                'confirmed' => 'Terkonfirmasi',
+                                                'completed' => 'Selesai',
+                                                'paid' => 'Dibayar',
+                                                'pending' => 'Menunggu',
+                                                'waiting_confirmation' => 'Menunggu Konfirmasi',
+                                                'waiting_payment' => 'Menunggu Pembayaran',
+                                                'cancelled' => 'Dibatalkan',
+                                                'rejected' => 'Ditolak',
+                                                'expired' => 'Kedaluwarsa',
+                                                default => ucfirst($b->status),
+                                            };
+                                        @endphp
+                                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">
+                                            {{ $statusLabel }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center py-10 text-gray-400">
+                        <i class="fa-solid fa-inbox text-4xl mb-4 block"></i>
+                        <p>Belum ada pesanan</p>
+                    </div>
+                    @endif
+                </div>
+
+                {{-- Field Status --}}
+                @php $fields = \App\Models\Field::where('owner_id', auth()->id())->get(); @endphp
+                @if($fields->count())
+                <div class="bg-white rounded-2xl p-6 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">Status Lapangan</h3>
+                        <a href="{{ route('owner.kelolaLapangan') }}" class="text-sm font-semibold text-red-500 hover:underline">Kelola Semua</a>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        @foreach($fields as $f)
+                        <div class="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                            <div class="h-32 relative bg-gray-200">
+                                <img src="{{ $f->image_url }}" alt="{{ $f->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                <span class="absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full
+                                    {{ $f->is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                    {{ $f->is_available ? 'Tersedia' : 'Tidak Tersedia' }}
+                                </span>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-semibold text-gray-800">{{ $f->name }}</h4>
+                                <p class="text-xs text-gray-500">{{ $f->type ?? 'Olahraga' }}</p>
+                                <div class="flex items-center justify-between mt-3 text-sm">
+                                    <span class="font-semibold text-red-500">Rp{{ number_format($f->price_per_hour ?? 0, 0, ',', '.') }}</span>
+                                    <span class="text-gray-400 text-xs"><i class="fa-regular fa-clock mr-1"></i>{{ substr($f->open_time ?? '08:00', 0, 5) }} - {{ substr($f->close_time ?? '22:00', 0, 5) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
             </div>
+
+            {{-- Right Sidebar --}}
+            <div class="w-full lg:w-80 space-y-6">
+
+                {{-- Quick Actions --}}
+                <div class="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">Akses Cepat</h3>
+                    <div class="space-y-3">
+                        <a href="{{ route('owner.tambahLapangan') }}" class="flex items-center p-4 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50/50 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-red-100">
+                                <i class="fa-solid fa-plus text-gray-500 group-hover:text-red-500"></i>
+                            </div>
+                            <span class="font-semibold text-sm text-gray-700 group-hover:text-red-600">Tambah Lapangan</span>
+                        </a>
+                        <a href="{{ route('owner.jadwalDanSlot') }}" class="flex items-center p-4 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50/50 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-red-100">
+                                <i class="fa-regular fa-calendar text-gray-500 group-hover:text-red-500"></i>
+                            </div>
+                            <span class="font-semibold text-sm text-gray-700 group-hover:text-red-600">Atur Jadwal</span>
+                        </a>
+                        <a href="{{ route('owner.kelolaBooking') }}" class="flex items-center p-4 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50/50 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-red-100">
+                                <i class="fa-solid fa-list text-gray-500 group-hover:text-red-500"></i>
+                            </div>
+                            <span class="font-semibold text-sm text-gray-700 group-hover:text-red-600">Lihat Pesanan</span>
+                        </a>
+                        <a href="{{ route('owner.promosiDiskon') }}" class="flex items-center p-4 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50/50 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-4 group-hover:bg-red-100">
+                                <i class="fa-solid fa-tag text-gray-500 group-hover:text-red-500"></i>
+                            </div>
+                            <span class="font-semibold text-sm text-gray-700 group-hover:text-red-600">Buat Promo</span>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Activity Timeline --}}
+                <div class="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">Aktivitas Terkini</h3>
+                    @php
+                        $recentActivities = \App\Models\Booking::whereHas('field', fn($q) => $q->where('owner_id', auth()->id()))
+                            ->with(['user', 'field'])
+                            ->orderBy('updated_at', 'desc')
+                            ->take(5)
+                            ->get();
+                    @endphp
+                    @if($recentActivities->count())
+                    <div class="relative space-y-6 pl-6">
+                        <div class="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
+                        @foreach($recentActivities as $act)
+                        @php
+                            $colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500'];
+                            $color = $colors[$loop->index % count($colors)];
+                        @endphp
+                        <div class="relative">
+                            <div class="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full {{ $color }} border-4 border-white shadow-sm"></div>
+                            <p class="text-sm font-semibold text-gray-700">{{ $act->user?->name ?? 'Seseorang' }} memesan {{ $act->field?->name ?? 'lapangan' }}</p>
+                            <p class="text-xs text-gray-400">{{ $act->updated_at->diffForHumans() }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fa-solid fa-clock-rotate-left text-3xl mb-3 block"></i>
+                        <p class="text-sm">Belum ada aktivitas</p>
+                    </div>
+                    @endif
+                </div>
+
+            </div>
+
         </div>
 
     </main>
 
 </div>
 
-<script>
-function toggleOwnerSidebar() {
-    document.querySelector('.sidebar').classList.toggle('is-open');
-    document.getElementById('sidebarOverlay').classList.toggle('is-visible');
-}
-</script>
-
-<div id="ownerFaqModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)document.getElementById('ownerFaqModal').style.display='none'">
-    <div style="background:white; border-radius:20px; padding:28px 24px; max-width:440px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.25); max-height:80vh; overflow-y:auto;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 style="margin:0; font-size:18px; font-weight:800; color:#02025b;">Pusat Bantuan</h3>
-            <span onclick="document.getElementById('ownerFaqModal').style.display='none'" style="cursor:pointer; font-size:24px; color:#999; line-height:1;">&times;</span>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-            @php
-                $faqs = [
-                    ['q' => 'Bagaimana cara menambah lapangan?', 'a' => 'Klik tombol "Tambah Lapangan" di halaman ini atau buka menu Kelola Lapangan > Tambah Lapangan. Isi data lapangan lalu simpan.'],
-                    ['q' => 'Bagaimana cara mengelola booking?', 'a' => 'Buka menu Kelola Booking. Anda bisa melihat, mengkonfirmasi, atau membatalkan booking dari sana.'],
-                    ['q' => 'Bagaimana cara mengatur jadwal & slot?', 'a' => 'Buka menu Jadwal & Slot. Atur jadwal buka/tutup lapangan dan slot waktu yang tersedia.'],
-                    ['q' => 'Bagaimana cara mengelola promo?', 'a' => 'Buka menu Promo & Diskon. Anda bisa membuat kode promo atau diskon khusus untuk lapangan Anda.'],
-                    ['q' => 'Bagaimana cara menghubungi CS?', 'a' => 'Hubungi Customer Service kami di WhatsApp melalui tautan berikut.'],
-                ];
-            @endphp
-            @foreach($faqs as $f)
-            <div style="background:#f8f9ff; border-radius:12px; padding:14px 16px;">
-                <p style="margin:0 0 6px; font-weight:700; color:#02025b; font-size:14px;">{{ $f['q'] }}</p>
-                <p style="margin:0; color:#555; font-size:13px; line-height:1.5;">
-                    {{ $f['a'] }}
-                    @if(str_contains($f['a'], 'WhatsApp'))
-                        <a href="https://wa.me/6281234567890?text=Halo%20CS%20Spies%20Sport" target="_blank" style="color:#EB5436; font-weight:700;">klik di sini</a>
-                    @endif
-                </p>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-
+@include('owner.faq-popup')
 </body>
 </html>

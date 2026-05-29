@@ -27,14 +27,9 @@
         'Tinju'=>'🥊','Bela Diri'=>'🥋','Yoga'=>'🧘','Fitness'=>'🏋️','Hiking'=>'🥾',
         'Padel'=>'🎾','Baseball'=>'⚾','Rugby'=>'🏉','Senam'=>'🤸',
     ];
-    function fieldImg($f) {
-        if (!$f->image) return asset('assets/images/bg/Explore.png');
-        return asset('storage/' . $f->image);
-    }
-
     $fieldJson = json_encode($allFields->map(fn($f) => [
         'id' => $f->id, 'name' => $f->name, 'location' => $f->location,
-        'type' => $f->type, 'rating' => $f->rating, 'image' => fieldImg($f),
+        'type' => $f->type, 'rating' => $f->rating, 'image' => $f->image_url,
     ])->values()->toArray());
     $sportOptionsJson = json_encode($sportOptions->values()->toArray());
     $sportEmojiMapJson = json_encode($sportEmojiMap);
@@ -280,7 +275,7 @@
                 </div>
                 <a href="{{ route('profile.show') }}" class="player-profile-pill">
                     <span class="player-profile-pill__avatar">
-                        <img src="{{ $profileAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile">
+                        <img src="{{ $profileAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile" onerror="this.src='{{ asset('assets/images/characters/' . ($user->gender === 'perempuan' ? 'profil2.png' : 'profil1.png')) }}'">
                     </span>
                     <span class="player-profile-pill__name">{{ $userName }}</span>
                 </a>

@@ -295,18 +295,22 @@ body{
    HEADER
 ========================= */
 
-.booking-header{
-     margin-top: 28px;
-    margin-bottom: 24px;
-
+.welcome-section{
+    margin-top: 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.booking-header h1{
+.welcome-section h1{
     font-size: 30px;
     color: #222;
+}
+
+.welcome-section p{
+    font-size: 14px;
+    color: #888;
+    margin-top: 6px;
 }
 
 /* BUTTON */
@@ -862,21 +866,70 @@ body{
 
 }
 
-@media(max-width: 768px){
+/* =========================
+   SIDEBAR TOGGLE
+========================= */
 
-    .main-content{
+.sidebar-toggle-btn {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1001;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: none;
+    background: white;
+    color: #ff4d4d;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media(max-width: 992px){
+    .sidebar-toggle-btn {
+        display: flex;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.is-open {
+        transform: translateX(0);
+    }
+
+    .main-content {
         margin-left: 0;
         padding: 20px;
+        padding-top: 70px;
     }
+}
+
+@media(max-width: 768px){
 
     .stats-grid{
         grid-template-columns: 1fr;
-    }
-
-    .booking-header{
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
     }
 
     .topbar{
@@ -886,5 +939,21 @@ body{
 
     .search-box{
         width: 100%;
+    }
+
+    .table-card {
+        overflow-x: auto;
+    }
+
+    .booking-table {
+        min-width: 700px;
+    }
+}
+
+@media(max-width: 560px){
+    .welcome-section{
+        flex-direction: column;
+        align-items: start;
+        gap: 16px;
     }
 }

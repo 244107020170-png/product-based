@@ -7,7 +7,7 @@
 
     <title>Kelola Booking</title>
 
-    @vite(['resources/css/owner-kelola-booking.css', 'resources/js/owner-kelola-booking.js'])
+    @vite(['resources/css/app.css', 'resources/css/owner-kelola-booking.css', 'resources/js/owner-kelola-booking.js'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- GOOGLE FONT --}}
@@ -54,6 +54,9 @@
                     <i class="fa-solid fa-bell"></i>
                 </button>
 
+                <button class="notif-btn">
+                    <i class="fa-solid fa-headset"></i>
+                </button>
                 <button class="notif-btn question">
                     <i class="fa-solid fa-circle-question"></i>
                 </button>
@@ -62,7 +65,7 @@
 
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
-                        <p>Owner Profile</p>
+                        <p>Profil Pemilik</p>
                     </div>
 
                     <img src="https://i.pravatar.cc/100"
@@ -81,12 +84,13 @@
             <div class="booking-main">
 
                 {{-- HEADER --}}
-                <div class="booking-header">
+                <div class="welcome-section">
 
                     <div>
-                        <h1>Selamat datang kembali, {{ auth()->user()->name }}!</h1>
+                        <h1>Lihat Pesanan Lapangan Anda</h1>
+                        <p>Kelola semua pemesanan lapangan olahraga Anda.</p>
                     </div>
-                    <a href="{{ route('owner.tambahLapangan') }}" style="display: inline-block; background: linear-gradient(135deg, #ff4d4d, #ff2e63); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    <a href="{{ route('owner.tambahLapangan') }}" class="add-btn">
                         <i class="fa-solid fa-plus"></i> Tambah Lapangan
                     </a>
 
@@ -146,7 +150,7 @@
                     <div class="stats-card">
 
                         <div>
-                            <p>Telah Dibooking</p>
+                            <p>Telah Dipesan</p>
                             <h2>{{ $bookedCount }}</h2>
                         </div>
 
@@ -207,11 +211,7 @@
 
                                 <tr>
 
-                                    <th>
-                                        <input type="checkbox">
-                                    </th>
-
-                                    <th>Customer</th>
+                                    <th>Pelanggan</th>
                                     <th>Lapangan</th>
                                     <th>Tanggal</th>
                                     <th>Waktu</th>
@@ -262,10 +262,6 @@
                                     data-status="{{ $statusLabel }}"
                                     data-price="Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}"
                                     data-raw-status="{{ $booking->status }}">
-
-                                    <td>
-                                        <input type="checkbox">
-                                    </td>
 
                                     <td>
 
@@ -324,19 +320,23 @@
 
                                     <td>
                                         @if($booking->status === 'waiting_confirmation')
-                                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                            <div style="display: flex; gap: 6px; flex-wrap: nowrap;">
                                                 <form action="{{ route('owner.booking.confirmPayment', $booking->id) }}" method="POST">
                                                     @csrf
-                                                    <button type="submit" class="action-btn" style="background: #43a680; border: none; color: white;">Terima</button>
+                                                    <button type="submit" class="action-btn" style="background: #16a34a; border: none; color: white; width: auto; padding: 0 14px; border-radius: 8px; font-size: 12px; font-weight: 600;">
+                                                        <i class="fa-solid fa-check"></i> Terima
+                                                    </button>
                                                 </form>
                                                 <form action="{{ route('owner.booking.rejectPayment', $booking->id) }}" method="POST">
                                                     @csrf
-                                                    <button type="submit" class="action-btn" style="background: #f8d7da; border: none; color: #842029;">Tolak</button>
+                                                    <button type="submit" class="action-btn" style="background: #dc2626; border: none; color: white; width: auto; padding: 0 14px; border-radius: 8px; font-size: 12px; font-weight: 600;">
+                                                        <i class="fa-solid fa-xmark"></i> Tolak
+                                                    </button>
                                                 </form>
                                             </div>
                                         @else
-                                            <button class="action-btn">
-                                                <i class="fa-solid fa-ellipsis"></i>
+                                            <button class="action-btn" onclick="showDetail(this)" style="cursor: pointer;">
+                                                <i class="fa-solid fa-eye"></i>
                                             </button>
                                         @endif
                                     </td>
@@ -344,9 +344,9 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" style="text-align: center; padding: 40px; color: #888;">
+                                    <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
                                         <i class="fa-solid fa-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; color: #ccc;"></i>
-                                        Belum ada booking
+                                        Belum ada pesanan
                                     </td>
                                 </tr>
                                 @endforelse
@@ -366,7 +366,7 @@
 
                             <div class="detail-header">
 
-                                <h3>Detail Booking</h3>
+                                <h3>Detail Pesanan</h3>
 
                                 <button>
                                     <i class="fa-solid fa-xmark"></i>
@@ -438,9 +438,9 @@
 
                                 <ul class="history-list">
 
-                                    <li style="color: black">Booking dibuat</li>
+                                    <li style="color: black">Pesanan dibuat</li>
                                     <li style="color: #F29E10">Menunggu konfirmasi</li>
-                                    <li style="color: #1b9d59">Booking selesai</li>
+                                    <li style="color: #1b9d59">Pesanan selesai</li>
 
                                 </ul>
 
@@ -487,5 +487,6 @@
 
 </div>
 
+@include('owner.faq-popup')
 </body>
 </html>

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Field extends Model
 {
+    protected $appends = ['image_url'];
+
     protected $fillable = [
         'name',
         'description',
@@ -71,6 +73,49 @@ class Field extends Model
     public function holidays()
     {
         return $this->hasMany(Holiday::class);
+    }
+
+    /**
+     * Get the best available image URL for this field.
+     * - Owner uploaded image → use it
+     * - No image but has sport type → use sport default from assets
+     * - Fallback → default.jpg
+     */
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->image) {
+            return asset('storage/' . $this->image);
+        }
+
+        $typeLower = $this->type ? strtolower(trim($this->type)) : '';
+
+        $sportImages = [
+            'futsal'    => 'futsal.jpg',
+            'badminton' => 'badminton.jpg',
+            'basket'    => 'basket.jpg',
+            'voli'      => 'volley.jpg',
+            'volley'    => 'volley.jpg',
+            'tennis'    => 'default.jpg',
+            'tenis'     => 'default.jpg',
+            'golf'      => 'default.jpg',
+            'renang'    => 'default.jpg',
+            'panahan'   => 'default.jpg',
+            'lari'      => 'default.jpg',
+            'sepeda'    => 'default.jpg',
+            'tinju'     => 'default.jpg',
+            'bela diri' => 'default.jpg',
+            'yoga'      => 'default.jpg',
+            'fitness'   => 'default.jpg',
+            'hiking'    => 'default.jpg',
+            'padel'     => 'default.jpg',
+            'baseball'  => 'default.jpg',
+            'rugby'     => 'default.jpg',
+            'senam'     => 'default.jpg',
+        ];
+
+        $file = $sportImages[$typeLower] ?? 'default.jpg';
+
+        return asset('assets/images/sports/' . $file);
     }
 
     /**

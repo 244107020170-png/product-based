@@ -281,8 +281,15 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
 
                             {{-- Image --}}
                             <div class="history-card__image">
-                                @if ($field && isset($field->image) && $field->image)
-                                    <img src="{{ asset('storage/'.$field->image) }}" alt="{{ $field->name ?? 'Lapangan' }}">
+                                @if ($field)
+                                    <img src="{{ $field->image_url }}" alt="{{ $field->name ?? 'Lapangan' }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                    <div class="history-card__image-placeholder" aria-hidden="true" style="display:none">
+                                        <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+                                            <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                            <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
+                                        </svg>
+                                    </div>
                                 @else
                                     <div class="history-card__image-placeholder" aria-hidden="true">
                                         <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
