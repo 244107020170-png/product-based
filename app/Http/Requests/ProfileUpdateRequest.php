@@ -41,6 +41,9 @@ class ProfileUpdateRequest extends FormRequest
             'phone'            => ['nullable', 'string', 'max:20'],
             'bio'              => ['nullable', 'string', 'max:500'],
             'sport_preference' => ['nullable', 'string', 'max:255'],
+            'skill_level'      => ['nullable', 'string', 'in:pemula,menengah,ahli'],
+            'open_partner'     => ['nullable', 'boolean'],
+            'city'             => ['nullable', 'string', 'max:100'],
 
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
 

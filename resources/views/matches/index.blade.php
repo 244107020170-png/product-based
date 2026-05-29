@@ -1,6 +1,7 @@
 @php
     use Carbon\Carbon;
     use App\Models\Field;
+    use App\Models\User;
 
     $user = auth()->user();
     $userName = $user?->name ?: 'Pecinta Olahraga';
@@ -16,6 +17,8 @@
         'Voli' => '🏐',
         'Tennis' => '🎾',
     ];
+
+
 
     $allFields = Field::with('owner')->get();
     $fullSportEmoji = [
@@ -613,6 +616,183 @@
                 </div>
 
             </div>
+
+            {{-- CARI TEMAN MAIN / PARTNER FINDER --}}
+            @php
+                $partnerSportOptions = collect(\App\Models\User::where('open_partner', true)->whereNotNull('sport_preference')->where('sport_preference', '!=', '')->pluck('sport_preference')->unique()->values())->merge($defaultSports)->unique()->values();
+            @endphp
+            <div class="mt-8 bg-white rounded-3xl border border-slate-100 p-4 sm:p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] w-full">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <h3 class="text-sm font-extrabold font-archivo text-[#02025b] uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                        <span>Cari Teman Main</span>
+                    </h3>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select id="partnerSportFilter" onchange="filterPartners()" class="partner-filter-select">
+                            <option value="">Semua Olahraga</option>
+                            @foreach($partnerSportOptions as $ps)
+                                <option value="{{ $ps }}">{{ $fullSportEmoji[$ps] ?? '🏆' }} {{ $ps }}</option>
+                            @endforeach
+                        </select>
+                        <select id="partnerSkillFilter" onchange="filterPartners()" class="partner-filter-select">
+                            <option value="">Semua Level</option>
+                            <option value="pemula">🌱 Pemula</option>
+                            <option value="menengah">⭐ Menengah</option>
+                            <option value="ahli">🏆 Ahli</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="partnerList" class="partner-grid">
+                    <div class="partner-empty">Memuat data partner...</div>
+                </div>
+            </div>
+
+            <style>
+            .partner-filter-select {
+                padding: 7px 12px;
+                border-radius: 10px;
+                border: 1px solid rgba(0,0,77,.1);
+                font-size: 12px;
+                font-weight: 600;
+                color: #02025b;
+                outline: none;
+                background: white;
+                cursor: pointer;
+                min-width: 130px;
+            }
+            .partner-filter-select:focus {
+                border-color: #EB5436;
+            }
+            .partner-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 12px;
+            }
+            .partner-card {
+                background: #f8fafc;
+                border-radius: 16px;
+                padding: 14px;
+                border: 1px solid rgba(0,0,77,.06);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: all .2s;
+            }
+            .partner-card:hover {
+                border-color: #EB5436;
+                box-shadow: 0 4px 12px rgba(235,84,54,.08);
+            }
+            .partner-card__avatar {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                object-fit: cover;
+                flex-shrink: 0;
+                background: #e2e8f0;
+            }
+            .partner-card__info {
+                flex: 1;
+                min-width: 0;
+            }
+            .partner-card__name {
+                font-weight: 700;
+                font-size: 13px;
+                color: #02025b;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .partner-card__meta {
+                font-size: 11px;
+                color: #666;
+                margin-top: 2px;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 4px;
+            }
+            .partner-card__sport {
+                color: #02025b;
+            }
+            .partner-card__skill {
+                display: inline-block;
+                background: #eef2ff;
+                color: #4338ca;
+                padding: 1px 8px;
+                border-radius: 10px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+            .partner-card__invite {
+                flex-shrink: 0;
+                padding: 8px 12px;
+                background: #25D366;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-size: 11px;
+                font-weight: 700;
+                cursor: pointer;
+                text-decoration: none;
+                white-space: nowrap;
+                transition: opacity .2s;
+            }
+            .partner-card__invite:hover {
+                opacity: .85;
+            }
+            .partner-empty {
+                text-align: center;
+                padding: 24px;
+                color: #94a3b8;
+                font-size: 13px;
+                grid-column: 1 / -1;
+            }
+            @media (max-width: 500px) {
+                .partner-grid {
+                    grid-template-columns: 1fr;
+                }
+                .partner-filter-select {
+                    min-width: 0;
+                    flex: 1;
+                }
+            }
+            </style>
+
+            <script>
+            function filterPartners() {
+                var sport = document.getElementById('partnerSportFilter').value;
+                var skill = document.getElementById('partnerSkillFilter').value;
+                var container = document.getElementById('partnerList');
+                container.innerHTML = '<div class="partner-empty">Memuat data partner...</div>';
+
+                var url = '{{ route("partner.data") }}?sport=' + encodeURIComponent(sport) + '&skill=' + encodeURIComponent(skill);
+                fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+                    if (data.length === 0) {
+                        container.innerHTML = '<div class="partner-empty">Belum ada partner yang tersedia dengan filter ini.</div>';
+                        return;
+                    }
+                    var html = '';
+                    data.forEach(function(p) {
+                        var phone = (p.phone || '').replace(/^0/, '62').replace(/[^0-9]/g, '');
+                        var waUrl = 'https://wa.me/' + phone + '?text=Halo%2C%20saya%20menemukan%20profil%20Anda%20di%20Spies%20Sport%20dan%20tertarik%20bermain%20bersama.';
+                        html += '<div class="partner-card">';
+                        html += '<img src="' + p.avatar + '" alt="' + p.name + '" class="partner-card__avatar">';
+                        html += '<div class="partner-card__info">';
+                        html += '<div class="partner-card__name">' + p.name + '</div>';
+                        html += '<div class="partner-card__meta">';
+                        if (p.sport_preference) html += '<span class="partner-card__sport">' + p.sport_preference + '</span>';
+                        if (p.skill_level) html += '<span class="partner-card__skill">' + ({pemula:'Pemula',menengah:'Menengah',ahli:'Ahli'}[p.skill_level] || p.skill_level) + '</span>';
+                        html += '</div></div>';
+                        html += '<a href="' + waUrl + '" target="_blank" class="partner-card__invite">💬 Ajak</a>';
+                        html += '</div>';
+                    });
+                    container.innerHTML = html;
+                }).catch(function() {
+                    container.innerHTML = '<div class="partner-empty" style="color:#dc2626;">Gagal memuat data partner.</div>';
+                });
+            }
+            filterPartners();
+            </script>
 
             {{-- PERTANDINGAN MENDATANG - Full Width Landscape Section --}}
             <div class="mt-8 bg-white rounded-3xl border border-slate-100 p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] space-y-5 w-full">

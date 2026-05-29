@@ -21,7 +21,10 @@ class MatchController extends Controller
             ->where('date', '>=', now()->toDateString())
             ->orderBy('date')
             ->orderBy('time')
-            ->get();
+            ->get()
+            ->filter(function ($match) {
+                return $match->players->count() < (int) $match->max_player;
+            });
 
         $cards = $matches->map(function (Matchs $match) {
             $fieldName = $match->field?->name ?? 'Lapangan';

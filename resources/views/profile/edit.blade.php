@@ -182,6 +182,47 @@
                         </div>
 
                         <div class="profile-form__group">
+                            <label for="pf-username">Username</label>
+                            <div class="profile-form__input-prefix-wrap">
+                                <span class="profile-form__prefix">@</span>
+                                <input id="pf-username" name="username" type="text"
+                                       class="profile-form__input profile-form__input--prefix @error('username') is-error @enderror"
+                                       value="{{ old('username', $user->username) }}"
+                                       placeholder="username" autocomplete="username" required>
+                            </div>
+                            @error('username')<span class="profile-form__error">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="profile-form__group">
+                            <label>Level Keahlian</label>
+                            <div style="padding:13px 16px; border-radius:14px; background:rgba(0,0,77,.04); border:1.5px solid rgba(0,0,77,.08); font-size:.93rem; font-weight:700; color:rgba(0,0,77,.5); display:flex; align-items:center; gap:8px;">
+                                @php
+                                    $skillLabels = ['pemula' => 'Pemula', 'menengah' => 'Menengah', 'ahli' => 'Ahli'];
+                                    $skillEmojis = ['pemula' => '🌱', 'menengah' => '⭐', 'ahli' => '🏆'];
+                                    $currentSkill = $user->skill_level ?: 'pemula';
+                                @endphp
+                                <span>{{ $skillEmojis[$currentSkill] ?? '🌱' }}</span>
+                                <span>{{ $skillLabels[$currentSkill] ?? 'Pemula' }}</span>
+                            </div>
+                            <input type="hidden" name="skill_level" value="{{ $currentSkill }}">
+                            <p style="font-size:0.78rem;color:rgba(0,0,77,.5);margin:4px 0 0;">Level ditentukan otomatis berdasarkan aktivitas dan pencapaianmu.</p>
+                        </div>
+
+                        <div class="profile-form__group">
+                            <label class="profile-form__checkbox-label">
+                                <input type="checkbox" name="open_partner" value="1"
+                                       {{ old('open_partner', $user->open_partner) ? 'checked' : '' }}>
+                                <span class="profile-form__checkbox-text">Tampilkan profil untuk Cari Teman Main</span>
+                            </label>
+                            <p style="font-size:0.78rem;color:rgba(0,0,77,.5);margin:4px 0 0;">Aktifkan agar pemain lain dapat menemukan dan mengajak Anda bermain.</p>
+                        </div>
+
+                    </div>{{-- /left-col --}}
+
+                    {{-- RIGHT COLUMN --}}
+                    <div class="profile-form__right-col">
+
+                        <div class="profile-form__group">
                             <label for="pf-email">Email</label>
                             <input id="pf-email" name="email" type="email"
                                    class="profile-form__input @error('email') is-error @enderror"
@@ -191,49 +232,22 @@
                         </div>
 
                         <div class="profile-form__group">
-                            <label for="pf-gender">Gender</label>
-                            <div class="profile-form__select-wrap">
-                                <select id="pf-gender" name="gender"
-                                        class="profile-form__select @error('gender') is-error @enderror">
-                                    <option value="">Pilih gender</option>
-                                    <option value="laki-laki"  {{ old('gender',$user->gender)==='laki-laki'  ?'selected':'' }}>Laki - laki</option>
-                                    <option value="perempuan"  {{ old('gender',$user->gender)==='perempuan'  ?'selected':'' }}>Perempuan</option>
-                                </select>
-                                <span class="profile-form__select-chevron" aria-hidden="true"></span>
-                            </div>
-                        </div>
-
-                        <div class="profile-form__group">
-                            <label for="pf-sport">Olahraga Favorit <span class="profile-form__hint">(pisahkan koma)</span></label>
-                            <input id="pf-sport" name="sport_preference" type="text"
-                                   class="profile-form__input"
-                                   value="{{ old('sport_preference', $user->sport_preference) }}"
-                                   placeholder="Futsal, Basket, Badminton">
-                        </div>
-
-                    </div>{{-- /left --}}
-
-                    {{-- RIGHT COLUMN --}}
-                    <div class="profile-form__right-col">
-
-                        <div class="profile-form__group">
-                            <label for="pf-username">Username</label>
-                            <div class="profile-form__input-prefix-wrap">
-                                <span class="profile-form__prefix">@</span>
-                                <input id="pf-username" name="username" type="text"
-                                       class="profile-form__input profile-form__input--prefix @error('username') is-error @enderror"
-                                       value="{{ old('username', $user->username) }}"
-                                       placeholder="username" autocomplete="username">
-                            </div>
-                            @error('username')<span class="profile-form__error">{{ $message }}</span>@enderror
-                        </div>
-
-                        <div class="profile-form__group">
-                            <label for="pf-phone">Nomor HP</label>
+                            <label for="pf-phone">Nomor Telepon</label>
                             <input id="pf-phone" name="phone" type="tel"
                                    class="profile-form__input @error('phone') is-error @enderror"
                                    value="{{ old('phone', $user->phone) }}"
-                                   placeholder="08xxxxxxxxxx" autocomplete="tel">
+                                   placeholder="Cth: 081234567890" autocomplete="tel">
+                            @error('phone')<span class="profile-form__error">{{ $message }}</span>@enderror
+                        </div>
+
+                        <div class="profile-form__group">
+                            <label for="pf-city">Kota</label>
+                            <input id="pf-city" name="city" type="text"
+                                   class="profile-form__input @error('city') is-error @enderror"
+                                   value="{{ old('city', $user->city) }}"
+                                   placeholder="Cth: Jakarta, Surabaya, Bandung..." autocomplete="address-level2">
+                            @error('city')<span class="profile-form__error">{{ $message }}</span>@enderror
+                            <p style="font-size:0.78rem;color:rgba(0,0,77,.5);margin:4px 0 0;">Digunakan untuk mencari lapangan terdekat.</p>
                         </div>
 
                         <div class="profile-form__group" style="flex:1;">
@@ -245,7 +259,7 @@
                             <span class="profile-form__char-count" id="bio-count">{{ strlen(old('bio', $user->bio ?? '')) }}/500</span>
                         </div>
 
-                    </div>{{-- /right --}}
+                    </div>{{-- /right-col --}}
 
                 </div>{{-- /grid --}}
 
@@ -382,6 +396,31 @@
     display: inline-flex;
     align-items: center;
     margin-left: 6px;
+}
+.profile-form__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,77,.08);
+    background: rgba(255,255,255,.6);
+    transition: all .2s;
+}
+.profile-form__checkbox-label:hover {
+    border-color: rgba(0,0,77,.2);
+    background: rgba(255,255,255,.9);
+}
+.profile-form__checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #eb5436;
+}
+.profile-form__checkbox-text {
+    font-size: .88rem;
+    font-weight: 600;
+    color: rgba(0,0,77,.85);
 }
 </style>
 </body>

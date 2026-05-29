@@ -304,9 +304,103 @@
             </div>
         </div>
 
+        {{-- REVIEW SECTION --}}
+        @if(in_array($booking->status, ['confirmed', 'completed', 'selesai']))
+        <div style="margin-top:24px; background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,77,.06); border:1px solid rgba(0,0,77,.08);">
+            @php
+                $existingReview = \App\Models\Review::where('user_id', Auth::id())->where('booking_id', $booking->id)->first();
+            @endphp
+            @if($existingReview)
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="display:flex; gap:4px;">
+                        @for($i=1; $i<=5; $i++)
+                            <span style="color:{{ $i <= $existingReview->rating ? '#f59e0b' : '#d1d5db' }}; font-size:20px;">★</span>
+                        @endfor
+                    </div>
+                    <div style="flex:1;">
+                        <p style="margin:0; font-weight:700; color:#02025b; font-size:14px;">Review Anda</p>
+                        <p style="margin:4px 0 0; color:#666; font-size:13px;">{{ $existingReview->review }}</p>
+                    </div>
+                </div>
+            @else
+                <button onclick="openReviewModal({{ $booking->field_id }}, {{ $booking->id }})" style="width:100%; padding:14px; background:linear-gradient(135deg,#02025b,#11114b); color:white; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:all .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+                    ⭐ Beri Review & Rating
+                </button>
+            @endif
+        </div>
+        @endif
+
     </section>
 </main>
 </div>
+
+{{-- REVIEW MODAL --}}
+<div id="reviewModal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)closeReviewModal()">
+    <div style="background:white; border-radius:20px; padding:28px 24px; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:#02025b;">Beri Review</h3>
+            <span onclick="closeReviewModal()" style="cursor:pointer; font-size:24px; color:#999; line-height:1;">&times;</span>
+        </div>
+        <form id="reviewForm" method="POST" action="{{ route('review.store') }}">
+            @csrf
+            <input type="hidden" name="field_id" id="reviewFieldId">
+            <input type="hidden" name="booking_id" id="reviewBookingId">
+            <div style="text-align:center; margin-bottom:20px;">
+                <p style="margin:0 0 10px; font-size:14px; color:#666; font-weight:600;">Bagaimana pengalaman bermainmu?</p>
+                <div id="starRating" style="display:flex; justify-content:center; gap:8px; font-size:36px; cursor:pointer;">
+                    <span data-star="1" onclick="setRating(1)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
+                    <span data-star="2" onclick="setRating(2)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
+                    <span data-star="3" onclick="setRating(3)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
+                    <span data-star="4" onclick="setRating(4)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
+                    <span data-star="5" onclick="setRating(5)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
+                </div>
+                <input type="hidden" name="rating" id="ratingValue" value="0">
+                <p id="ratingHint" style="margin:8px 0 0; font-size:12px; color:#999;">Klik bintang untuk memberi rating</p>
+            </div>
+            <textarea name="review" id="reviewText" rows="4" placeholder="Tulis ulasan kamu di sini (minimal 10 karakter)..." style="width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.15); font-size:14px; outline:none; resize:none; box-sizing:border-box; font-family:inherit;"></textarea>
+            <p id="reviewError" style="display:none; color:#dc2626; font-size:12px; margin:6px 0 0;"></p>
+            <button type="submit" id="reviewSubmitBtn" style="width:100%; margin-top:16px; padding:14px; background:#EB5436; color:white; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer;">Kirim Review</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openReviewModal(fieldId, bookingId) {
+    document.getElementById('reviewFieldId').value = fieldId;
+    document.getElementById('reviewBookingId').value = bookingId;
+    document.getElementById('reviewModal').style.display = 'flex';
+}
+function closeReviewModal() {
+    document.getElementById('reviewModal').style.display = 'none';
+}
+function setRating(val) {
+    document.getElementById('ratingValue').value = val;
+    var stars = document.querySelectorAll('#starRating span');
+    var hints = ['', '😞 Buruk', '😐 Biasa', '🙂 Bagus', '😊 Sangat Bagus', '🤩 Luar Biasa!'];
+    stars.forEach(function(s, i) {
+        s.style.color = i < val ? '#f59e0b' : '#d1d5db';
+    });
+    document.getElementById('ratingHint').textContent = hints[val] || '';
+}
+document.getElementById('reviewForm').addEventListener('submit', function(e) {
+    var rating = parseInt(document.getElementById('ratingValue').value);
+    var review = document.getElementById('reviewText').value.trim();
+    var errorEl = document.getElementById('reviewError');
+    if (rating < 1) {
+        e.preventDefault();
+        errorEl.textContent = 'Silakan pilih rating terlebih dahulu.';
+        errorEl.style.display = 'block';
+        return;
+    }
+    if (review.length < 10) {
+        e.preventDefault();
+        errorEl.textContent = 'Ulasan minimal 10 karakter.';
+        errorEl.style.display = 'block';
+        return;
+    }
+    errorEl.style.display = 'none';
+});
+</script>
 
 <div id="toast" style="position: fixed; top: 24px; right: 24px; z-index: 99999; padding: 16px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; color: white; display: none; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15); max-width: 400px; transform: translateX(120%); transition: transform .3s ease;">
     <span id="toast-icon" style="font-size: 20px; flex-shrink: 0;"></span>

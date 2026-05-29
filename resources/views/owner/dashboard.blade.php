@@ -18,6 +18,14 @@
 
 <div class="dashboard-layout">
 
+    {{-- MOBILE SIDEBAR TOGGLE --}}
+    <button id="sidebarToggle" class="sidebar-toggle-btn" onclick="toggleOwnerSidebar()" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    {{-- SIDEBAR OVERLAY --}}
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleOwnerSidebar()"></div>
+
     {{-- SIDEBAR --}}
     @include('owner.navbar')
 
@@ -39,7 +47,7 @@
                     <i class="fa-solid fa-bell"></i>
                 </button>
 
-                <button class="notif-btn question">
+                <button class="notif-btn question" onclick="document.getElementById('ownerFaqModal').style.display='flex'">
                     <i class="fa-solid fa-circle-question"></i>
                 </button>
 
@@ -141,6 +149,44 @@
 
     </main>
 
+</div>
+
+<script>
+function toggleOwnerSidebar() {
+    document.querySelector('.sidebar').classList.toggle('is-open');
+    document.getElementById('sidebarOverlay').classList.toggle('is-visible');
+}
+</script>
+
+<div id="ownerFaqModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)document.getElementById('ownerFaqModal').style.display='none'">
+    <div style="background:white; border-radius:20px; padding:28px 24px; max-width:440px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.25); max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:#02025b;">Pusat Bantuan</h3>
+            <span onclick="document.getElementById('ownerFaqModal').style.display='none'" style="cursor:pointer; font-size:24px; color:#999; line-height:1;">&times;</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            @php
+                $faqs = [
+                    ['q' => 'Bagaimana cara menambah lapangan?', 'a' => 'Klik tombol "Tambah Lapangan" di halaman ini atau buka menu Kelola Lapangan > Tambah Lapangan. Isi data lapangan lalu simpan.'],
+                    ['q' => 'Bagaimana cara mengelola booking?', 'a' => 'Buka menu Kelola Booking. Anda bisa melihat, mengkonfirmasi, atau membatalkan booking dari sana.'],
+                    ['q' => 'Bagaimana cara mengatur jadwal & slot?', 'a' => 'Buka menu Jadwal & Slot. Atur jadwal buka/tutup lapangan dan slot waktu yang tersedia.'],
+                    ['q' => 'Bagaimana cara mengelola promo?', 'a' => 'Buka menu Promo & Diskon. Anda bisa membuat kode promo atau diskon khusus untuk lapangan Anda.'],
+                    ['q' => 'Bagaimana cara menghubungi CS?', 'a' => 'Hubungi Customer Service kami di WhatsApp melalui tautan berikut.'],
+                ];
+            @endphp
+            @foreach($faqs as $f)
+            <div style="background:#f8f9ff; border-radius:12px; padding:14px 16px;">
+                <p style="margin:0 0 6px; font-weight:700; color:#02025b; font-size:14px;">{{ $f['q'] }}</p>
+                <p style="margin:0; color:#555; font-size:13px; line-height:1.5;">
+                    {{ $f['a'] }}
+                    @if(str_contains($f['a'], 'WhatsApp'))
+                        <a href="https://wa.me/6281234567890?text=Halo%20CS%20Spies%20Sport" target="_blank" style="color:#EB5436; font-weight:700;">klik di sini</a>
+                    @endif
+                </p>
+            </div>
+            @endforeach
+        </div>
+    </div>
 </div>
 
 </body>

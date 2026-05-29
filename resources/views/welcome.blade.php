@@ -201,70 +201,51 @@
                         Lihat Semua <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
-<!-- Field Card 1 -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+@php
+    $popularFields = \App\Models\Field::withCount('bookings')->orderBy('bookings_count', 'desc')->take(3)->get();
+@endphp
+@forelse($popularFields as $popularField)
 <div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 <div class="h-64 overflow-hidden relative">
-<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A premium high-end indoor tennis court with vibrant blue surfacing and crisp white lines. The court is illuminated by large floor-to-ceiling windows showing a lush green garden outside, creating a serene wellness atmosphere. Soft sunlight creates high-key lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZed3vUQN6cKUwnpeYlk03WDS2uHRPbpEAhjMXGhjJFsv04-I0UBWeM-MTB08Ui5EYBMyyT9GWPZUEs9HPx2F5CW0lqF5M5syafiFBuxodXmKYXahhnUV_nhTpho1KWNo2crORq93M7tI6iYyKchMDKYYulKhYq1zVTFtXK_sfUbLeR2oAvEIwwJ9C2POXhlPrR1Z9P0WtOeVGhMhHnr8YEvTISdbOwd-oJuTMASM0neoWWwY--MuZ-i194f9PLWk5_lWDXG5OPNYJ">
+@php $imgField = $popularField->image ? (str_starts_with($popularField->image, 'storage/') ? asset($popularField->image) : asset('storage/' . $popularField->image)) : asset('assets/images/bg/Explore.png'); @endphp
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $popularField->name }}" src="{{ $imgField }}">
 <div class="absolute top-md right-md bg-white/90 backdrop-blur-md px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
 <span class="material-symbols-outlined text-orange-400 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                            4.9
-                        </div>
+                            {{ number_format($popularField->rating ?? 4.5, 1) }}
+</div>
+@if($popularField->bookings_count >= 5)
+<div class="absolute top-md left-md bg-primary text-white px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                            Popular
+</div>
+@endif
 </div>
 <div class="p-lg">
-<div class="text-primary text-label-sm mb-xs">TENNIS</div>
-<h5 class="font-title-lg text-title-lg mb-base">Royal Tennis Club</h5>
+<div class="text-primary text-label-sm mb-xs">{{ strtoupper($popularField->type ?? 'OLAHRAGA') }}</div>
+<h5 class="font-title-lg text-title-lg mb-base">{{ $popularField->name }}</h5>
 <div class="flex items-center gap-xs text-secondary mb-md">
 <span class="material-symbols-outlined text-[16px]">location_on</span>
-<span class="text-label-sm">Malang City Center</span>
+<span class="text-label-sm">{{ $popularField->location ?: 'Lokasi tidak tersedia' }}</span>
 </div>
-<button @guest onclick="showLoginPopup()" @endguest class="w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all">
+<div class="flex items-center gap-2 mb-md">
+@if($popularField->bookings_count >= 5)
+<span class="bg-primary/10 text-primary px-md py-xs rounded-full text-label-sm font-bold">Popular</span>
+@endif
+@if($popularField->bookings_count > 0)
+<span class="bg-amber-50 text-amber-700 px-md py-xs rounded-full text-label-sm font-bold">Most Booked</span>
+@endif
+</div>
+<button @guest onclick="showLoginPopup()" @endguest onclick="window.location.href='{{ route('login') }}'" class="w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all">
                             Cek Jadwal
-                        </button>
+</button>
 </div>
 </div>
-<!-- Field Card 2 -->
-<div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-<div class="h-64 overflow-hidden relative">
-<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A modern professional indoor futsal field featuring high-quality green synthetic turf and bright LED lighting. The walls are sleek grey with a glassmorphic gallery area overlooking the pitch. The atmosphere is energetic and clean, designed with high-performance sports aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD4ygR3kSUe6Z75atZ9tYg3dOzWtC0ZklNbyq_irKAbR3OxKuvCGWWkqoj-ZIkBpqr00mSYutq-2C7OeVSlEiWM2UXlLK7zn9MD-gQZKOuqSSenvNyLykNy43gvFOEyUByQxsB_5e0pfbAM_L8F3nqBJxG8rxX5mgipCrydmSk6o9cYiTsKZh4nQmo9PeOImpFCM7_kjHU8HNxJRo1LIjAYichFwBj8fUV0qG_5rnovDzeh2KDvNCutFn1jXUnje_yGOU4iKXB4_1P">
-<div class="absolute top-md right-md bg-white/90 backdrop-blur-md px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
-<span class="material-symbols-outlined text-orange-400 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                            4.8
-                        </div>
+@empty
+<div class="col-span-full text-center py-xl">
+<p class="text-secondary">Belum ada data lapangan populer.</p>
 </div>
-<div class="p-lg">
-<div class="text-primary text-label-sm mb-xs">FUTSAL</div>
-<h5 class="font-title-lg text-title-lg mb-base">Galaxy Futsal Arena</h5>
-<div class="flex items-center gap-xs text-secondary mb-md">
-<span class="material-symbols-outlined text-[16px]">location_on</span>
-<span class="text-label-sm">Sukarno Hatta, Malang</span>
-</div>
-<button @guest onclick="showLoginPopup()" @endguest class="w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all">
-                            Cek Jadwal
-                        </button>
-</div>
-</div>
-<!-- Field Card 3 -->
-<div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-<div class="h-64 overflow-hidden relative">
-<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A professional indoor badminton court with multiple courts visible, featuring blue high-grip floors and high-performance overhead lighting. The space is vast and airy with a modern sports complex feel, using soft white and teal accents for a professional wellness environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXNClnlkAKmHPMDswvU8as-OziGbjg9pqAjfQywnzanrPNzOj0otFpVThK0G3alYatIqXgZzXL3wM8t46WWERJFmO8OTulGOv33FeYRC8njFy1u7YwajWqqhpKm7-pRAx35quXz_FN4sEy1YquWrB8nqdVoGcWHZWhRgkvZhIFk356QMIMZl9sl-oAIeAvrfz3Ag0D6A3_8_Wbd3r2hE_idQHPMgSja4xDo6ar9IyOlISmJDajaQZ93VGrTUTYNQYeRcLu-naBTYuE">
-<div class="absolute top-md right-md bg-white/90 backdrop-blur-md px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
-<span class="material-symbols-outlined text-orange-400 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                            4.7
-                        </div>
-</div>
-<div class="p-lg">
-<div class="text-primary text-label-sm mb-xs">BADMINTON</div>
-<h5 class="font-title-lg text-title-lg mb-base">Smash Center</h5>
-<div class="flex items-center gap-xs text-secondary mb-md">
-<span class="material-symbols-outlined text-[16px]">location_on</span>
-<span class="text-label-sm">Blimbing, Malang</span>
-</div>
-<button @guest onclick="showLoginPopup()" @endguest class="w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all">
-                            Cek Jadwal
-                        </button>
-</div>
-</div>
+@endforelse
 </div>
 </div>
 </section>
@@ -325,6 +306,99 @@
         <button id="closePopupBtn" class="text-secondary hover:text-primary transition-all font-label-md">Nanti Aja</button>
     </div>
 </div>
+<!-- FAQ BOT - Floating Icon -->
+<div id="faqFab" onclick="toggleFaqPopup()" style="position:fixed; bottom:24px; right:24px; width:56px; height:56px; background:#EB5436; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 20px rgba(235,84,54,.4); z-index:999; transition:all .3s ease;">
+    <span class="material-symbols-outlined" style="font-size:28px; font-variation-settings:'FILL' 1;">live_help</span>
+</div>
+
+<!-- FAQ POPUP -->
+<div id="faqPopup" style="display:none; position:fixed; bottom:90px; right:24px; width:340px; max-width:calc(100vw - 48px); background:white; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.2); z-index:1000; overflow:hidden;">
+    <div style="background:#EB5436; color:white; padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 1;">support_agent</span>
+            <span style="font-weight:700; font-size:15px;">Pusat Bantuan</span>
+        </div>
+        <span onclick="toggleFaqPopup()" style="cursor:pointer; font-size:20px; line-height:1;">&times;</span>
+    </div>
+    <div style="padding:16px 20px;">
+        <p style="font-size:13px; color:#666; margin-bottom:12px;">Ada yang bisa kami bantu?</p>
+        <div onclick="faqAnswer('booking')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span class="material-symbols-outlined" style="color:#EB5436; font-size:20px;">calendar_month</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Booking</div><div style="font-size:11px; color:#888;">Panduan memesan lapangan</div></div>
+        </div>
+        <div onclick="faqAnswer('join_match')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span class="material-symbols-outlined" style="color:#EB5436; font-size:20px;">group_add</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Join Public Match</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
+        </div>
+        <div onclick="faqAnswer('payment')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span class="material-symbols-outlined" style="color:#EB5436; font-size:20px;">payments</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Pembayaran</div><div style="font-size:11px; color:#888;">Informasi metode pembayaran</div></div>
+        </div>
+        <div onclick="faqAnswer('cs')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span class="material-symbols-outlined" style="color:#EB5436; font-size:20px;">headset_mic</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Hubungi Customer Service</div><div style="font-size:11px; color:#888;">Chat dengan admin via WhatsApp</div></div>
+        </div>
+    </div>
+    <div id="faqAnswerBox" style="display:none; padding:16px 20px; border-top:1px solid rgba(0,0,77,.06); background:#f8fafc;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-weight:700; font-size:13px; color:#02025b;" id="faqAnswerTitle"></span>
+            <span onclick="closeFaqAnswer()" style="cursor:pointer; font-size:16px; color:#999;">&times;</span>
+        </div>
+        <p style="font-size:13px; color:#555; line-height:1.6;" id="faqAnswerText"></p>
+    </div>
+</div>
+
+<script>
+    function toggleFaqPopup() {
+        const popup = document.getElementById('faqPopup');
+        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+        document.getElementById('faqAnswerBox').style.display = 'none';
+    }
+
+    function faqAnswer(type) {
+        const titleEl = document.getElementById('faqAnswerTitle');
+        const textEl = document.getElementById('faqAnswerText');
+        const boxEl = document.getElementById('faqAnswerBox');
+
+        const answers = {
+            booking: {
+                title: 'Cara Booking',
+                text: '1. Pilih lapangan yang kamu inginkan.\n2. Pilih tanggal dan jam yang tersedia.\n3. Klik "Pesan" dan ikuti instruksi pembayaran.\n4. Laporkan pembayaran ke owner untuk konfirmasi.\n5. Setelah dikonfirmasi, booking kamu aktif!'
+            },
+            join_match: {
+                title: 'Cara Join Public Match',
+                text: '1. Buka halaman "Cari Tim".\n2. Geser kartu pertandingan yang tersedia.\n3. Klik "Bergabung" pada pertandingan yang diinginkan.\n4. Lanjutkan pembayaran kontribusi jika ada.\n5. Tunggu konfirmasi dari host pertandingan.'
+            },
+            payment: {
+                title: 'Cara Pembayaran',
+                text: 'Pembayaran dilakukan dengan transfer ke rekening owner lapangan. Setelah transfer, laporkan pembayaran melalui halaman detail booking. Owner akan mengkonfirmasi pembayaran kamu.'
+            },
+            cs: {
+                title: 'Hubungi Customer Service',
+                text: 'Kamu akan diarahkan ke WhatsApp admin. Klik tombol di bawah untuk memulai chat.'
+            }
+        };
+
+        const answer = answers[type];
+        if (!answer) return;
+
+        titleEl.textContent = answer.title;
+        textEl.textContent = answer.text;
+        boxEl.style.display = 'block';
+
+        if (type === 'cs') {
+            textEl.style.display = 'none';
+            boxEl.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-weight:700; font-size:13px; color:#02025b;">Hubungi Customer Service</span><span onclick="closeFaqAnswer()" style="cursor:pointer; font-size:16px; color:#999;">&times;</span></div><p style="font-size:13px; color:#555; margin-bottom:12px;">Kamu akan dihubungkan dengan admin kami melalui WhatsApp.</p><a href="https://wa.me/6281234567890?text=Halo%20Spies%20Sport%2C%20saya%20butuh%20bantuan" target="_blank" style="display:block; text-align:center; background:#25D366; color:white; padding:12px; border-radius:12px; font-weight:700; text-decoration:none;"><span style="margin-right:8px;">&#x1F4AC;</span> Chat WhatsApp</a>';
+        } else {
+            textEl.style.display = 'block';
+        }
+    }
+
+    function closeFaqAnswer() {
+        document.getElementById('faqAnswerBox').style.display = 'none';
+    }
+</script>
+
 <script>
         // Reveal on Scroll
         function reveal() {

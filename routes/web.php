@@ -31,7 +31,48 @@ Route::get('/dashboard', function () {
     } elseif ($user->role === 'admin') {
         return redirect('/admin/dashboard');
     } else {
-        $fields = \App\Models\Field::with('owner')->get();
+        $fieldsQuery = \App\Models\Field::with('owner');
+
+        // LAPANGAN TERDEKAT - Handle nearby filter
+        if (request('nearby') == 1) {
+            $userLat = request('lat');
+            $userLng = request('lng');
+            $userCity = $user->city ?? null;
+
+            if ($userLat && $userLng) {
+                $fields = $fieldsQuery->get()->sortBy(function($f) use ($userLat, $userLng) {
+                    if ($f->latitude && $f->longitude) {
+                        $lat1 = deg2rad($userLat);
+                        $lon1 = deg2rad($userLng);
+                        $lat2 = deg2rad($f->latitude);
+                        $lon2 = deg2rad($f->longitude);
+                        $dlat = $lat2 - $lat1;
+                        $dlon = $lon2 - $lon1;
+                        $a = sin($dlat/2)**2 + cos($lat1)*cos($lat2)*sin($dlon/2)**2;
+                        return 6371 * 2 * atan2(sqrt($a), sqrt(1-$a));
+                    }
+                    return 999999;
+                })->values();
+            } else {
+                $allFields = $fieldsQuery->get();
+                if ($userCity) {
+                    $fields = $allFields->filter(function($f) use ($userCity) {
+                        return $f->location && str_contains(strtolower($f->location), strtolower($userCity));
+                    })->values();
+                    if ($fields->isEmpty()) {
+                        $nearbyMessage = 'Tidak ada lapangan ditemukan di kota "' . e($userCity) . '".';
+                    }
+                } else {
+                    $nearbyMessage = 'Kamu belum mengisi kota. Silakan isi kota di ';
+                    $fields = collect();
+                }
+            }
+        } else {
+            $fields = $fieldsQuery->get();
+        }
+
+        $isNearby = request('nearby') == 1;
+        $nearbyMessage = $nearbyMessage ?? null;
         $upcomingBooking = \App\Models\Booking::where('user_id', $user->id)
             ->where('status', \App\Enums\BookingStatus::CONFIRMED)
             ->where(function($q) {
@@ -64,8 +105,84 @@ Route::get('/dashboard', function () {
             ->with('match.field')
             ->latest('confirmed_at')
             ->get();
-        
-        $recommendedMatches = \App\Models\Matchs::with('field')->where('date', '>=', now()->toDateString())->inRandomOrder()->limit(3)->get();
+
+        // SMART MATCH RECOMMENDATION
+        $userBookingSports = \App\Models\Booking::where('user_id', $user->id)
+            ->whereIn('status', [\App\Enums\BookingStatus::CONFIRMED, \App\Enums\BookingStatus::COMPLETED])
+            ->with('field')
+            ->get()
+            ->pluck('field.type')
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->keys()
+            ->toArray();
+
+        $userMatchSports = \App\Models\MatchPlayer::where('user_id', $user->id)
+            ->with('match')
+            ->get()
+            ->pluck('match.sport')
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->keys()
+            ->toArray();
+
+        $userSportPref = $user->sport_preference ? array_map('trim', explode(',', $user->sport_preference)) : [];
+
+        $allSports = array_unique(array_merge($userBookingSports, $userMatchSports, $userSportPref));
+
+        $recommendedMatches = collect();
+        $recommendedBadge = '';
+
+        $hasActivity = \App\Models\Booking::where('user_id', $user->id)->exists() ||
+                       \App\Models\MatchPlayer::where('user_id', $user->id)->exists();
+
+        if ($hasActivity && !empty($allSports)) {
+            $recommendedMatches = \App\Models\Matchs::with('field')
+                ->where('type', 'public')
+                ->where('date', '>=', now()->toDateString())
+                ->where(function($q) use ($allSports) {
+                    foreach ($allSports as $s) {
+                        $q->orWhere('sport', $s);
+                    }
+                })
+                ->orderBy('date')
+                ->take(3)
+                ->get();
+
+            if ($recommendedMatches->isNotEmpty()) {
+                $recommendedBadge = 'Recommended Based On Your Activity';
+            }
+        }
+
+        if ($recommendedMatches->isEmpty()) {
+            $recommendedMatches = \App\Models\Matchs::with('field')
+                ->where('type', 'public')
+                ->where('date', '>=', now()->toDateString())
+                ->withCount('players')
+                ->orderBy('players_count', 'desc')
+                ->orderBy('date')
+                ->take(3)
+                ->get();
+
+            if ($recommendedMatches->isNotEmpty()) {
+                $recommendedBadge = 'Popular Choice';
+            }
+        }
+
+        // Check if user has active bookings
+        $hasActiveBooking = \App\Models\Booking::where('user_id', $user->id)
+            ->whereIn('status', [
+                \App\Enums\BookingStatus::CONFIRMED,
+                \App\Enums\BookingStatus::WAITING_PAYMENT,
+                \App\Enums\BookingStatus::WAITING_CONFIRMATION,
+            ])
+            ->exists();
+
+        if (!$hasActiveBooking && $recommendedMatches->isNotEmpty() && !$recommendedBadge) {
+            $recommendedBadge = 'Recommended Match For You';
+        }
 
         // Pesan Lagi: only show if user has previously booked fields
         $previousFieldIds = \App\Models\Booking::where('user_id', $user->id)
@@ -88,8 +205,13 @@ Route::get('/dashboard', function () {
         }
 
         $favoriteFields = \App\Models\Favorite::with('field')->where('user_id', $user->id)->limit(3)->get();
+        $favoriteIds = \App\Models\Favorite::where('user_id', $user->id)->pluck('field_id')->toArray();
         
-        return view('fields.index', compact('fields', 'upcomingBooking', 'upcomingJoin', 'confirmedMatchNotifs', 'recommendedMatches', 'pesanLagiFields', 'favoriteFields', 'previousFieldIds')); // player dashboard now shows available fields
+        return view('fields.index', compact(
+            'fields', 'upcomingBooking', 'upcomingJoin', 'confirmedMatchNotifs',
+            'recommendedMatches', 'pesanLagiFields', 'favoriteFields', 'previousFieldIds',
+            'recommendedBadge', 'favoriteIds', 'isNearby', 'nearbyMessage'
+        ));
     }
 })->middleware(['auth'])->name('dashboard');
 
@@ -376,6 +498,40 @@ Route::middleware('auth')->group(function () {
     Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorite.index');
     Route::post('/favorit/toggle', [FavoriteController::class, 'toggle'])->name('favorite.toggle');
     Route::delete('/favorit/{fieldId}', [FavoriteController::class, 'destroy'])->name('favorite.destroy');
+
+    /* REVIEWS */
+    Route::post('/reviews/store', [App\Http\Controllers\ReviewController::class, 'store'])->name('review.store');
+    Route::get('/reviews/check/{field}', [App\Http\Controllers\ReviewController::class, 'checkEligibility'])->name('review.check');
+    Route::get('/reviews/check-any', [App\Http\Controllers\ReviewController::class, 'checkAnyEligibility'])->name('review.check-any');
+    Route::get('/reviews/latest/{field}', [App\Http\Controllers\ReviewController::class, 'latest'])->name('review.latest');
+
+    /* PARTNER FINDER - Get potential partners data */
+    Route::get('/partner/data', function () {
+        $sport = request('sport');
+        $skill = request('skill');
+        $query = \App\Models\User::where('open_partner', true)
+            ->where('id', '!=', auth()->id());
+
+        if ($sport) {
+            $query->where('sport_preference', 'like', '%' . $sport . '%');
+        }
+        if ($skill) {
+            $query->where('skill_level', $skill);
+        }
+
+        $partners = $query->get()->map(function ($u) {
+            return [
+                'id' => $u->id,
+                'name' => $u->name,
+                'avatar' => $u->avatarUrl(),
+                'sport_preference' => $u->sport_preference,
+                'skill_level' => $u->skill_level,
+                'phone' => $u->phone,
+            ];
+        });
+
+        return response()->json($partners);
+    })->name('partner.data');
 
     /* HISTORY */
     Route::get('/history', [HistoryController::class, 'index'])->name('history.index');

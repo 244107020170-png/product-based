@@ -113,12 +113,25 @@
     <header class="player-dashboard-topbar">
         <div class="player-dashboard-topbar__left">
             <button type="button" class="player-dashboard-topbar__menu" data-sidebar-open><span></span><span></span><span></span></button>
-            <label class="player-search" for="fields-search">
+            <label class="player-search" for="fields-search" style="max-width:320px;">
                 <span class="player-search__icon">
                     <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.75" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 </span>
                 <input id="fields-search" type="search" placeholder="Cari lapangan...">
             </label>
+            @if(!empty($isNearby))
+                <a href="{{ route('dashboard') }}" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:white; color:#02025b; border:1.5px solid rgba(0,0,77,.12); border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; text-decoration:none; transition:all .2s;" onmouseover="this.style.borderColor='#EB5436'" onmouseout="this.style.borderColor='rgba(0,0,77,.12)'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="hidden sm:inline">Kembali</span>
+                    <span class="sm:hidden">Back</span>
+                </a>
+            @else
+            <button onclick="findNearestFields()" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#EB5436; color:white; border:none; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(235,84,54,.25); transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 20px rgba(235,84,54,.35)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(235,84,54,.25)'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span class="hidden sm:inline">Lapangan Terdekat</span>
+                <span class="sm:hidden">Terdekat</span>
+            </button>
+            @endif
         </div>
         <div class="player-dashboard-topbar__right">
             <div class="player-dashboard-topbar__date">
@@ -127,7 +140,7 @@
                 </span>
                 <span>{{ $currentDate }}</span>
             </div>
-            <a href="#" class="player-dashboard-topbar__icon" title="Hubungi CS" style="text-decoration: none; color: inherit;">
+            <a href="javascript:void(0)" onclick="toggleFaqPopup()" class="player-dashboard-topbar__icon" title="Hubungi CS" style="text-decoration: none; color: inherit;">
                 <span class="player-inline-icon">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </span>
@@ -193,7 +206,7 @@
 
         <!-- NEW DASHBOARD HEADER -->
         <div class="dashboard-header-flex">
-            <h1 style="font-size: 28px; font-weight: 800; color: #02025b; margin: 0;">Dashboard</h1>
+            <h1 style="font-size: 28px; font-weight: 800; color: #02025b; margin: 0;"></h1>
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <a href="javascript:void(0)" onclick="showCreateModal()" style="background: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background .2s; display: inline-block;">
                     Buat Pertandingan Baru
@@ -201,6 +214,7 @@
             </div>
         </div>
 
+        @if(empty($isNearby))
         <!-- HERO SECTION -->
         <div class="hero-section">
             <!-- Hero Banner -->
@@ -222,19 +236,21 @@
                 </style>
                 <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); position: relative; z-index: 1; min-height: 280px; display: flex; flex-direction: column; justify-content: center;">
                     <div class="hero-content-inner" style="max-width: 60%;">
-                        <h2 style="font-size: 32px; font-weight: 900; color: #02025b; margin: 0 0 20px 0;">Hai, {{ Auth::user()->name ?? 'Pecinta Olahraga' }}!</h2>
+                        <h2 style="font-size: 24px; font-weight: 600; color: #02025b; margin: 0 0 20px 0;">Hai {{ Auth::user()->name ?? 'Pecinta Olahraga' }}! Siap bikin keringat jadi teman?</h2>
                         
-                        <div style="background: rgba(255,255,255,.9); padding: 16px; border-radius: 12px; display: flex; gap: 16px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); max-width: 320px;">
-                            <img src="{{ Auth::user()->avatarUrl() }}" alt="Profil" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                        <div onclick="openDashboardReview()" style="cursor:pointer; background: #FDF9ED; padding: 20px 24px; border-radius: 14px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); width: 100%; max-width: 410px; transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(0,0,0,.05)'">
+                            <div style="width:80px; height:80px; overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                                <img src="{{ asset('assets/images/characters/review.png') }}" alt="Review" style="width:68px; height:68px; object-fit:contain;">
+                            </div>
                             <div>
                                 <p style="margin: 0; font-weight: 800; color: #02025b; font-size: 14px;">Gimana permainan nya?</p>
                                 <p style="margin: 2px 0; font-size: 12px; color: #666;">Silakan review permainan terakhir kamu.</p>
-                                <div style="display: flex; gap: 4px; margin-top: 4px;">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <div style="display: flex; gap: 3px; margin-top: 4px;">
+                                    <span style="font-size:14px; color:#f59e0b;">★</span>
+                                    <span style="font-size:14px; color:#f59e0b;">★</span>
+                                    <span style="font-size:14px; color:#f59e0b;">★</span>
+                                    <span style="font-size:14px; color:#f59e0b;">★</span>
+                                    <span style="font-size:14px; color:#f59e0b;">★</span>
                                 </div>
                             </div>
                         </div>
@@ -407,7 +423,7 @@
                     @forelse($recommendedMatches as $rm)
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,77,.05);">
                             <div>
-                                <span style="background: #fee2e2; color: #e11d48; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">Untuk Anda</span>
+                                <span style="background: #fee2e2; color: #e11d48; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">{{ $recommendedBadge ?: 'Untuk Anda' }}</span>
                                 <span style="font-size: 14px; font-weight: 800; color: #02025b; margin-left: 6px;">{{ $rm->title }}</span>
                                 <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">{{ $rm->field->name ?? '' }}</p>
                             </div>
@@ -552,6 +568,7 @@
             </div>
         </div>
         @endif
+        @endif
 
         <!-- LAPANGAN TERSEDIA (Original Section) -->
         <div style="margin-bottom: 30px;">
@@ -561,8 +578,14 @@
                     <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                     <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
                 </svg>
-                <span>Lapangan Tersedia</span>
+                <span>{{ !empty($isNearby) ? 'Lapangan Terdekat' : 'Lapangan Tersedia' }}</span>
             </h2>
+            @if(!empty($isNearby))
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; margin-bottom: 12px;">
+                <span style="font-size: 14px;">📍</span>
+                <span style="font-size: 12px; font-weight: 700; color: #92400e;">Menampilkan lapangan terdekat berdasarkan {{ request('lat') && request('lng') ? 'lokasi Anda' : 'kota ' . e(Auth::user()->city ?? '') }}</span>
+            </div>
+            @endif
             @if($selectedSport)
             <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; margin-bottom: 8px;">
                 <span style="font-size: 16px;">
@@ -586,40 +609,60 @@
             <p style="color: #666;">Pilih lapangan yang ingin kamu booking</p>
         </div>
 
+        @if(!empty($nearbyMessage))
+        <div style="display:flex; align-items:center; gap:12px; padding:16px 20px; background:#fffbeb; border:1px solid #fde68a; border-radius:14px; margin-bottom:20px;">
+            <span style="font-size:20px;">📍</span>
+            <div style="flex:1;">
+                <p style="margin:0; font-size:13px; font-weight:700; color:#92400e;">{{ $nearbyMessage }}</p>
+                @if(str_contains($nearbyMessage, 'isi kota'))
+                    <a href="{{ route('profile.edit') }}" style="font-size:12px; font-weight:600; color:#EB5436; text-decoration:underline; margin-top:4px; display:inline-block;">Isi kota di Edit Profil &rarr;</a>
+                @endif
+            </div>
+            <button onclick="this.parentElement.remove()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#92400e; padding:0; line-height:1;">&times;</button>
+        </div>
+        @endif
+
         @if($fields->isEmpty())
         <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px;">
-            <h3 style="font-size: 20px; color: #001a4d; margin-bottom: 10px;">Belum Ada Lapangan</h3>
-            <p style="color: #666;">Tidak ada lapangan yang tersedia saat ini.</p>
+            <h3 style="font-size: 20px; color: #001a4d; margin-bottom: 10px;">{{ !empty($isNearby) ? 'Tidak Ada Lapangan Terdekat' : 'Belum Ada Lapangan' }}</h3>
+            <p style="color: #666;">{{ !empty($isNearby) ? 'Tidak ditemukan lapangan di sekitar kotamu. Coba ubah kota di Edit Profil.' : 'Tidak ada lapangan yang tersedia saat ini.' }}</p>
+            @if(!empty($isNearby))
+            <a href="{{ route('dashboard') }}" style="display:inline-block; margin-top:12px; padding:10px 24px; background:#02025b; color:white; border-radius:10px; font-size:13px; font-weight:700; text-decoration:none;">&larr; Tampilkan Semua Lapangan</a>
+            @endif
         </div>
         @else
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
             @foreach($fields as $field)
-            <a href="{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}" class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease;">
-                <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column;">
-                    <div style="position: relative; height: 200px; overflow: hidden;">
-                        <img src="{{ fieldImg($field) }}" 
-                             alt="{{ $field->name }}"
-                             style="width: 100%; height: 100%; object-fit: cover;">
-                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600;">
-                            <span style="display:inline-flex;vertical-align:-2px;margin-right:4px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                                    <path d="M12 3L14.9 8.7L21 9.6L16.5 14L17.6 20L12 17.1L6.4 20L7.5 14L3 9.6L9.1 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                                </svg>
-                            </span>{{ $field->rating ?? '4.8' }}
-                        </div>
+            @php $isFav = in_array($field->id, $favoriteIds ?? []); @endphp
+            <div class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; cursor:pointer;" onclick="window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'">
+                <div style="position: relative; height: 200px; overflow: hidden;">
+                    <img src="{{ fieldImg($field) }}" 
+                         alt="{{ $field->name }}"
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                    <div style="position: absolute; top: 12px; left: 12px; display:flex; gap:6px;">
+                        <span onclick="event.stopPropagation();toggleFavorite({{ $field->id }}, this)" style="background:rgba(0,0,0,0.6); color:{{ $isFav ? '#EB5436' : 'white' }}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; font-size:18px;" data-fav="{{ $isFav ? '1' : '0' }}">
+                            {{ $isFav ? '❤️' : '🤍' }}
+                        </span>
                     </div>
-                    <div style="padding: 18px; flex: 1; display: flex; flex-direction: column;">
-                        <h3 style="font-size: 18px; font-weight: 700; color: #001a4d; margin: 0 0 10px 0;">{{ $field->name }}</h3>
-                        <p style="color: #666; font-size: 13px; margin: 0 0 12px 0; flex: 1;">{{ $field->location }}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0;">
-                            <span style="font-size: 16px; font-weight: 700; color: #f59e0b;">{{ $field->formattedPrice() }}</span>
-                            <button type="button" style="padding: 8px 16px; background: #f59e0b; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">
-                                Pesan →
-                            </button>
-                        </div>
+                    <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600;">
+                        <span style="display:inline-flex;vertical-align:-2px;margin-right:4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 3L14.9 8.7L21 9.6L16.5 14L17.6 20L12 17.1L6.4 20L7.5 14L3 9.6L9.1 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            </svg>
+                        </span>{{ number_format($field->rating ?? 4.5, 1) }}
                     </div>
                 </div>
-            </a>
+                <div style="padding: 18px; flex: 1; display: flex; flex-direction: column;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: #001a4d; margin: 0 0 10px 0;">{{ $field->name }}</h3>
+                    <p style="color: #666; font-size: 13px; margin: 0 0 12px 0; flex: 1;">{{ $field->location }}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0;">
+                        <span style="font-size: 16px; font-weight: 700; color: #f59e0b;">{{ $field->formattedPrice() }}</span>
+                        <button type="button" onclick="event.stopPropagation();window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'" style="padding: 8px 16px; background: #f59e0b; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">
+                            Pesan →
+                        </button>
+                    </div>
+                </div>
+            </div>
             @endforeach
         </div>
         @endif
@@ -742,6 +785,186 @@
         </div>
     </div>
 </div>
+<!-- FAQ POPUP -->
+<div id="faqPopup" style="display:none; position:fixed; bottom:90px; right:24px; width:340px; max-width:calc(100vw - 48px); background:white; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.2); z-index:1000; overflow:hidden;">
+    <div style="background:#EB5436; color:white; padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span class="material-symbols-outlined" style="font-size:22px;color:white;font-variation-settings:'FILL' 1;">support_agent</span>
+            <span style="font-weight:700; font-size:15px;">Pusat Bantuan</span>
+        </div>
+        <span onclick="toggleFaqPopup()" style="cursor:pointer; font-size:20px; line-height:1; color:white;">&times;</span>
+    </div>
+    <div style="padding:16px 20px;">
+        <p style="font-size:13px; color:#666; margin-bottom:12px;">Ada yang bisa kami bantu?</p>
+        <div onclick="faqAnswer('booking')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span style="color:#EB5436; font-size:20px;">📅</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Booking</div><div style="font-size:11px; color:#888;">Panduan memesan lapangan</div></div>
+        </div>
+        <div onclick="faqAnswer('join_match')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span style="color:#EB5436; font-size:20px;">👥</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Join Public Match</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
+        </div>
+        <div onclick="faqAnswer('payment')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span style="color:#EB5436; font-size:20px;">💳</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Pembayaran</div><div style="font-size:11px; color:#888;">Informasi metode pembayaran</div></div>
+        </div>
+        <div onclick="faqAnswer('cs')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
+            <span style="color:#EB5436; font-size:20px;">🎧</span>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Hubungi Customer Service</div><div style="font-size:11px; color:#888;">Chat dengan admin via WhatsApp</div></div>
+        </div>
+    </div>
+    <div id="faqAnswerBox" style="display:none; padding:16px 20px; border-top:1px solid rgba(0,0,77,.06); background:#f8fafc;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-weight:700; font-size:13px; color:#02025b;" id="faqAnswerTitle"></span>
+            <span onclick="closeFaqAnswer()" style="cursor:pointer; font-size:16px; color:#999;">&times;</span>
+        </div>
+        <p style="font-size:13px; color:#555; line-height:1.6; white-space:pre-line;" id="faqAnswerText"></p>
+    </div>
+</div>
+
+<script>
+function toggleFaqPopup() {
+    var popup = document.getElementById('faqPopup');
+    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('faqAnswerBox').style.display = 'none';
+}
+function faqAnswer(type) {
+    var titleEl = document.getElementById('faqAnswerTitle');
+    var textEl = document.getElementById('faqAnswerText');
+    var boxEl = document.getElementById('faqAnswerBox');
+    var answers = {
+        booking: { title: 'Cara Booking', text: '1. Pilih lapangan yang kamu inginkan.\n2. Pilih tanggal dan jam yang tersedia.\n3. Klik "Pesan" dan ikuti instruksi pembayaran.\n4. Laporkan pembayaran ke owner untuk konfirmasi.\n5. Setelah dikonfirmasi, booking kamu aktif!' },
+        join_match: { title: 'Cara Join Public Match', text: '1. Buka halaman "Cari Tim".\n2. Geser kartu pertandingan yang tersedia.\n3. Klik "Bergabung" pada pertandingan yang diinginkan.\n4. Lanjutkan pembayaran kontribusi jika ada.\n5. Tunggu konfirmasi dari host pertandingan.' },
+        payment: { title: 'Cara Pembayaran', text: 'Pembayaran dilakukan dengan transfer ke rekening owner lapangan. Setelah transfer, laporkan pembayaran melalui halaman detail booking. Owner akan mengkonfirmasi pembayaran kamu.' },
+        cs: { title: 'Hubungi Customer Service', text: '' }
+    };
+    var answer = answers[type];
+    if (!answer) return;
+    titleEl.textContent = answer.title;
+    textEl.textContent = answer.text;
+    boxEl.style.display = 'block';
+    if (type === 'cs') {
+        textEl.style.display = 'none';
+        boxEl.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-weight:700; font-size:13px; color:#02025b;">Hubungi Customer Service</span><span onclick="closeFaqAnswer()" style="cursor:pointer; font-size:16px; color:#999;">&times;</span></div><p style="font-size:13px; color:#555; margin-bottom:12px;">Kamu akan dihubungkan dengan admin kami melalui WhatsApp.</p><a href="https://wa.me/6281234567890?text=Halo%20Spies%20Sport%2C%20saya%20butuh%20bantuan" target="_blank" style="display:block; text-align:center; background:#25D366; color:white; padding:12px; border-radius:12px; font-weight:700; text-decoration:none;">&#x1F4AC; Chat WhatsApp</a>';
+    } else {
+        textEl.style.display = 'block';
+    }
+}
+function closeFaqAnswer() { document.getElementById('faqAnswerBox').style.display = 'none'; }
+
+function toggleFavorite(fieldId, el) {
+    event.stopPropagation();
+    fetch('{{ route("favorite.toggle") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ field_id: fieldId })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.favorited) {
+            el.setAttribute('data-fav', '1');
+            el.innerHTML = '❤️';
+            el.style.color = '#EB5436';
+        } else {
+            el.setAttribute('data-fav', '0');
+            el.innerHTML = '🤍';
+            el.style.color = 'white';
+        }
+    });
+}
+
+function openDashboardReview() {
+    fetch('{{ route("review.check-any") }}')
+    .then(function(r) { return r.json(); }).then(function(data) {
+        if (data.eligible && data.booking) {
+            document.getElementById('dashReviewFieldId').value = data.booking.field_id;
+            document.getElementById('dashReviewBookingId').value = data.booking.id;
+            document.getElementById('dashReviewModal').style.display = 'flex';
+            document.getElementById('dashReviewHint').innerHTML = '<strong>' + data.booking.field_name + '</strong> &middot; ' + data.booking.date;
+            dashResetRating();
+        } else {
+            var msg = document.createElement('div');
+            msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#02025b;color:white;padding:12px 24px;border-radius:12px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);text-align:center;';
+            msg.textContent = data.message || 'Belum ada booking selesai untuk direview.';
+            document.body.appendChild(msg);
+            setTimeout(function() { msg.remove(); }, 4000);
+        }
+    }).catch(function() {
+        var msg = document.createElement('div');
+        msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#dc2626;color:white;padding:12px 24px;border-radius:12px;font-weight:600;z-index:9999;font-size:14px;';
+        msg.textContent = 'Gagal memuat data review.';
+        document.body.appendChild(msg);
+        setTimeout(function() { msg.remove(); }, 3000);
+    });
+}
+function dashSetRating(val) {
+    document.getElementById('dashRatingValue').value = val;
+    var stars = document.querySelectorAll('#dashStarRating span');
+    var hints = ['', '😞 Buruk', '😐 Biasa', '🙂 Bagus', '😊 Sangat Bagus', '🤩 Luar Biasa!'];
+    stars.forEach(function(s, i) {
+        s.style.color = i < val ? '#f59e0b' : '#d1d5db';
+    });
+    document.getElementById('dashRatingHint').textContent = hints[val] || '';
+}
+function dashResetRating() {
+    document.getElementById('dashRatingValue').value = 0;
+    document.querySelectorAll('#dashStarRating span').forEach(function(s) { s.style.color = '#d1d5db'; });
+    document.getElementById('dashRatingHint').textContent = 'Klik bintang untuk memberi rating';
+    document.getElementById('dashReviewText').value = '';
+    document.getElementById('dashReviewError').style.display = 'none';
+}
+function dashCloseReview() {
+    document.getElementById('dashReviewModal').style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('dashReviewForm').addEventListener('submit', function(e) {
+        var rating = parseInt(document.getElementById('dashRatingValue').value);
+        var review = document.getElementById('dashReviewText').value.trim();
+        var errorEl = document.getElementById('dashReviewError');
+        if (rating < 1) {
+            e.preventDefault();
+            errorEl.textContent = 'Silakan pilih rating terlebih dahulu.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (review.length < 10) {
+            e.preventDefault();
+            errorEl.textContent = 'Ulasan minimal 10 karakter.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        errorEl.style.display = 'none';
+    });
+});
+
+function findNearestFields() {
+    @if(empty(Auth::user()->city))
+    var msg = document.createElement('div');
+    msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#02025b;color:white;padding:16px 24px;border-radius:12px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);text-align:center;';
+    msg.innerHTML = '📍 Isi kota kamu dulu ya<br><a href="{{ route("profile.edit") }}" style="color:#fde68a;font-size:12px;margin-top:6px;display:inline-block;">Edit Profil &rarr;</a>';
+    document.body.appendChild(msg);
+    setTimeout(function() { msg.remove(); }, 5000);
+    @else
+    var msg = document.createElement('div');
+    msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#02025b;color:white;padding:12px 24px;border-radius:12px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);';
+    if (navigator.geolocation) {
+        msg.textContent = 'Mendeteksi lokasi Anda...';
+        document.body.appendChild(msg);
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            msg.textContent = 'Menampilkan lapangan terdekat...';
+            window.location.href = '{{ route("dashboard") }}?nearby=1&lat=' + pos.coords.latitude + '&lng=' + pos.coords.longitude;
+        }, function() {
+            msg.textContent = 'Menggunakan kota terdaftar untuk mencari lapangan terdekat.';
+            setTimeout(function() { msg.remove(); }, 3000);
+            window.location.href = '{{ route("dashboard") }}?nearby=1';
+        });
+    } else {
+        msg.textContent = 'Browser tidak mendukung geolokasi. Menggunakan kota terdaftar.';
+        document.body.appendChild(msg);
+        setTimeout(function() { msg.remove(); window.location.href = '{{ route("dashboard") }}?nearby=1'; }, 2000);
+    }
+    @endif
+}
+</script>
+
 <script>
 var _selectedSport = '';
 function showCreateModal(){document.getElementById('createMatchModal').style.display='flex';}
@@ -755,5 +978,37 @@ function filterSports(){var q=document.getElementById('sportSearchInput').value.
 function selectSport(s){_selectedSport=s;hideSportModal();showFieldModal();}
 function applyFieldSportFilter(){var cards=document.querySelectorAll('#fieldListGrid > a');for(var i=0;i<cards.length;i++){var card=cards[i];if(!_selectedSport||card.getAttribute('data-field-sport')===_selectedSport){card.style.display='flex';card.href=card.href.split('?')[0]+'?sport='+encodeURIComponent(_selectedSport);}else{card.style.display='none';}}}
 </script>
+
+<!-- Review Modal -->
+<div id="dashReviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)dashCloseReview()">
+    <div style="background:white;border-radius:20px;padding:28px;width:90%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;max-height:90vh;overflow-y:auto;">
+        <button onclick="dashCloseReview()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#999;">&times;</button>
+        <div style="text-align:center;margin-bottom:16px;">
+            <div style="width:80px;height:80px;border-radius:18px;background:#eef2ff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px;">
+                <img src="{{ asset('assets/images/characters/review.png') }}" alt="Review" style="width:60px;height:60px;object-fit:contain;">
+            </div>
+            <h3 style="margin:8px 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Review</h3>
+            <p id="dashReviewHint" style="margin:0;font-size:14px;color:#666;"></p>
+        </div>
+        <form id="dashReviewForm" method="POST" action="{{ route('review.store') }}">
+            @csrf
+            <input type="hidden" name="field_id" id="dashReviewFieldId" value="">
+            <input type="hidden" name="booking_id" id="dashReviewBookingId" value="">
+            <input type="hidden" name="rating" id="dashRatingValue" value="0">
+            <div id="dashStarRating" style="display:flex;gap:8px;justify-content:center;font-size:36px;margin-bottom:8px;">
+                <span onclick="dashSetRating(1)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
+                <span onclick="dashSetRating(2)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
+                <span onclick="dashSetRating(3)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
+                <span onclick="dashSetRating(4)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
+                <span onclick="dashSetRating(5)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
+            </div>
+            <p id="dashRatingHint" style="text-align:center;font-size:12px;color:#999;margin:0 0 12px;">Klik bintang untuk memberi rating</p>
+            <textarea id="dashReviewText" name="review" rows="3" placeholder="Tulis ulasan kamu di sini..." style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:12px;font-size:14px;resize:none;box-sizing:border-box;"></textarea>
+            <p id="dashReviewError" style="color:#dc2626;font-size:12px;margin:4px 0 0;display:none;"></p>
+            <button type="submit" style="width:100%;margin-top:14px;padding:12px;background:#02025b;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Review</button>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
