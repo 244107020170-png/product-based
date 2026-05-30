@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Booking;
+use App\Models\Favorite;
+use App\Models\MatchPlayer;
 use App\Models\Matchs;
+use App\Models\Review;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,39 +26,120 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        try {
-            // Histori Tim: match yang DIikuti user (sebagai player)
-            $historiTim = Matchs::with(['field', 'creator', 'players'])
-                ->whereHas('players', fn ($q2) => $q2->where('users.id', $user->id))
-                ->latest()
-                ->get();
+        $historiTim = MatchPlayer::query()
+            ->select('match_players.*')
+            ->join('matches', 'matches.id', '=', 'match_players.match_id')
+            ->where('match_players.user_id', $user->id)
+            ->where('matches.type', 'public')
+            ->with(['match.field', 'match.creator', 'match.players'])
+            ->orderByDesc('matches.date')
+            ->orderByDesc('matches.time')
+            ->take(5)
+            ->get()
+            ->pluck('match')
+            ->filter()
+            ->values();
 
-            // Private Match: match pribadi yang dibuat user sendiri
-            $privateMatch = Matchs::with(['field', 'creator', 'players'])
-                ->where('created_by', $user->id)
-                ->where('type', 'private')
-                ->latest()
-                ->get();
+        $personalBookings = Booking::with('field')
+            ->where('user_id', $user->id)
+            ->orderByDesc('date')
+            ->orderByDesc('start_time')
+            ->take(5)
+            ->get();
 
-            // Favorit: lapangan favorit user
-            $favoriteFields = \App\Models\Favorite::with('field')
-                ->where('user_id', $user->id)
-                ->latest()
-                ->get();
+        $createdMatches = Matchs::with(['field', 'players'])
+            ->where('created_by', $user->id)
+            ->orderByDesc('date')
+            ->orderByDesc('time')
+            ->take(5)
+            ->get();
 
-        } catch (\Exception $e) {
-            // Fallback jika match_players belum punya kolom yang benar
-            // (migrate dulu: php artisan migrate)
-            $historiTim   = Matchs::with(['field', 'creator'])
-                ->where('created_by', $user->id)
-                ->latest()
-                ->get();
+        $privateActivities = $this->buildPrivateActivities($personalBookings, $createdMatches);
 
-            $privateMatch = $historiTim;
-            $favoriteFields = collect();
+        $favoriteFields = Favorite::with('field')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $userReviews = Review::with('field')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('profile.show', compact('user', 'historiTim', 'privateActivities', 'favoriteFields', 'userReviews'));
+    }
+
+    private function buildPrivateActivities(Collection $bookings, Collection $createdMatches): Collection
+    {
+        $bookingActivities = $bookings->map(function (Booking $booking) {
+            $field = $booking->field;
+            $activityAt = Carbon::parse($booking->date->format('Y-m-d') . ' ' . ($booking->start_time ?: '00:00:00'));
+
+            return [
+                'name' => 'Booking ' . ($field?->name ?? 'Lapangan'),
+                'date' => $activityAt,
+                'date_label' => $activityAt->locale('id')->translatedFormat('j F Y'),
+                'status' => $this->bookingStatusLabel($booking->status),
+                'status_class' => $this->statusClass($booking->status, false),
+                'location' => $field?->location,
+                'sort_at' => $activityAt,
+            ];
+        });
+
+        $matchActivities = $createdMatches->map(function (Matchs $match) {
+            $activityAt = Carbon::parse($match->date . ' ' . ($match->time ?: '00:00:00'));
+            $isPast = $activityAt->isPast();
+
+            return [
+                'name' => $match->title,
+                'date' => $activityAt,
+                'date_label' => $activityAt->locale('id')->translatedFormat('j F Y'),
+                'status' => $isPast ? 'Selesai' : 'Akan Datang',
+                'status_class' => $this->statusClass(null, $isPast),
+                'location' => trim(($match->field?->name ?? 'Lapangan') . ($match->field?->location ? ' - ' . $match->field->location : '')),
+                'sort_at' => $activityAt,
+            ];
+        });
+
+        return $bookingActivities
+            ->concat($matchActivities)
+            ->sortByDesc('sort_at')
+            ->take(5)
+            ->values();
+    }
+
+    private function bookingStatusLabel(?string $status): string
+    {
+        return match ($status) {
+            'selesai', 'completed' => 'Selesai',
+            'confirmed' => 'Akan Datang',
+            'pending', 'waiting_confirmation' => 'Menunggu Konfirmasi',
+            'waiting_payment' => 'Menunggu Pembayaran',
+            'paid' => 'Dibayar',
+            'cancelled' => 'Dibatalkan',
+            'expired' => 'Kadaluarsa',
+            'rejected' => 'Ditolak',
+            default => $status ? ucfirst(str_replace('_', ' ', $status)) : 'Menunggu',
+        };
+    }
+
+    private function statusClass(?string $status, bool $isPast): string
+    {
+        if ($isPast || in_array($status, ['selesai', 'completed'], true)) {
+            return 'history-status--selesai';
         }
 
-        return view('profile.show', compact('user', 'historiTim', 'privateMatch', 'favoriteFields'));
+        if (in_array($status, ['cancelled', 'expired', 'rejected'], true)) {
+            return 'history-status--dibatal';
+        }
+
+        if (in_array($status, ['confirmed', 'paid'], true)) {
+            return 'history-status--akan';
+        }
+
+        return 'history-status--pending';
     }
 
     /* ================================================================

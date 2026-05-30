@@ -77,7 +77,7 @@ class MatchController extends Controller
             ->take(5)
             ->get();
 
-        // User skill level (calculate from bookings & matches)
+        // User skill level (calculate from bookings, matches & reviews)
         $totalBookings = \App\Models\Booking::where('user_id', $user->id)
             ->whereIn('status', [
                 \App\Enums\BookingStatus::CONFIRMED,
@@ -88,23 +88,40 @@ class MatchController extends Controller
         $totalMatches = MatchPlayer::where('user_id', $user->id)
             ->count();
 
+        $totalReviews = \App\Models\Review::where('user_id', $user->id)->count();
+
+        $totalPoints = ($totalBookings * 1) + ($totalMatches * 2) + ($totalReviews * 3);
+
+        $_tiers = [['min' => 0, 'max' => 5], ['min' => 6, 'max' => 20], ['min' => 21, 'max' => PHP_INT_MAX]];
+        $_currentTier = $_tiers[0];
+        $_nextTier = $_tiers[1];
+        foreach ($_tiers as $i => $t) {
+            if ($totalPoints >= $t['min']) { $_currentTier = $t; $_nextTier = $_tiers[$i + 1] ?? null; }
+        }
+        $_progressPct = 100;
+        if ($_nextTier) {
+            $_range = $_currentTier['max'] - $_currentTier['min'];
+            $_tierProgress = max(0, $totalPoints - $_currentTier['min']);
+            $_progressPct = $_range > 0 ? min(100, round(($_tierProgress / $_range) * 100)) : 100;
+        }
+
         $userSkill = [
-            'totalBookings' => $totalBookings,
-            'totalMatches' => $totalMatches,
-            'level' => $this->getUserLevel($totalBookings + $totalMatches),
-            'progress' => min(($totalBookings + $totalMatches) % 5, 4),
+            'totalBookings'  => $totalBookings,
+            'totalMatches'   => $totalMatches,
+            'totalReviews'   => $totalReviews,
+            'totalPoints'    => $totalPoints,
+            'level'          => $this->getUserLevel($totalPoints),
+            'progressPct'    => $_progressPct,
         ];
 
         return view('matches.index', compact('cards', 'upcomingBookings', 'myTeams', 'userSkill'));
     }
 
-    private function getUserLevel($total): string
+    private function getUserLevel($points): string
     {
-        if ($total < 3) return 'Pemula';
-        if ($total < 8) return 'Pemain Biasa';
-        if ($total < 15) return 'Pemain Aktif';
-        if ($total < 25) return 'Pemain Berpengalaman';
-        return 'Master';
+        if ($points >= 21) return 'Pro';
+        if ($points >= 6) return 'Aktif';
+        return 'Pemula';
     }
 
     public function create()

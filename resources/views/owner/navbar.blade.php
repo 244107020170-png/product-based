@@ -49,6 +49,11 @@
                 <span>Pemeliharaan Kontrol</span>
             </a>
 
+            <a href="/owner/history" class="menu-item {{ Request::is('owner/history*') ? 'active' : '' }}">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Histori</span>
+            </a>
+
         </nav>
     </div>
 

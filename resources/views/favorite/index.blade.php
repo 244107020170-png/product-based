@@ -21,14 +21,21 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
     ];
 
     // Sport-based gradient bg colors untuk placeholder gambar lapangan
-    $sportGradients = [
-        'Futsal'    => 'linear-gradient(135deg,#1a237e,#283593)',
-        'Voli'      => 'linear-gradient(135deg,#1b5e20,#2e7d32)',
-        'Badminton' => 'linear-gradient(135deg,#bf360c,#e64a19)',
-        'Basket'    => 'linear-gradient(135deg,#e65100,#f57c00)',
-        'Renang'    => 'linear-gradient(135deg,#006064,#00838f)',
-        'Tennis'    => 'linear-gradient(135deg,#558b2f,#689f38)',
-        'Lainnya'   => 'linear-gradient(135deg,#4a148c,#6a1b9a)',
+    $allFavFields = collect();
+    $sportTypes = [];
+    foreach ($grouped ?? [] as $sport => $fields) {
+        $sportTypes[] = $sport;
+        foreach ($fields as $f) {
+            $allFavFields->push((object)['sport' => $sport, 'field' => $f]);
+        }
+    }
+
+    $favAllSports = ['Futsal','Badminton','Basket','Voli','Tennis','Golf','Renang','Panahan','Lari','Sepeda','Tinju','Bela Diri','Yoga','Fitness','Hiking','Padel','Baseball','Rugby','Senam'];
+    $favSportEmoji = [
+        'Futsal'=>'⚽','Badminton'=>'🏸','Basket'=>'🏀','Voli'=>'🏐','Tennis'=>'🎾',
+        'Golf'=>'🏌️','Renang'=>'🏊','Panahan'=>'🏹','Lari'=>'🏃','Sepeda'=>'🚴',
+        'Tinju'=>'🥊','Bela Diri'=>'🥋','Yoga'=>'🧘','Fitness'=>'🏋️','Hiking'=>'🥾',
+        'Padel'=>'🎾','Baseball'=>'⚾','Rugby'=>'🏉','Senam'=>'🤸','Lainnya'=>'🏆',
     ];
 @endphp
 <!DOCTYPE html>
@@ -38,15 +45,10 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Favoritmu – {{ config('app.name','Spies Sport') }}</title>
-@vite(['resources/css/app.css','resources/css/player-dashboard.css'])
+@vite(['resources/css/app.css','resources/css/player-dashboard.css','resources/js/app.js'])
 <style>
-/* ═══════════════════════════════════════
-   FAVORITMU PAGE — inline
-   ═══════════════════════════════════════ */
-
 .fav-main { padding: 8px 20px 56px; max-width: 1200px; }
 
-/* ── Page title ── */
 .fav-page-title {
     font-size: clamp(1.4rem, 2.2vw, 1.9rem);
     font-weight: 800;
@@ -54,130 +56,148 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
     margin: 6px 0 24px 4px;
 }
 
-/* ── Sport section ── */
-.fav-section {
-    background: rgba(255,255,255,.93);
-    border: 1px solid rgba(0,0,77,.07);
-    border-radius: 24px;
-    padding: 24px 28px 28px;
-    margin-bottom: 20px;
-    box-shadow: 0 16px 38px rgba(0,0,77,.07);
-    animation: sectionIn .3s ease both;
-}
-@keyframes sectionIn {
-    from { opacity:0; transform:translateY(12px); }
-    to   { opacity:1; transform:translateY(0); }
-}
-
-.fav-section__header {
+/* ── Filter button ── */
+.fav-filters {
     display: flex;
+    margin-bottom: 24px;
+}
+.fav-filter-btn {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-.fav-section__sport {
-    font-size: 1.65rem;
-    font-weight: 900;
-    color: #00004d;
-    margin: 0;
-}
-.fav-section__see-all {
-    font-size: .82rem;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    font-size: 14px;
     font-weight: 700;
-    color: rgba(0,0,77,.5);
-    text-decoration: none;
-    transition: color .18s;
+    color: #02025b;
+    cursor: pointer;
+    transition: all .18s;
+    font-family: inherit;
 }
-.fav-section__see-all:hover { color: #eb5436; }
+.fav-filter-btn:hover {
+    border-color: #6366f1;
+    background: #eef2ff;
+}
 
-/* ── Field card grid ── */
+/* ── Card grid ── */
 .fav-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
 }
 
 /* ── Field card ── */
 .fav-card {
+    background: #fff;
     border-radius: 16px;
     overflow: hidden;
-    transition: transform .2s ease, box-shadow .2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all .3s ease;
     cursor: pointer;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
-.fav-card:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(0,0,77,.14); }
+.fav-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
 
-/* image area */
+.fav-card__img-wrap {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
 .fav-card__img {
     width: 100%;
-    aspect-ratio: 4/3;
+    height: 100%;
     object-fit: cover;
-    display: block;
-    border-radius: 14px;
-}
-.fav-card__img-placeholder {
-    width: 100%;
-    aspect-ratio: 4/3;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.8rem;
-}
-.fav-card__img-placeholder svg {
-    width: 56px;
-    height: 56px;
-    color: rgba(255, 255, 255, .95);
 }
 
-/* remove (x) button */
-.fav-card__remove {
+/* Heart toggle */
+.fav-card__heart {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 30px;
-    height: 30px;
+    top: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.6);
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: rgba(0,0,0,.55);
-    border: 0;
-    color: #fff;
-    font-size: .85rem;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: opacity .18s ease, background .18s ease;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 2;
+    border: 0;
+    transition: all .2s;
 }
-.fav-card:hover .fav-card__remove { opacity: 1; }
-.fav-card__remove:hover { background: #ef4444; }
+.fav-card__heart:hover { transform: scale(1.1); }
 
-/* meta */
-.fav-card__meta { padding: 10px 2px 4px; }
-.fav-card__name-row {
+/* Rating badge */
+.fav-card__rating {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
     display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    margin-bottom: 3px;
+    align-items: center;
+    gap: 5px;
+    z-index: 2;
 }
-.fav-card__pin {
-    flex-shrink: 0;
-    margin-top: 2px;
+
+/* Content */
+.fav-card__body {
+    padding: 16px 18px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 .fav-card__name {
-    font-size: .92rem;
-    font-weight: 800;
-    color: #00004d;
-    margin: 0;
-    line-height: 1.25;
+    font-size: 18px;
+    font-weight: 700;
+    color: #001a4d;
+    margin: 0 0 4px;
+    line-height: 1.3;
 }
-.fav-card__dist {
-    font-size: .78rem;
-    color: rgba(0,0,77,.52);
+.fav-card__loc {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+    font-size: 13px;
+    margin: 0 0 14px;
+}
+.fav-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: auto;
+}
+.fav-card__price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #001a4d;
+}
+.fav-card__btn {
+    padding: 8px 16px;
+    background: #f59e0b;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
     font-weight: 600;
-    margin: 0;
-    padding-left: 22px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    text-decoration: none;
 }
+.fav-card__btn:hover { opacity: .9; }
 
 /* ── Empty state ── */
 .fav-empty {
@@ -220,7 +240,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
 }
 .fav-empty__btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(235,84,54,.3); }
 
-/* ── Toast notification ── */
+/* ── Toast ── */
 .fav-toast {
     position: fixed;
     bottom: 28px;
@@ -241,15 +261,8 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
 .fav-toast.is-visible { transform: translateY(0); opacity: 1; }
 .fav-toast.is-error   { background: #ef4444; }
 
-/* ── Responsive ── */
-@media(max-width: 860px) {
-    .fav-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media(max-width: 560px) {
-    .fav-main { padding: 8px 12px 40px; }
-    .fav-section { padding: 18px 16px 22px; }
-    .fav-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-}
+[x-cloak] { display: none !important; }
+[data-search-hidden] { display: none !important; }
 </style>
 </head>
 <body class="player-dashboard-page" style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">
@@ -333,7 +346,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
   </header>
 
   {{-- ══════ FAVORIT PAGE ══════ --}}
-  <div class="fav-main">
+  <div class="fav-main" x-data="{ activeSport: 'all', openSportModal: false }">
     <h1 class="fav-page-title">Favoritmu</h1>
 
     @if(empty($grouped))
@@ -348,62 +361,99 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
         <p class="fav-empty__sub">Tandai lapangan favoritmu saat booking untuk memunculkannya di sini.</p>
         <a href="{{ url('/fields') }}" class="fav-empty__btn">Jelajahi Lapangan</a>
       </div>
-
     @else
-      {{-- Grouped by sport --}}
-      @foreach($grouped as $sport => $fields)
-        @php
-          $gradient = $sportGradients[$sport] ?? $sportGradients['Lainnya'];
-          $sportEmoji = match($sport) {
-              'Futsal'    => '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 3V21M3 12H21M6.5 6.5L17.5 17.5M17.5 6.5L6.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-              'Voli'      => '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 3C15.2 5.5 17 8.6 17 12.2M7 12.2C7 8.6 8.8 5.5 12 3M4.5 15.5C8.2 14.2 11.8 14.2 15.5 15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-              'Badminton' => '<svg viewBox="0 0 24 24" fill="none"><path d="M9 5L19 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="5" y="13" width="3" height="7" rx="1" transform="rotate(-45 5 13)" stroke="currentColor" stroke-width="2"/><path d="M14 4L20 10M12 6L18 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-              'Basket'    => '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 3V21M3 12H21M6 6C8.8 8 8.8 16 6 18M18 6C15.2 8 15.2 16 18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-              'Renang'    => '<svg viewBox="0 0 24 24" fill="none"><path d="M3 16C4.5 17.2 6 17.2 7.5 16C9 14.8 10.5 14.8 12 16C13.5 17.2 15 17.2 16.5 16C18 14.8 19.5 14.8 21 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 10L10 7L13 10M16 10V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-              'Tennis'    => '<svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="2"/><path d="M5.5 5.5C7.5 7 10.5 11 12.5 12.5M18.5 18.5L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="14" y="14" width="7" height="3" rx="1.5" transform="rotate(45 14 14)" stroke="currentColor" stroke-width="2"/></svg>',
-              default     => '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/></svg>',
-          };
-        @endphp
-        <div class="fav-section" data-sport-section="{{ $sport }}">
-          <div class="fav-section__header">
-            <h2 class="fav-section__sport">{{ $sport }}</h2>
-            @if(count($fields) > 3)
-              <a href="{{ url('/fields') }}" class="fav-section__see-all">Lihat semua</a>
-            @endif
-          </div>
+      {{-- Filter trigger --}}
+      <div class="fav-filters">
+        <button @click="openSportModal = true" class="fav-filter-btn">
+          <span x-text="activeSport === 'all' ? '🏅 Semua Olahraga' : activeSport"></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
 
-          <div class="fav-grid">
-            @foreach(array_slice($fields, 0, 3) as $field)  {{-- max 3 per row --}}
-              <div class="fav-card" data-field-id="{{ $field->id }}">
-
-                {{-- Remove button --}}
-                <button type="button" class="fav-card__remove" data-remove="{{ $field->id }}" title="Hapus dari favorit">✕</button>
-
-                {{-- Image --}}
-                <img src="{{ $field->image_url }}"
-                     alt="{{ $field->name }}"
-                     class="fav-card__img"
-                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                <div class="fav-card__img-placeholder" style="background:{{ $gradient }};display:none">{!! $sportEmoji !!}</div>
-
-                {{-- Meta --}}
-                <div class="fav-card__meta">
-                  <div class="fav-card__name-row">
-                    <span class="fav-card__pin">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" fill="#ef4444" stroke="#ef4444" stroke-width="1"/>
-                        <circle cx="12" cy="10.5" r="2.2" fill="#fff"/>
-                      </svg>
-                    </span>
-                    <p class="fav-card__name">{{ $field->name }}</p>
-                  </div>
-                  <p class="fav-card__dist">{{ $field->location }}</p>
-                </div>
+      {{-- Sport filter modal --}}
+      <div x-show="openSportModal" x-cloak
+           x-transition:enter="transition ease-out duration-200"
+           x-transition:enter-start="opacity-0"
+           x-transition:enter-end="opacity-100"
+           x-transition:leave="transition ease-in duration-150"
+           x-transition:leave-start="opacity-100"
+           x-transition:leave-end="opacity-0"
+           class="fixed inset-0 bg-[#11114b]/50 backdrop-blur-md z-[999] flex items-center justify-center p-4"
+           @click.self="openSportModal = false"
+           @keydown.escape.window="openSportModal = false">
+        <div class="bg-white rounded-[32px] w-full max-w-[420px] p-6 sm:p-8 shadow-2xl border border-slate-100"
+             x-show="openSportModal"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="scale-90 translate-y-6 opacity-0"
+             x-transition:enter-end="scale-100 translate-y-0 opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="scale-100 translate-y-0 opacity-100"
+             x-transition:leave-end="scale-90 translate-y-6 opacity-0">
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 flex items-center justify-center text-lg">🏅</div>
+              <div>
+                <h3 class="text-lg font-extrabold text-[#02025b] m-0">Pilih Olahraga</h3>
+                <p class="text-xs font-semibold text-slate-400 m-0 mt-0.5">Filter lapangan favorit berdasarkan kategori</p>
               </div>
+            </div>
+            <button @click="openSportModal = false" class="p-2 bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-2.5 max-h-[320px] overflow-y-auto pr-1">
+            <button @click="activeSport='all'; openSportModal=false"
+                    class="flex flex-col items-center gap-1.5 p-3.5 border-2 rounded-2xl cursor-pointer transition-all duration-200 font-inherit text-xs font-extrabold uppercase tracking-wide"
+                    :class="activeSport==='all' ? 'border-indigo-400 bg-indigo-50/80 text-indigo-700' : 'border-slate-100 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/30'">
+              <span class="text-xl">🏅</span>
+              <span>Semua</span>
+            </button>
+            @foreach($favAllSports as $fs)
+            <button @click="activeSport='{{ $fs }}'; openSportModal=false"
+                    class="flex flex-col items-center gap-1.5 p-3.5 border-2 rounded-2xl cursor-pointer transition-all duration-200 font-inherit text-xs font-extrabold uppercase tracking-wide"
+                    :class="activeSport==='{{ $fs }}' ? 'border-indigo-400 bg-indigo-50/80 text-indigo-700' : 'border-slate-100 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/30'">
+              <span class="text-xl">{{ $favSportEmoji[$fs] ?? '🏆' }}</span>
+              <span>{{ $fs }}</span>
+            </button>
             @endforeach
           </div>
         </div>
-      @endforeach
+      </div>
+
+      {{-- Card grid --}}
+      <div class="fav-grid">
+        @foreach($allFavFields as $item)
+        @php $field = $item->field; $sport = $item->sport; @endphp
+        <div class="fav-card" x-show="activeSport==='all' || activeSport==='{{ $sport }}'" data-field-id="{{ $field->id }}" data-sport="{{ $sport }}" onclick="window.location.href='{{ route('booking.show', $field->id) }}'">
+          {{-- Image wrap --}}
+          <div class="fav-card__img-wrap">
+            <img src="{{ $field->image_url }}" alt="{{ $field->name }}" class="fav-card__img">
+
+            {{-- Heart toggle --}}
+            <button type="button" class="fav-card__heart" onclick="event.stopPropagation();" data-toggle="{{ $field->id }}">❤️</button>
+
+            {{-- Rating --}}
+            <div class="fav-card__rating">
+              <span>⭐</span>
+              <span>{{ ($field->review_count ?? 0) > 0 ? number_format($field->rating ?? 0, 1) : 'Baru' }}</span>
+            </div>
+          </div>
+
+          {{-- Body --}}
+          <div class="fav-card__body">
+            <h3 class="fav-card__name">{{ $field->name }}</h3>
+            <p class="fav-card__loc">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {{ $field->location }}
+            </p>
+            <div class="fav-card__footer">
+              <span class="fav-card__price">{{ $field->formattedPrice() }}</span>
+              <a href="{{ route('booking.show', $field->id) }}" class="fav-card__btn">Pesan →</a>
+            </div>
+          </div>
+        </div>
+        @endforeach
+      </div>
     @endif
   </div>
 
@@ -437,15 +487,14 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2800);
   }
 
-  /* ── remove favorite ── */
+  /* ── toggle favorite via heart ── */
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-  document.querySelectorAll('[data-remove]').forEach(btn => {
+  document.querySelectorAll('[data-toggle]').forEach(btn => {
     btn.addEventListener('click', async e => {
       e.stopPropagation();
-      const fieldId = btn.dataset.remove;
+      const fieldId = btn.dataset.toggle;
       const card    = btn.closest('.fav-card');
-      const section = btn.closest('.fav-section');
 
       try {
         const res = await fetch('{{ route("favorite.toggle") }}', {
@@ -462,21 +511,12 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
         const data = await res.json();
 
         if (data.status === 'removed') {
-          /* animate card out */
           card.style.transition = 'all .3s ease';
           card.style.opacity    = '0';
           card.style.transform  = 'scale(.85)';
           setTimeout(() => {
             card.remove();
-            /* if section empty, remove section */
-            const remaining = section.querySelectorAll('.fav-card');
-            if (remaining.length === 0) {
-              section.style.transition = 'opacity .3s ease';
-              section.style.opacity    = '0';
-              setTimeout(() => section.remove(), 300);
-            }
-            /* if no sections left, show empty state */
-            if (document.querySelectorAll('.fav-section').length === 0) {
+            if (document.querySelectorAll('.fav-card').length === 0) {
               location.reload();
             }
           }, 300);
@@ -493,8 +533,8 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
     const kw = e.target.value.toLowerCase().trim();
     document.querySelectorAll('.fav-card').forEach(card => {
       const name = card.querySelector('.fav-card__name')?.textContent.toLowerCase() || '';
-      const loc  = card.querySelector('.fav-card__dist')?.textContent.toLowerCase() || '';
-      card.style.display = (!kw || name.includes(kw) || loc.includes(kw)) ? '' : 'none';
+      const loc  = card.querySelector('.fav-card__loc')?.textContent.toLowerCase() || '';
+      card.toggleAttribute('data-search-hidden', !!kw && !name.includes(kw) && !loc.includes(kw));
     });
   });
 })();

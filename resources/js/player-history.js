@@ -85,4 +85,33 @@ ready(() => {
     
     // Apply once on load so empty-state visibility is always in sync
     applyStatFilter(initStatus);
+
+    const historyTabs = Array.from(document.querySelectorAll('[data-histab]'));
+    const historyPanels = {
+        pesanan: document.getElementById('histab-pesanan'),
+        ulasan: document.getElementById('histab-ulasan'),
+    };
+
+    const openHistoryTab = (name) => {
+        if (!historyPanels[name]) return;
+
+        historyTabs.forEach((tab) => {
+            const active = tab.dataset.histab === name;
+            tab.classList.toggle('is-active', active);
+            tab.setAttribute('aria-selected', String(active));
+        });
+
+        Object.entries(historyPanels).forEach(([key, panel]) => {
+            panel?.classList.toggle('is-active', key === name);
+        });
+    };
+
+    historyTabs.forEach((tab) => {
+        tab.addEventListener('click', () => openHistoryTab(tab.dataset.histab));
+    });
+
+    const initTab = urlParams.get('tab') || window.location.hash.replace('#', '');
+    if (initTab) {
+        openHistoryTab(initTab);
+    }
 });

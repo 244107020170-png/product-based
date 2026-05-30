@@ -7,19 +7,20 @@
     $bio       = $user->bio ?: 'Hei! Saya suka olahraga dan senang bertemu teman baru.';
     $tags      = $user->sportTags();
 
-    /* Badge logic — sama persis dengan halaman Keahlian */
+    /* Badge logic — booking=1, match=2, review=3 */
     $badgeBookings = \App\Models\Booking::where('user_id', $user->id)
         ->whereIn('status', ['selesai', 'confirmed', 'pending'])
         ->count();
     $badgeMatches = \Illuminate\Support\Facades\DB::table('match_players')
         ->where('user_id', $user->id)
         ->count();
-    $badgePoints = $badgeBookings + $badgeMatches;
+    $badgeReviews = \App\Models\Review::where('user_id', $user->id)->count();
+    $badgePoints = ($badgeBookings * 1) + ($badgeMatches * 2) + ($badgeReviews * 3);
 
     $badgeDefs = [
-        ['name' => 'Pemula', 'range' => '1-5 Match', 'min' => 0, 'max' => 5, 'icon' => '👶', 'earned' => $badgePoints >= 1, 'color' => '#6b7280'],
-        ['name' => 'Aktif', 'range' => '6-20 Match', 'min' => 6, 'max' => 20, 'icon' => '🌱', 'earned' => $badgePoints >= 6, 'color' => '#1d6fcf'],
-        ['name' => 'Pro', 'range' => '>20 Match', 'min' => 21, 'max' => PHP_INT_MAX, 'icon' => '🌟', 'earned' => $badgePoints >= 21, 'color' => '#7c3aed'],
+        ['name' => 'Pemula', 'range' => '0-5 Poin', 'min' => 0, 'max' => 5, 'icon' => '👶', 'earned' => $badgePoints >= 1, 'color' => '#6b7280'],
+        ['name' => 'Aktif', 'range' => '6-20 Poin', 'min' => 6, 'max' => 20, 'icon' => '🌱', 'earned' => $badgePoints >= 6, 'color' => '#1d6fcf'],
+        ['name' => 'Pro', 'range' => '>20 Poin', 'min' => 21, 'max' => PHP_INT_MAX, 'icon' => '🌟', 'earned' => $badgePoints >= 21, 'color' => '#7c3aed'],
     ];
 
     $currentBadgeLevel = 'Pemula';
@@ -33,8 +34,7 @@
         'Aktif' => '#1d6fcf',
         default => '#6b7280',
     };
-    $playerChar = asset('assets/images/characters/player.png');
-    $reviewChar = asset('assets/images/characters/review.png');
+    $thinkChar = asset('assets/images/characters/think.png');
     $coverImg   = $user->cover_photo ? (str_starts_with($user->cover_photo, 'covers/') ? asset('storage/' . $user->cover_photo) : $user->cover_photo) : asset('assets/images/bg/Explore.png');
 
     /* Sidebar */
@@ -56,23 +56,28 @@
 
     /* Helper: build match card data from DB record */
     $buildCard = function($m) {
-        $cover = asset('assets/images/bg/Explore.png');
+        $field = $m->field;
+        $cover = $field?->image_url ?? asset('assets/images/bg/Explore.png');
         $memberCount = optional($m->players)->count() ?? 0;
         $memberCount += 1; // +1 creator
+        $matchDateTime = \Carbon\Carbon::parse($m->date . ' ' . ($m->time ?: '00:00:00'));
+        $isPast = $matchDateTime->isPast();
         return [
             'img'     => $cover,
             'type'    => $m->type === 'public' ? 'Publik' : 'Pribadi',
             'title'   => $m->title,
-            'host'    => optional($m->creator)->name ?? '-',
+            'team'    => optional($m->creator)->name ?? '-',
             'members' => $memberCount.' Member',
-            'lokasi'  => optional($m->field)->location ?? (optional($m->field)->name ?? '-'),
+            'sport'   => $m->sport ?: ($field?->type ?: 'Olahraga'),
+            'lokasi'  => $field?->location ?? ($field?->name ?? '-'),
             'waktu'   => $m->timeRange(),
             'tanggal' => $m->formattedDate(),
+            'status'  => $isPast ? 'Selesai' : 'Akan Datang',
+            'statusClass' => $isPast ? 'history-status--selesai' : 'history-status--akan',
         ];
     };
 
     $historiCards  = $historiTim->map($buildCard);
-    $privateCards  = $privateMatch->map($buildCard);
 
     $favFieldCards = $favoriteFields->map(function ($fav) {
         $f = $fav->field;
@@ -81,8 +86,9 @@
             'id'       => $f->id,
             'name'     => $f->name,
             'location' => $f->location ?? 'Lokasi tidak tersedia',
-            'rating'   => $f->rating ?? '4.8',
+            'rating'   => $f->rating ?? 0,
             'image'    => $f->image_url,
+            'price'    => method_exists($f, 'formattedPrice') ? $f->formattedPrice() : 'Rp' . number_format($f->price_per_hour ?? 0, 0, ',', '.') . '/jam',
         ];
     })->filter();
 @endphp
@@ -97,6 +103,7 @@
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
         'resources/css/player-profile-view.css',
+        'resources/css/player-history.css',
         'resources/js/player-dashboard.js',
     ])
 </head>
@@ -243,7 +250,7 @@
             </div>
 
             {{-- TABS --}}
-            <div class="profview-tabs" role="tablist">
+            <div class="profview-tabs" role="tablist" aria-label="Aktivitas profil">
                 <button class="profview-tab is-active" data-profview-tab="histori" role="tab" aria-selected="true" aria-controls="panel-histori">Histori Tim</button>
                 <button class="profview-tab" data-profview-tab="private" role="tab" aria-selected="false" aria-controls="panel-private">Pribadi</button>
                 <button class="profview-tab" data-profview-tab="favorit" role="tab" aria-selected="false" aria-controls="panel-favorit">Favorit</button>
@@ -254,13 +261,13 @@
             <div class="profview-panel is-active" id="panel-histori" role="tabpanel">
                 @if($historiCards->isEmpty())
                     <div class="profview-empty-char">
-                        <img src="{{ $playerChar }}" alt="" class="profview-empty-char__img">
-                        <p class="profview-empty-char__text">Wah, kayanya kamu belum pernah ikut match nih!</p>
+                        <img src="{{ $thinkChar }}" alt="" class="profview-empty-char__img">
+                        <p class="profview-empty-char__text">Belum ada riwayat pertandingan.</p>
                     </div>
                 @else
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span style="font-size: 14px; font-weight: 700; color: #02025b;">Riwayat pertandingan yang kamu ikuti</span>
-                    <a href="{{ route('history.index') }}" style="padding: 8px 16px; border-radius: 8px; background: rgba(0,0,77,.06); color: #02025b; font-weight: 700; font-size: 12px; text-decoration: none; transition: background .2s;" onmouseover="this.style.background='rgba(0,0,77,.12)'" onmouseout="this.style.background='rgba(0,0,77,.06)'">Lihat semua</a>
+                <div class="profview-panel-head">
+                    <span class="profview-panel-title">Riwayat pertandingan yang kamu ikuti</span>
+                    <a href="{{ route('history.index') }}" class="profview-see-all">Lihat Semua</a>
                 </div>
                 <div class="profview-match-list" id="scroll-histori">
                     @foreach($historiCards as $m)
@@ -272,15 +279,30 @@
 
             {{-- Panel: Pribadi --}}
             <div class="profview-panel" id="panel-private" role="tabpanel">
-                @if($privateCards->isEmpty())
+                @if($privateActivities->isEmpty())
                     <div class="profview-empty-char">
-                        <img src="{{ $playerChar }}" alt="" class="profview-empty-char__img">
-                        <p class="profview-empty-char__text">Wah, kayanya kamu belum pernah bikin tim nih!</p>
+                        <img src="{{ $thinkChar }}" alt="" class="profview-empty-char__img">
+                        <p class="profview-empty-char__text">Belum ada aktivitas pribadi.</p>
                     </div>
                 @else
-                <div class="profview-match-list" id="scroll-private">
-                    @foreach($privateCards as $m)
-                        @include('profile.partials.match-card', ['match'=>$m])
+                <div class="profview-panel-head">
+                    <span class="profview-panel-title">Aktivitas pribadi terbaru</span>
+                    <a href="{{ route('activity.index') }}" class="profview-see-all">Lihat Semua</a>
+                </div>
+                <div class="profview-activity-list" id="scroll-private">
+                    @foreach($privateActivities as $activity)
+                    <article class="profview-activity-card">
+                        <div class="profview-activity-card__body">
+                            <h3 class="profview-activity-card__title">{{ $activity['name'] }}</h3>
+                            <div class="profview-activity-card__meta">
+                                <span>{{ $activity['date_label'] }}</span>
+                                @if($activity['location'])
+                                <span>{{ $activity['location'] }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        <span class="history-status {{ $activity['status_class'] }}">{{ $activity['status'] }}</span>
+                    </article>
                     @endforeach
                 </div>
                 @endif
@@ -290,28 +312,29 @@
             <div class="profview-panel" id="panel-favorit" role="tabpanel">
                 @if($favFieldCards->isEmpty())
                 <div class="profview-empty-char">
-                    <img src="{{ $playerChar }}" alt="" class="profview-empty-char__img">
-                    <p class="profview-empty-char__text">Wah, kayanya kamu belum pernah tambah favorit nih!</p>
+                    <img src="{{ $thinkChar }}" alt="" class="profview-empty-char__img">
+                    <p class="profview-empty-char__text">Belum memiliki lapangan favorit.</p>
                 </div>
                 @else
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+                <div class="profview-panel-head">
+                    <span class="profview-panel-title">Lapangan favorit kamu</span>
+                    <a href="{{ route('favorite.index') }}" class="profview-see-all">Lihat Semua</a>
+                </div>
+                <div class="profview-favorite-grid">
                     @foreach($favFieldCards as $fc)
-                    <a href="{{ route('booking.show', $fc['id']) }}" style="text-decoration: none; color: inherit; display: block; background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,77,.08); overflow: hidden; transition: all .2s; box-shadow: 0 2px 8px rgba(0,0,0,.04);" onmouseover="this.style.boxShadow='0 8px 20px rgba(0,0,0,.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,.04)';this.style.transform='none'">
-                        <div style="height: 140px; overflow: hidden; background: #e2e8f0;">
-                            <img src="{{ $fc['image'] }}" alt="{{ $fc['name'] }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <a href="{{ route('booking.show', $fc['id']) }}" class="profview-field-card">
+                        <div class="profview-field-card__image">
+                            <img src="{{ $fc['image'] }}" alt="{{ $fc['name'] }}">
                         </div>
-                        <div style="padding: 14px;">
-                            <h4 style="margin: 0 0 4px; font-size: 15px; font-weight: 800; color: #02025b;">{{ $fc['name'] }}</h4>
-                            <p style="margin: 0 0 6px; font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                {{ $fc['location'] }}
-                            </p>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 13px; font-weight: 700; color: #02025b;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" style="display: inline; vertical-align: -2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <div class="profview-field-card__body">
+                            <h4 class="profview-field-card__name">{{ $fc['name'] }}</h4>
+                            <p class="profview-field-card__location">{{ $fc['location'] }}</p>
+                            <div class="profview-field-card__bottom">
+                                <span class="profview-field-card__rating">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                     {{ $fc['rating'] }}
                                 </span>
-                                <span style="background: #02025b; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">Pesan</span>
+                                <span class="profview-field-card__price">{{ $fc['price'] }}</span>
                             </div>
                         </div>
                     </a>
@@ -322,10 +345,61 @@
 
             {{-- Panel: Review --}}
             <div class="profview-panel" id="panel-ulasan" role="tabpanel">
-                <div class="profview-empty-char">
-                    <img src="{{ $reviewChar }}" alt="" class="profview-empty-char__img">
-                    <p class="profview-empty-char__text">Wah, kayanya kamu belum pernah me-review nih!</p>
+                @if($userReviews->isNotEmpty())
+                <div class="profview-panel-head">
+                    <span class="profview-panel-title">Ulasan terbaru kamu</span>
+                    <a href="{{ route('history.index', ['tab' => 'ulasan']) }}" class="profview-see-all">Lihat Semua</a>
                 </div>
+                <div class="hist-reviews-list profview-reviews-list">
+                    @foreach($userReviews as $rv)
+                    @php
+                        $rvField = $rv->field;
+                        $photos = $rv->photos ?? [];
+                    @endphp
+                    <div class="hist-review-card">
+                        <div class="hist-review-card__avatar">
+                            <img src="{{ $user->avatarUrl() }}" alt="">
+                        </div>
+                        <div class="hist-review-card__body">
+                            <div class="hist-review-card__top">
+                                <div>
+                                    <p class="hist-review-card__field">{{ $rvField?->name ?? 'Lapangan' }}</p>
+                                    <div class="hist-review-card__stars">
+                                        @for($i = 1; $i <= 5; $i++)
+                                        <span style="color:{{ $i <= $rv->rating ? '#f59e0b' : '#e2e8f0' }};">★</span>
+                                        @endfor
+                                    </div>
+                                </div>
+                                <span class="hist-review-card__date">{{ \Carbon\Carbon::parse($rv->created_at)->locale('id')->translatedFormat('j F Y') }}</span>
+                            </div>
+                            @if($rv->review)
+                            <p class="hist-review-card__text">{{ $rv->review }}</p>
+                            @endif
+                            @if(count($photos) > 0)
+                            <div class="hist-review-card__photos">
+                                @foreach(array_slice($photos, 0, 3) as $photo)
+                                <a href="{{ asset('storage/'.$photo) }}" target="_blank" class="hist-review-card__photo">
+                                    <img src="{{ asset('storage/'.$photo) }}" alt="Foto review">
+                                </a>
+                                @endforeach
+                                @if(count($photos) > 3)
+                                <div class="hist-review-card__photo-more">+{{ count($photos) - 3 }}</div>
+                                @endif
+                            </div>
+                            @endif
+                            @if($rv->booking_id)
+                            <a href="{{ route('booking.detail', $rv->booking_id) }}" class="hist-review-card__detail">Lihat Detail</a>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="profview-empty-char">
+                    <img src="{{ $thinkChar }}" alt="" class="profview-empty-char__img">
+                    <p class="profview-empty-char__text">Belum pernah memberikan ulasan.</p>
+                </div>
+                @endif
             </div>
 
         </div>{{-- /card --}}

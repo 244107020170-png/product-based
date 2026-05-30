@@ -132,6 +132,10 @@
                         @php
                             $data = $notif->data;
                             $match = \App\Models\Matchs::find($data['match_id'] ?? null);
+                            $_mapsLink = $data['maps_link'] ?? null;
+                            if (!$_mapsLink && ($data['booking_id'] ?? null) && in_array($data['type'] ?? '', ['booking_confirmed', 'booking_payment_received'])) {
+                                $_mapsLink = optional(optional(\App\Models\Booking::find($data['booking_id']))->field)->maps_link;
+                            }
                         @endphp
                         <div class="notif-item {{ $notif->unread() ? 'unread' : '' }}">
                             @if($notif->unread())
@@ -141,10 +145,22 @@
                             @endif
                             <div class="notif-content">
                                 <p class="notif-text">
-                                    <strong>{{ $data['user_name'] ?? 'Pemain' }}</strong>
                                     @if(($data['type'] ?? '') === 'payment_claimed')
-                                        mengklaim sudah bayar untuk pertandingan <strong>{{ $data['match_title'] ?? '#' }}</strong>
+                                        <strong>{{ $data['user_name'] ?? 'Pemain' }}</strong> mengklaim sudah bayar untuk pertandingan <strong>{{ $data['match_title'] ?? '#' }}</strong>
                                         — Rp{{ number_format($data['amount'] ?? 0, 0, ',', '.') }}
+                                    @elseif(($data['type'] ?? '') === 'booking_payment_received')
+                                        Pembayaran untuk <strong>{{ $data['field_name'] ?? '' }}</strong> diterima, menunggu konfirmasi owner
+                                        @if($data['booking_id'] ?? null)
+                                            &nbsp;<a href="{{ route('booking.detail', $data['booking_id']) }}" style="color:#3b82f6;font-weight:700;text-decoration:none;">Lihat</a>
+                                        @endif
+                                    @elseif(($data['type'] ?? '') === 'booking_confirmed')
+                                        Booking <strong>{{ $data['field_name'] ?? '' }}</strong> telah dikonfirmasi
+                                        @if(!empty($_mapsLink))
+                                            &nbsp;<a href="{{ $_mapsLink }}" target="_blank" rel="noopener noreferrer" style="color:#3b82f6;font-weight:600;text-decoration:none;white-space:nowrap;" title="Buka Google Maps"><svg viewBox="0 0 24 24" fill="none" width="16" height="16" style="vertical-align:middle;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#3b82f6"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg></a>
+                                        @endif
+                                        @if($data['booking_id'] ?? null)
+                                            &nbsp;<a href="{{ route('booking.detail', $data['booking_id']) }}" style="color:#3b82f6;font-weight:700;text-decoration:none;">Lihat</a>
+                                        @endif
                                     @else
                                         {{ $data['message'] ?? '' }}
                                     @endif

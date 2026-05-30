@@ -13,7 +13,7 @@ class HistoryController extends Controller
     {
         $user = Auth::user();
 
-        $query = Booking::with('field')
+        $query = Booking::with('field', 'review')
             ->where('user_id', $user->id)
             ->orderBy('date', 'desc')
             ->orderBy('start_time', 'desc');
@@ -59,33 +59,46 @@ class HistoryController extends Controller
             ->get();
 
         // Stats — include match joins in counts
-        $allBookings  = Booking::where('user_id', $user->id)->get();
-        $totalSemua   = $allBookings->count() + $matchJoins->count();
-        $totalSelesai = $allBookings->whereIn('status', ['selesai', 'completed'])->count()
-            + $matchJoins->filter(function ($mp) {
-                return $mp->match && $mp->match->date < now()->toDateString();
-            })->count();
-        $totalAkan    = $allBookings->whereIn('status', ['confirmed', 'pending', 'waiting_payment', 'waiting_confirmation', 'paid'])->count()
-            + $matchJoins->filter(function ($mp) {
-                return $mp->match && $mp->match->date >= now()->toDateString();
-            })->count();
+        // Apply same auto-selesai logic as the view:
+        // non-cancelled bookings whose end time has passed → selesai
+        $now = now();
+        $allBookings = Booking::where('user_id', $user->id)->get();
+        $totalSemua  = $allBookings->count() + $matchJoins->count();
+
+        $nonSelesaiStatuses = ['cancelled', 'expired', 'rejected'];
+        $totalSelesai = $allBookings->filter(function ($b) use ($nonSelesaiStatuses, $now) {
+            if (in_array($b->status, $nonSelesaiStatuses)) return false;
+            $end = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
+            return $end->isPast();
+        })->count() + $matchJoins->filter(function ($mp) {
+            return $mp->match && $mp->match->date < now()->toDateString();
+        })->count();
+
+        $totalAkan = $allBookings->filter(function ($b) use ($nonSelesaiStatuses, $now) {
+            if (in_array($b->status, $nonSelesaiStatuses)) return false;
+            $end = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
+            return !$end->isPast();
+        })->count() + $matchJoins->filter(function ($mp) {
+            return $mp->match && $mp->match->date >= now()->toDateString();
+        })->count();
+
         $totalDibatal = $allBookings->whereIn('status', ['cancelled', 'expired', 'rejected'])->count();
 
         // Total pengeluaran — responsive to active filter
         $totalPengeluaran = $bookings
             ->reject(fn($b) => in_array($b->status, ['cancelled', 'expired', 'rejected']))
-            ->sum(function ($booking) {
-                $field = $booking->field;
-                if (!$field) return 0;
-                $start = \Carbon\Carbon::parse($booking->start_time);
-                $end   = \Carbon\Carbon::parse($booking->end_time);
-                $hours = max(1, $start->diffInHours($end));
-                return $field->price_per_hour * $hours;
-            });
+            ->sum(fn($booking) => $booking->total_price);
+
+        // User's reviews
+        $userReviews = \App\Models\Review::with('field')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('history.index', compact(
             'bookings',
             'matchJoins',
+            'userReviews',
             'totalSemua',
             'totalSelesai',
             'totalAkan',

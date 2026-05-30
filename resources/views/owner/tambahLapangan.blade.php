@@ -112,7 +112,21 @@
                     </div>
                 </div>
 
-                {{-- Baris 3: Jam Operasional --}}
+                {{-- Baris 3: Lokasi & Maps Link --}}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lokasi / Alamat</label>
+                        <input type="text" name="location" class="form-control" value="{{ isset($field) ? $field->location : '' }}" placeholder="Contoh: Jl. Merdeka No. 123, Malang" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Google Maps Link <span style="color:#94a3b8;font-weight:400;">(opsional)</span></label>
+                        <input type="url" name="maps_link" class="form-control" value="{{ isset($field) ? $field->maps_link : '' }}" placeholder="https://maps.app.goo.gl/...">
+                        <small class="form-help">Tempel link Google Maps untuk arah ke lapangan</small>
+                    </div>
+                </div>
+
+                {{-- Baris 4: Jam Operasional --}}
                 <div class="time-picker-section">
                     <label class="section-label">Jam Operasional</label>
                     <div class="time-picker-row">

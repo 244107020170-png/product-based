@@ -211,7 +211,7 @@
 <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $popularField->name }}" src="{{ $popularField->image_url }}" onerror="this.style.display='none'">
 <div class="absolute top-md right-md bg-white/90 backdrop-blur-md px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
 <span class="material-symbols-outlined text-orange-400 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                            {{ number_format($popularField->rating ?? 4.5, 1) }}
+                            {{ number_format($popularField->rating ?? 0, 1) }}
 </div>
 @if($popularField->bookings_count >= 5)
 <div class="absolute top-md left-md bg-primary text-white px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
@@ -246,6 +246,108 @@
 </div>
 @endforelse
 </div>
+</div>
+</section>
+<!-- Promo & Diskon -->
+<section class="py-xl">
+<div class="container mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h2 class="font-headline-lg text-headline-lg">Promo & Diskon</h2>
+<p class="text-secondary">Jangan lewatkan penawaran spesial dari berbagai lapangan.</p>
+</div>
+<button @guest onclick="showLoginPopup()" @endguest class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
+    Lihat Semua <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+@php
+    $promoDiscounts = \App\Models\Discount::with('field')
+        ->active()
+        ->orderBy('value', 'desc')
+        ->get();
+
+    $promoFieldItems = collect();
+    foreach ($promoDiscounts as $promo) {
+        if ($promo->field_id) {
+            if ($promo->field && $promo->field->is_available) {
+                $promoFieldItems->push((object)[
+                    'promo' => $promo,
+                    'field' => $promo->field,
+                ]);
+            }
+        } else {
+            $ownerFields = \App\Models\Field::where('owner_id', $promo->owner_id)
+                ->where('is_available', true)
+                ->get();
+            foreach ($ownerFields as $f) {
+                $promoFieldItems->push((object)[
+                    'promo' => $promo,
+                    'field' => $f,
+                ]);
+            }
+        }
+    }
+    $promoFieldItems = $promoFieldItems->shuffle()->take(3);
+@endphp
+@if($promoFieldItems->isNotEmpty())
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+    @foreach($promoFieldItems as $item)
+    @php $promo = $item->promo; $f = $item->field; @endphp
+    <div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+        <div class="h-64 overflow-hidden relative">
+            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $f->name }}" src="{{ $f->image_url }}" onerror="this.style.display='none'">
+            <div class="absolute top-md left-md flex gap-xs flex-wrap">
+                @if($promo->type === 'percentage')
+                <div class="bg-red-500 text-white px-lg py-xs rounded-full font-label-sm font-bold flex items-center gap-xs shadow-lg shadow-red-500/30">
+                    <span>🔥</span>
+                    {{ (int)$promo->value }}% OFF
+                </div>
+                @else
+                <div class="bg-red-500 text-white px-lg py-xs rounded-full font-label-sm font-bold flex items-center gap-xs shadow-lg shadow-red-500/30">
+                    <span>🔥</span>
+                    Hemat Rp{{ number_format((int)$promo->value, 0, ',', '.') }}
+                </div>
+                @endif
+            </div>
+            <div class="absolute top-md right-md bg-white/90 backdrop-blur-md px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
+                <span class="material-symbols-outlined text-orange-400 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                {{ number_format($f->rating ?? 0, 1) }}
+            </div>
+        </div>
+        <div class="p-lg">
+            <div class="flex items-center gap-2 mb-xs">
+                <span class="text-primary text-label-sm">{{ strtoupper($f->type ?? 'OLAHRAGA') }}</span>
+                <span class="px-md py-[2px] rounded-full text-[10px] font-bold" style="background:#fef3c7;color:#92400e;">
+                    {{ \Carbon\Carbon::parse($promo->end_date)->locale('id')->translatedFormat('d M') }}
+                </span>
+            </div>
+            <h5 class="font-title-lg text-title-lg mb-base">{{ $f->name }}</h5>
+            <p class="font-label-sm text-secondary mb-base">{{ $promo->name }}</p>
+            <div class="flex items-center gap-xs text-secondary mb-md">
+                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                <span class="text-label-sm">{{ $f->location ?: 'Lokasi tidak tersedia' }}</span>
+            </div>
+            <div class="flex flex-col gap-1 mb-md">
+                @php
+                    $discountedPrice = $promo->type === 'percentage'
+                        ? (int)round($f->price_per_hour * (1 - $promo->value / 100))
+                        : max(0, $f->price_per_hour - (int)$promo->value);
+                @endphp
+                <span class="text-xl font-bold text-red-500">Rp{{ number_format($discountedPrice, 0, ',', '.') }}/jam</span>
+                <span class="text-sm text-gray-400 line-through">Rp{{ number_format($f->price_per_hour, 0, ',', '.') }}/jam</span>
+            </div>
+            <button @guest onclick="showLoginPopup()" @endguest onclick="window.location.href='{{ route('login') }}'" class="block w-full bg-red-500 text-white text-center py-md rounded-full font-label-md font-bold shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all">
+                Pesan Sekarang
+            </button>
+        </div>
+    </div>
+    @endforeach
+</div>
+@else
+<div class="text-center py-xl">
+    <p class="text-secondary">Belum ada promo aktif saat ini.</p>
+</div>
+@endif
 </div>
 </section>
 <!-- CTA Section -->

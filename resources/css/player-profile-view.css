@@ -217,30 +217,34 @@
 .profview-tabs {
     display: flex;
     align-items: stretch;
+    flex-wrap: wrap;
     gap: 8px;
-    border-bottom: 2px solid rgba(0, 0, 77, 0.09);
+    border: 1px solid rgba(0, 0, 77, 0.08);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.76);
     margin: 0 0 20px;
-    padding: 0 4px;
+    padding: 6px;
 }
 
 .profview-tab {
+    flex: 1 1 140px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 22px;
+    min-width: 0;
+    padding: 11px 18px;
     border: 0;
-    border-bottom: 3px solid transparent;
+    border-radius: 12px;
     background: transparent;
     color: rgba(0, 0, 77, 0.52);
     font-size: 0.92rem;
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    position: relative;
-    bottom: -2px;
-    transition: color 0.18s ease, border-color 0.18s ease;
+    transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
     text-decoration: none;
-    white-space: nowrap;
+    white-space: normal;
+    text-align: center;
 }
 
 .profview-tab:hover {
@@ -249,7 +253,8 @@
 
 .profview-tab.is-active {
     color: var(--pd-primary);
-    border-bottom-color: var(--pd-accent);
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(0, 0, 77, 0.08);
 }
 
 /* ---- Tab panel container ---- */
@@ -260,6 +265,40 @@
 
 .profview-panel.is-active {
     display: block;
+}
+
+.profview-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.profview-panel-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+}
+
+.profview-see-all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: rgba(0, 0, 77, 0.06);
+    color: var(--pd-primary);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.profview-see-all:hover {
+    background: rgba(0, 0, 77, 0.12);
+    transform: translateY(-1px);
 }
 
 /* ---- Match History List ---- */
@@ -379,6 +418,139 @@
     margin: 0;
 }
 
+.profview-match-card .history-status {
+    padding: 3px 10px;
+    font-size: 0.7rem;
+}
+
+.profview-activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.profview-activity-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    border: 1px solid rgba(0, 0, 77, 0.07);
+    border-radius: 16px;
+    background: #fff;
+    padding: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 77, 0.05);
+}
+
+.profview-activity-card__body {
+    min-width: 0;
+}
+
+.profview-activity-card__title {
+    margin: 0 0 7px;
+    font-size: 0.96rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+    line-height: 1.25;
+}
+
+.profview-activity-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px 14px;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(0, 0, 77, 0.58);
+}
+
+.profview-favorite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.profview-field-card {
+    display: block;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 77, 0.08);
+    border-radius: 14px;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 77, 0.04);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.profview-field-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 77, 0.1);
+}
+
+.profview-field-card__image {
+    height: 140px;
+    overflow: hidden;
+    background: #e2e8f0;
+}
+
+.profview-field-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.profview-field-card__body {
+    padding: 14px;
+}
+
+.profview-field-card__name {
+    margin: 0 0 5px;
+    font-size: 0.94rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+}
+
+.profview-field-card__location {
+    margin: 0 0 10px;
+    font-size: 0.78rem;
+    color: rgba(0, 0, 77, 0.58);
+    line-height: 1.4;
+}
+
+.profview-field-card__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.profview-field-card__rating,
+.profview-field-card__price {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--pd-primary);
+}
+
+.profview-field-card__rating svg {
+    width: 14px;
+    height: 14px;
+    color: #f59e0b;
+}
+
+.profview-field-card__price {
+    padding: 4px 9px;
+    border-radius: 8px;
+    background: var(--pd-primary);
+    color: #fff;
+}
+
+.profview-reviews-list {
+    padding: 0;
+}
+
 /* ---- Empty state dengan karakter ---- */
 .profview-empty-char {
     display: flex;
@@ -444,6 +616,7 @@
     }
 
     .profview-tabs {
+        flex-wrap: nowrap;
         overflow-x: auto;
         scrollbar-width: none;
     }
@@ -453,13 +626,14 @@
     }
 
     .profview-tab {
+        flex: 0 0 auto;
         padding: 9px 14px;
         white-space: nowrap;
         font-size: 0.85rem;
     }
 
     .profview-match-card {
-        grid-template-columns: 130px 1fr auto;
+        grid-template-columns: 130px 1fr;
     }
 }
 
@@ -472,12 +646,35 @@
         grid-template-columns: 1fr;
     }
 
+    .profview-match-card__img-wrap {
+        width: 100%;
+        min-height: 120px;
+    }
+
     .profview-match-card__img,
     .profview-match-card__img-placeholder {
         min-height: 120px;
     }
 
-    .profview-match-card {
-        grid-template-columns: 120px 1fr;
+    .profview-match-card__body {
+        padding: 14px;
+    }
+
+    .profview-match-card__details {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .profview-match-card__details .sep {
+        display: none;
+    }
+
+    .profview-activity-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profview-favorite-grid {
+        grid-template-columns: 1fr;
     }
 }

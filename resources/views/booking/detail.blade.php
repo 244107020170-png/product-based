@@ -82,7 +82,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Detail Booking – {{ config('app.name', 'Spies Sport') }}</title>
+    <title>Detail Pemesanan – {{ config('app.name', 'Spies Sport') }}</title>
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
@@ -170,7 +170,7 @@
             
 <div style="background: linear-gradient(135deg, #02025b 0%, #11114b 100%); color: white; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
                     <div>
-                        <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800;">Detail Booking</h1>
+                        <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800;">Detail Pemesanan</h1>
                         <p style="margin: 0; font-size: 14px; opacity: 0.9;">Booking ID: #{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</p>
                     </div>
                     <div style="margin-top: 8px;">
@@ -204,9 +204,34 @@
                     </div>
                 </div>
 
+                @php
+                    $adminFee = 2000;
+                @endphp
                 <div style="border-top: 2px dashed rgba(0,0,77,.1); padding-top: 24px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 16px; color: #666; font-weight: 600;">Total Pembayaran</span>
+                    @if($booking->discount_amount > 0)
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #999;">Harga Asli</span>
+                        <span style="font-size: 14px; color: #999; text-decoration: line-through;">Rp{{ number_format($booking->original_total_price ?? 0, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #dc2626; font-weight: 600;">Diskon</span>
+                        <span style="font-size: 14px; color: #dc2626; font-weight: 700;">-Rp{{ number_format($booking->discount_amount ?? 0, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed rgba(0,0,77,.1); padding-bottom: 12px;">
+                        <span style="font-size: 15px; font-weight: 700; color: #000;">Harga Setelah Diskon</span>
+                        <span style="font-size: 17px; font-weight: 800; color: #16a34a;">Rp{{ number_format($booking->subtotal_price ?? 0, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666;">Subtotal</span>
+                        <span style="font-size: 14px; font-weight: 700; color: #000;">Rp{{ number_format($booking->subtotal_price ?? 0, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666;">Biaya Admin</span>
+                        <span style="font-size: 14px; font-weight: 700; color: #000;">Rp{{ number_format($adminFee, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                        <span style="font-size: 16px; color: #000; font-weight: 800;">Total</span>
                         <span style="font-size: 24px; font-weight: 800; color: #02025b;">Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</span>
                     </div>
                 </div>
@@ -261,12 +286,11 @@
 
                             <div style="display: grid; gap: 12px;">
                                 @if($booking->status === 'waiting_payment' && $booking->payment_deadline && now()->lte($booking->payment_deadline))
-                                    <form action="{{ route('booking.pay', $booking->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" style="width: 100%; border: none; border-radius: 14px; background: #43a680; color: white; font-weight: 800; padding: 14px 18px; cursor: pointer;">Saya Sudah Bayar</button>
-                                    </form>
+                                    <div style="padding: 14px 16px; border-radius: 14px; background: #eafaf1; color: #155724; font-weight: 700; text-align:center;">
+                                        Scan QR Code atau klik gambar QR untuk konfirmasi pembayaran.
+                                    </div>
                                 @elseif($booking->status === 'waiting_confirmation')
-                                    <div style="padding: 14px 16px; border-radius: 14px; background: #eafaf1; color: #155724; font-weight: 700;">Pembayaran diterima. Tunggu konfirmasi owner.</div>
+                                    <!-- payment success shown in QR card -->
                                 @elseif($booking->status === 'confirmed')
                                     <div style="padding: 14px 16px; border-radius: 14px; background: #e7f5ff; color: #0d3c61; font-weight: 700;">Booking sudah dikonfirmasi.</div>
                                 @elseif($booking->status === 'expired')
@@ -280,24 +304,28 @@
                             </div>
                         </div>
 
+                        @php
+                            $payUrl = route('booking.payment', $booking->id);
+                            $isPaid = in_array($booking->status, ['waiting_confirmation', 'confirmed', 'paid', 'completed']);
+                        @endphp
                         <div class="qr-card" style="width: 100%; background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,77,.08); padding: 24px; text-align: center;">
-                            <div style="font-size: 13px; color: #666; margin-bottom: 12px;">Scan QR dan transfer</div>
-                            <div style="width: 200px; height: 200px; margin: 0 auto 12px auto; background: white; border: 1px solid rgba(0,0,77,.08); border-radius: 20px; display: grid; place-items: center;">
-                                <svg width="150" height="150" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect width="160" height="160" rx="28" fill="#02025b"/>
-                                    <rect x="24" y="24" width="42" height="42" rx="8" fill="#fff"/>
-                                    <rect x="24" y="94" width="42" height="42" rx="8" fill="#fff"/>
-                                    <rect x="94" y="24" width="42" height="42" rx="8" fill="#fff"/>
-                                    <rect x="70" y="70" width="20" height="20" fill="#fff"/>
-                                    <rect x="70" y="94" width="42" height="20" fill="#fff"/>
-                                    <rect x="94" y="70" width="20" height="42" fill="#fff"/>
-                                    <rect x="24" y="70" width="20" height="20" fill="#fff"/>
-                                    <rect x="46" y="46" width="14" height="14" fill="#02025b"/>
-                                    <rect x="46" y="100" width="14" height="14" fill="#02025b"/>
-                                    <rect x="100" y="46" width="14" height="14" fill="#02025b"/>
-                                </svg>
-                            </div>
-                            <div style="font-size: 18px; font-weight: 800; color: #02025b;">Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</div>
+                            @if($isPaid)
+                                <div style="width: 80px; height: 80px; margin: 0 auto 12px auto; background: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </div>
+                                <div style="font-size: 15px; font-weight: 700; color: #16a34a; margin-bottom: 4px;">Pembayaran Berhasil</div>
+                                <div style="font-size: 13px; color: #666;">Menunggu konfirmasi owner</div>
+                            @else
+                                <div style="font-size: 13px; color: #666; margin-bottom: 12px;">Scan QR untuk bayar</div>
+                                <a href="{{ $payUrl }}" target="_blank">
+                                    <div style="width: 200px; height: 200px; margin: 0 auto 12px auto; background: white; border: 1px solid rgba(0,0,77,.08); border-radius: 20px; display: grid; place-items: center; overflow:hidden;">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($payUrl) }}" alt="QR Code" style="width:200px;height:200px;" onerror="this.style.display='none'">
+                                    </div>
+                                </a>
+                                <div style="font-size: 13px; color: #666;">Scan dengan HP untuk konfirmasi pembayaran</div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -335,69 +363,95 @@
 </div>
 
 {{-- REVIEW MODAL --}}
-<div id="reviewModal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.5); justify-content:center; align-items:center;" onclick="if(event.target===this)closeReviewModal()">
-    <div style="background:white; border-radius:20px; padding:28px 24px; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.25);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 style="margin:0; font-size:18px; font-weight:800; color:#02025b;">Beri Review</h3>
-            <span onclick="closeReviewModal()" style="cursor:pointer; font-size:24px; color:#999; line-height:1;">&times;</span>
-        </div>
-        <form id="reviewForm" method="POST" action="{{ route('review.store') }}">
+<div id="reviewModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);justify-content:center;align-items:center;padding:20px;" onclick="if(event.target===this)closeReviewModal()">
+    <div style="background:white;border-radius:20px;padding:28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto;">
+        <button type="button" onclick="closeReviewModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;line-height:1;">&times;</button>
+        <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Review</h3>
+        <p id="reviewModalFieldName" style="margin:0 0 16px;font-size:13px;color:#64748b;">{{ $booking->field->name ?? 'Lapangan' }}</p>
+
+        <form id="reviewForm" method="POST" action="{{ route('review.store') }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="field_id" id="reviewFieldId">
             <input type="hidden" name="booking_id" id="reviewBookingId">
-            <div style="text-align:center; margin-bottom:20px;">
-                <p style="margin:0 0 10px; font-size:14px; color:#666; font-weight:600;">Bagaimana pengalaman bermainmu?</p>
-                <div id="starRating" style="display:flex; justify-content:center; gap:8px; font-size:36px; cursor:pointer;">
-                    <span data-star="1" onclick="setRating(1)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
-                    <span data-star="2" onclick="setRating(2)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
-                    <span data-star="3" onclick="setRating(3)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
-                    <span data-star="4" onclick="setRating(4)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
-                    <span data-star="5" onclick="setRating(5)" style="color:#d1d5db; transition:all .2s; user-select:none;">★</span>
+
+            {{-- Rating --}}
+            <div style="margin-bottom:16px;">
+                <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Rating <span style="color:#dc2626;">*</span></p>
+                <div id="halfStarContainer" style="display:flex;gap:2px;flex-direction:row-reverse;justify-content:flex-end;">
+                    @for($i = 5; $i >= 1; $i--)
+                    <div class="hstar" data-star="{{ $i }}" style="position:relative;width:32px;height:32px;cursor:pointer;">
+                        <span class="hstar-bg" style="position:absolute;inset:0;font-size:32px;line-height:1;color:#e2e8f0;pointer-events:none;">★</span>
+                        <span class="hstar-fill" id="hsf-{{ $i }}" style="position:absolute;inset:0;font-size:32px;line-height:1;color:#f59e0b;overflow:hidden;width:0%;pointer-events:none;">★</span>
+                        <span class="hstar-left" onclick="setHalfRating({{ $i - 0.5 }})" style="position:absolute;top:0;left:0;bottom:0;width:50%;z-index:2;cursor:pointer;"></span>
+                        <span class="hstar-right" onclick="setHalfRating({{ $i }})" style="position:absolute;top:0;right:0;bottom:0;width:50%;z-index:2;cursor:pointer;"></span>
+                    </div>
+                    @endfor
                 </div>
-                <input type="hidden" name="rating" id="ratingValue" value="0">
-                <p id="ratingHint" style="margin:8px 0 0; font-size:12px; color:#999;">Klik bintang untuk memberi rating</p>
+                <p id="ratingDisplay" style="margin:6px 0 0;font-size:12px;color:#94a3b8;">Klik bintang untuk memberi rating</p>
+                <input type="hidden" name="rating" id="reviewRating" value="0">
             </div>
-            <textarea name="review" id="reviewText" rows="4" placeholder="Tulis ulasan kamu di sini (minimal 10 karakter)..." style="width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.15); font-size:14px; outline:none; resize:none; box-sizing:border-box; font-family:inherit;"></textarea>
-            <p id="reviewError" style="display:none; color:#dc2626; font-size:12px; margin:6px 0 0;"></p>
-            <button type="submit" id="reviewSubmitBtn" style="width:100%; margin-top:16px; padding:14px; background:#EB5436; color:white; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer;">Kirim Review</button>
+
+            {{-- Review text --}}
+            <div style="margin-bottom:16px;">
+                <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Ulasan <span style="color:#dc2626;">*</span></p>
+                <textarea name="review" id="reviewText" rows="4" placeholder="Tulis ulasan kamu di sini (minimal 10 karakter)..." style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,0,77,.15);font-size:14px;outline:none;resize:none;box-sizing:border-box;font-family:inherit;"></textarea>
+            </div>
+
+            {{-- Photo upload --}}
+            <div style="margin-bottom:16px;">
+                <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Foto <span style="color:#94a3b8;font-weight:400;">(opsional)</span></p>
+                <label style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;border:1px dashed rgba(0,0,77,.2);background:#f8fafc;cursor:pointer;transition:all .2s;font-size:13px;color:#64748b;" onmouseover="this.style.borderColor='#EB5436'" onmouseout="this.style.borderColor='rgba(0,0,77,.2)'">
+                    <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="7.5" cy="9.5" r="1.5" fill="currentColor"/><path d="M3 16L8 11L12 15L16 10L21 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span id="reviewPhotoLabel">Tambahkan foto</span>
+                    <input type="file" name="photos[]" id="reviewPhotos" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="updatePhotoLabel(this)">
+                </label>
+                <p style="margin:6px 0 0;font-size:11px;color:#94a3b8;">Maksimal 5 foto (JPEG, PNG, WebP). Maks 5MB per foto.</p>
+            </div>
+
+            <p id="reviewError" style="display:none;color:#dc2626;font-size:12px;margin:6px 0 0;"></p>
+            <button type="submit" id="reviewSubmitBtn" style="width:100%;margin-top:8px;padding:14px;background:#EB5436;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Review</button>
         </form>
     </div>
 </div>
 
 <script>
+function setHalfRating(val) {
+    document.getElementById('reviewRating').value = val;
+    document.getElementById('ratingDisplay').textContent = val + ' dari 5 bintang';
+    for (var i = 1; i <= 5; i++) {
+        var fill = document.getElementById('hsf-' + i);
+        if (val >= i) fill.style.width = '100%';
+        else if (val >= i - 0.5) fill.style.width = '50%';
+        else fill.style.width = '0%';
+    }
+}
+function resetHalfRating() {
+    setHalfRating(0);
+    document.getElementById('ratingDisplay').textContent = 'Klik bintang untuk memberi rating';
+}
 function openReviewModal(fieldId, bookingId) {
     document.getElementById('reviewFieldId').value = fieldId;
     document.getElementById('reviewBookingId').value = bookingId;
+    resetHalfRating();
+    document.getElementById('reviewText').value = '';
+    document.getElementById('reviewError').style.display = 'none';
+    document.getElementById('reviewPhotoLabel').textContent = 'Tambahkan foto';
+    document.getElementById('reviewPhotos').value = '';
     document.getElementById('reviewModal').style.display = 'flex';
 }
 function closeReviewModal() {
     document.getElementById('reviewModal').style.display = 'none';
 }
-function setRating(val) {
-    document.getElementById('ratingValue').value = val;
-    var stars = document.querySelectorAll('#starRating span');
-    var hints = ['', '😞 Buruk', '😐 Biasa', '🙂 Bagus', '😊 Sangat Bagus', '🤩 Luar Biasa!'];
-    stars.forEach(function(s, i) {
-        s.style.color = i < val ? '#f59e0b' : '#d1d5db';
-    });
-    document.getElementById('ratingHint').textContent = hints[val] || '';
+function updatePhotoLabel(input) {
+    var label = document.getElementById('reviewPhotoLabel');
+    label.textContent = input.files.length > 0 ? input.files.length + ' foto dipilih' : 'Tambahkan foto';
 }
 document.getElementById('reviewForm').addEventListener('submit', function(e) {
-    var rating = parseInt(document.getElementById('ratingValue').value);
+    var ratingEl = document.getElementById('reviewRating');
     var review = document.getElementById('reviewText').value.trim();
     var errorEl = document.getElementById('reviewError');
-    if (rating < 1) {
-        e.preventDefault();
-        errorEl.textContent = 'Silakan pilih rating terlebih dahulu.';
-        errorEl.style.display = 'block';
-        return;
-    }
-    if (review.length < 10) {
-        e.preventDefault();
-        errorEl.textContent = 'Ulasan minimal 10 karakter.';
-        errorEl.style.display = 'block';
-        return;
-    }
+    if (parseFloat(ratingEl.value) === 0) { e.preventDefault(); errorEl.textContent = 'Pilih rating terlebih dahulu.'; errorEl.style.display = 'block'; return; }
+    if (review.length < 10) { e.preventDefault(); errorEl.textContent = 'Review minimal 10 karakter.'; errorEl.style.display = 'block'; return; }
     errorEl.style.display = 'none';
 });
 </script>

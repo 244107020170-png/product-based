@@ -14,8 +14,9 @@ class ReviewController extends Controller
         $validated = $request->validate([
             'field_id' => 'required|exists:fields,id',
             'booking_id' => 'required|exists:bookings,id',
-            'rating' => 'required|integer|min:1|max:5',
+            'rating' => 'required|numeric|min:0.5|max:5',
             'review' => 'required|string|min:10',
+            'photos.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $user = auth()->user();
@@ -38,20 +39,21 @@ class ReviewController extends Controller
             return back()->with('error', 'Anda sudah memberikan review untuk booking ini.');
         }
 
+        $photos = [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('review-photos', 'public');
+                if ($path) $photos[] = $path;
+            }
+        }
+
         Review::create([
             'user_id' => $user->id,
             'field_id' => $validated['field_id'],
             'booking_id' => $validated['booking_id'],
             'rating' => $validated['rating'],
             'review' => $validated['review'],
-        ]);
-
-        $field = Field::find($validated['field_id']);
-        $avgRating = Review::where('field_id', $field->id)->avg('rating');
-        $reviewCount = Review::where('field_id', $field->id)->count();
-        $field->update([
-            'rating' => round($avgRating, 1),
-            'review_count' => $reviewCount,
+            'photos' => $photos,
         ]);
 
         return back()->with('success', 'Review berhasil dikirim! Terima kasih atas masukan Anda.');

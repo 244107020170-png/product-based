@@ -64,10 +64,13 @@
             </div>
             <div class="stats-card">
                 <div>
-                    <p>Pesanan Hari Ini</p>
-                    <h2 class="yellow-text">{{ $todayBooking ?? 0 }}</h2>
+                    <p>Rating & Review</p>
+                    <h2 style="display:flex;align-items:center;gap:6px;color:#c2410c;font-size:1.9rem;font-weight:400;">
+                        <span style="color:#f59e0b;">★</span> {{ $avgRating ?? 0 }}
+                        <span style="font-size:13px;color:#94a3b8;font-weight:400;">({{ $totalReviews ?? 0 }})</span>
+                    </h2>
                 </div>
-                <div class="stats-icon yellow"><i class="fa-solid fa-calendar-days"></i></div>
+                <div class="stats-icon" style="background:#fef3c7;color:#f59e0b;"><i class="fa-solid fa-star"></i></div>
             </div>
             <div class="stats-card">
                 <div>
@@ -229,6 +232,43 @@
                             <span class="font-semibold text-sm text-gray-700 group-hover:text-red-600">Buat Promo</span>
                         </a>
                     </div>
+                </div>
+
+                {{-- Recent Reviews --}}
+                <div class="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">⭐ Review Terbaru</h3>
+                    @if($recentReviews->count())
+                    <div class="space-y-4">
+                        @foreach($recentReviews as $rv)
+                        <div style="padding:12px;border-radius:12px;background:#f8fafc;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div style="width:30px;height:30px;border-radius:50%;background:#EB5436;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;">
+                                        {{ strtoupper(substr($rv->user?->name ?? '?', 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p style="margin:0;font-size:13px;font-weight:600;color:#1e293b;">{{ $rv->user?->name ?? 'Anonim' }}</p>
+                                        <p style="margin:0;font-size:11px;color:#94a3b8;">{{ $rv->field?->name ?? '-' }}</p>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:2px;">
+                                    @for($i = 1; $i <= 5; $i++)
+                                    <span style="font-size:14px;color:{{ $i <= $rv->rating ? '#f59e0b' : '#e2e8f0' }};">★</span>
+                                    @endfor
+                                </div>
+                            </div>
+                            @if($rv->review)
+                            <p style="margin:0;font-size:12px;color:#64748b;line-height:1.4;font-style:italic;">"{{ \Illuminate\Support\Str::limit($rv->review, 80) }}"</p>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fa-regular fa-star text-3xl mb-3 block"></i>
+                        <p class="text-sm">Belum ada review</p>
+                    </div>
+                    @endif
                 </div>
 
                 {{-- Activity Timeline --}}

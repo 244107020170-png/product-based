@@ -442,22 +442,22 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
 
       <ul class="act-rules">
         <li class="act-rule">
-          <span class="act-rule__icon">
-            <img src="{{ asset('assets/images/icons/booking.png') }}" alt="booking">
+          <span class="act-rule__icon" style="background:#dbeafe;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/><circle cx="12" cy="14" r="1.5"/><circle cx="8.5" cy="14" r="1.5"/><circle cx="15.5" cy="14" r="1.5"/></svg>
           </span>
           Booking lapangan
           <span class="act-rule__pts">+1 poin</span>
         </li>
         <li class="act-rule">
-          <span class="act-rule__icon">
-            <img src="{{ asset('assets/images/icons/caritim.png') }}" alt="match">
+          <span class="act-rule__icon" style="background:#e0f2fe;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </span>
           Gabung pertandingan publik
           <span class="act-rule__pts">+2 poin</span>
         </li>
         <li class="act-rule">
-          <span class="act-rule__icon">
-            <img src="{{ asset('assets/images/icons/badge.png') }}" alt="review">
+          <span class="act-rule__icon" style="background:#fef3c7;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </span>
           Memberi ulasan lapangan
           <span class="act-rule__pts">+3 poin</span>
@@ -476,12 +476,16 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
         <div class="act-list">
           @foreach($activities as $i => $act)
             @php
-              $icon = $sportIcons[$act['sport']] ?? asset('assets/images/icons/gor.png');
               $pts  = ($act['points'] > 0 ? '+' : '') . $act['points'];
+              $actIcon = match($act['type']) {
+                'booking' => ['bg' => '#dbeafe', 'clr' => '#2563eb', 'svg' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/><circle cx="12" cy="14" r="1.5"/><circle cx="8.5" cy="14" r="1.5"/><circle cx="15.5" cy="14" r="1.5"/></svg>'],
+                'review'  => ['bg' => '#fef3c7', 'clr' => '#d97706', 'svg' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'],
+                default   => ['bg' => '#e0f2fe', 'clr' => '#0284c7', 'svg' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'],
+              };
             @endphp
             <div class="act-item" style="animation-delay: {{ $i * 0.06 }}s">
-              <div class="act-item__sport-icon">
-                <img src="{{ $icon }}" alt="{{ $act['sport'] }}">
+              <div class="act-item__sport-icon" style="background:{{ $actIcon['bg'] }};">
+                {!! $actIcon['svg'] !!}
               </div>
               <span>{{ $act['label'] }}</span>
               <span class="act-item__pts">({{ $pts }})</span>

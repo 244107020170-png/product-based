@@ -10,6 +10,17 @@
     // Filter displayed fields by sport (preserves controller's nearby filter on $fields)
     $fields = $selectedSport ? $fields->where('type', $selectedSport) : $fields;
 
+    $activePromoFieldIds = \App\Models\Discount::active()->whereNotNull('field_id')->pluck('field_id')->unique()->toArray();
+    $globalPromoOwnerIds = \App\Models\Discount::active()->whereNull('field_id')->pluck('owner_id')->unique()->toArray();
+    $fields = $fields->sortByDesc(function ($f) use ($activePromoFieldIds, $globalPromoOwnerIds) {
+        $hp = in_array($f->id, $activePromoFieldIds) || in_array($f->owner_id, $globalPromoOwnerIds);
+        $ft = $f->featured ?? false;
+        if ($ft && $hp) return 3;
+        if ($ft)        return 2;
+        if ($hp)        return 1;
+        return 0;
+    })->values();
+
     $sportList = ['Futsal','Badminton','Basket','Voli','Tennis','Golf','Renang','Panahan','Lari','Sepeda','Tinju','Bela Diri','Yoga','Fitness','Hiking','Padel','Baseball','Rugby','Senam'];
     $sportEmoji = [
         'Futsal'=>'⚽','Badminton'=>'🏸','Basket'=>'🏀','Voli'=>'🏐','Tennis'=>'🎾',
@@ -24,8 +35,6 @@
     $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
-    $bookingNotifs = Auth::user()->bookings()->with('field')->latest()->get();
-    $confirmedMatchNotifs = isset($confirmedMatchNotifs) ? $confirmedMatchNotifs : collect();
     $upcomingJoin = isset($upcomingJoin) ? $upcomingJoin : null;
     $myTeams = \App\Models\Matchs::with('field')->where('created_by', Auth::id())->latest()->take(4)->get();
     
@@ -179,11 +188,106 @@
                     grid-template-columns: 1fr;
                 }
             }
-            .badge-tiers {
+            .lvl-card {
+                background: white;
+                border-radius: 20px;
+                padding: 20px;
+                box-shadow: 0 4px 20px rgba(0,0,77,.05);
+                border: 1px solid rgba(0,0,77,.05);
+                display: flex;
+                flex-direction: column;
+            }
+            .lvl-card__head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+            }
+            .lvl-card__title {
+                margin: 0;
+                font-size: 15px;
+                font-weight: 800;
+                color: #02025b;
+            }
+            .lvl-card__link {
+                font-size: 12px;
+                color: #666;
+                font-weight: 600;
+                text-decoration: none;
+            }
+            .lvl-card__body {
+                background: #f8fafc;
+                padding: 16px;
+                border-radius: 12px;
+                margin-bottom: 16px;
+            }
+            .lvl-card__level-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+            .lvl-card__level-label {
+                font-size: 13px;
+                color: #666;
+            }
+            .lvl-card__level-name {
+                font-size: 14px;
+                font-weight: 800;
+            }
+            .lvl-card__track {
+                height: 6px;
+                background: #e2e8f0;
+                border-radius: 6px;
+                overflow: hidden;
+                margin-bottom: 6px;
+            }
+            .lvl-card__bar {
+                height: 100%;
+                border-radius: 6px;
+                transition: width .6s ease;
+            }
+            .lvl-card__poin {
+                margin: 0;
+                font-size: 10px;
+                color: #888;
+                text-align: center;
+            }
+            .lvl-card__tiers {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 gap: 12px;
                 text-align: center;
+            }
+            .lvl-card__tier {
+                transition: all .2s;
+            }
+            .lvl-card__tier.is-current {
+                transform: scale(1.04);
+            }
+            .lvl-card__tier:not(.is-earned) {
+                opacity: .45;
+            }
+            .lvl-card__tier-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 6px;
+            }
+            .lvl-card__tier-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+            .lvl-card__tier-name {
+                margin: 4px 0 0 0;
+                font-size: 11px;
+            }
+            .lvl-card__tier-range {
+                font-size: 9px;
+                color: #666;
             }
             @media (max-width: 768px) {
                 .dashboard-header-flex {
@@ -193,13 +297,49 @@
                 .hero-content-inner {
                     max-width: 100% !important;
                 }
-                .badge-tiers {
+                .lvl-card__tiers {
                     grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                }
+                .lvl-card__tier-icon {
+                    width: 36px;
+                    height: 36px;
+                }
+                .lvl-card__tier-icon svg {
+                    width: 18px;
+                    height: 18px;
+                }
+                .lvl-card__tier-name {
+                    font-size: 10px;
+                }
+                .lvl-card__tier-range {
+                    font-size: 8px;
                 }
             }
             @media (max-width: 480px) {
-                .badge-tiers {
-                    grid-template-columns: 1fr;
+                .lvl-card__tiers {
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                }
+                .lvl-card {
+                    padding: 14px;
+                }
+                .lvl-card__body {
+                    padding: 12px;
+                }
+                .lvl-card__tier-icon {
+                    width: 32px;
+                    height: 32px;
+                }
+                .lvl-card__tier-icon svg {
+                    width: 16px;
+                    height: 16px;
+                }
+                .lvl-card__tier-name {
+                    font-size: 9px;
+                }
+                .lvl-card__tier-range {
+                    font-size: 8px;
                 }
             }
         </style>
@@ -259,82 +399,69 @@
             </div>
 
             <!-- Notifikasi -->
+            @php $notifItems = auth()->user()->notifications()->orderBy('created_at', 'desc')->take(5)->get(); @endphp
             <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #02025b;">Notifikasi</h3>
-                    <a href="#" style="font-size: 13px; color: #666; text-decoration: none; font-weight: 600;">Lihat semua</a>
+                    <a href="{{ route('notifications.index') }}" style="font-size: 13px; color: #666; text-decoration: none; font-weight: 600;">Lihat semua</a>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 280px;">
-                    @forelse($bookingNotifs as $notif)
+                <div style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 280px;">
+                    @forelse($notifItems as $notif)
                     @php
-                        $notifField = $notif->field;
-                        $mapsUrl = $notifField && $notifField->location
-                            ? 'https://www.google.com/maps/search/?api=1&query='.urlencode($notifField->location)
-                            : 'https://maps.google.com';
-                        $statusLabels = [
-                            'pending'             => ['label' => 'Menunggu',           'color' => '#92400e', 'bg' => '#fef3c7'],
-                            'waiting_payment'     => ['label' => 'Menunggu Pembayaran','color' => '#92400e', 'bg' => '#fef3c7'],
-                            'waiting_confirmation'=> ['label' => 'Menunggu Konfirmasi','color' => '#92400e', 'bg' => '#fef3c7'],
-                            'paid'                => ['label' => 'Dibayar',            'color' => '#1e40af', 'bg' => '#dbeafe'],
-                            'confirmed'           => ['label' => 'Terkonfirmasi',      'color' => '#166534', 'bg' => '#bbf7d0'],
-                            'completed'           => ['label' => 'Selesai',            'color' => '#166534', 'bg' => '#bbf7d0'],
-                            'cancelled'           => ['label' => 'Dibatalkan',         'color' => '#991b1b', 'bg' => '#fecaca'],
-                            'expired'             => ['label' => 'Kedaluwarsa',        'color' => '#991b1b', 'bg' => '#fecaca'],
-                            'rejected'            => ['label' => 'Ditolak',            'color' => '#991b1b', 'bg' => '#fecaca'],
-                        ];
-                        $status = $statusLabels[$notif->status] ?? ['label' => 'Unknown', 'color' => '#666', 'bg' => '#e5e7eb'];
+                        $d = $notif->data;
+                        $isUnread = is_null($notif->read_at);
+                        $notifType = $d['type'] ?? '';
+                        $matchId = $d['match_id'] ?? null;
+                        $bookingId = $d['booking_id'] ?? null;
+                        $matchTitle = $d['match_title'] ?? '';
+                        $userName = $d['user_name'] ?? '';
+                        $amount = $d['amount'] ?? 0;
+                        $fieldName = $d['field_name'] ?? '';
+                        $notifLink = match($notifType) {
+                            'booking_payment_received', 'booking_confirmed' => $bookingId ? route('booking.detail', $bookingId) : null,
+                            default => $matchId ? route('matches.show', $matchId) : null,
+                        };
+                        $mapsLink = $d['maps_link'] ?? null;
+                        if (!$mapsLink && $bookingId && in_array($notifType, ['booking_confirmed', 'booking_payment_received'])) {
+                            $mapsLink = optional(optional(\App\Models\Booking::find($bookingId))->field)->maps_link;
+                        }
                     @endphp
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid rgba(0,0,77,.03);">
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <div style="width: 32px; height: 32px; background: #02025b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">
-                                {{ strtoupper(substr($notifField?->name ?? 'L', 0, 1)) }}
-                            </div>
-                            <div>
-                                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #02025b;">{{ $notifField?->name ?? 'Lapangan' }}</p>
-                                <p style="margin: 2px 0 0 0; font-size: 12px; color: #666;">
-                                    <span style="background: {{ $status['bg'] }}; color: {{ $status['color'] }}; padding: 1px 6px; border-radius: 4px; font-weight: 600;">{{ $status['label'] }}</span>
-                                    {{ \Carbon\Carbon::parse($notif->date)->locale('id')->translatedFormat('j F Y') }}, {{ $notif->start_time }} WIB
-                                </p>
-                            </div>
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: {{ $isUnread ? '#f0f7ff' : 'transparent' }}; border-radius: 10px; {{ $isUnread ? 'border: 1px solid #dbeafe;' : '' }}">
+                        @if($notifType === 'payment_claimed')
+                            <div style="width: 32px; height: 32px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">💰</div>
+                        @elseif($notifType === 'booking_confirmed')
+                            <div style="width: 32px; height: 32px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">📍</div>
+                        @else
+                            <div style="width: 32px; height: 32px; background: #bbf7d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">✅</div>
+                        @endif
+                        <div style="flex: 1; min-width: 0;">
+                            <p style="margin: 0; font-size: 13px; color: #1f2937; line-height: 1.3;">
+                                @if($notifType === 'payment_claimed')
+                                    <strong>{{ $userName }}</strong> mengklaim sudah bayar <strong>{{ $matchTitle }}</strong>
+                                @elseif($notifType === 'payment_confirmed')
+                                    Pembayaran untuk <strong>{{ $matchTitle }}</strong> dikonfirmasi
+                                @elseif($notifType === 'booking_payment_received')
+                                    Pembayaran untuk <strong>{{ $fieldName }}</strong> diterima, menunggu konfirmasi owner
+                                @elseif($notifType === 'booking_confirmed')
+                                    Booking <strong>{{ $fieldName }}</strong> telah dikonfirmasi
+                                    @if(!empty($mapsLink))
+                                        &nbsp;<a href="{{ $mapsLink }}" target="_blank" rel="noopener noreferrer" style="color:#3b82f6;font-weight:600;text-decoration:none;white-space:nowrap;" title="Buka Google Maps"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:middle;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#3b82f6"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg></a>
+                                    @endif
+                                @else
+                                    {{ $d['message'] ?? '' }}
+                                @endif
+                            </p>
+                            <p style="margin: 2px 0 0 0; font-size: 11px; color: #9ca3af;{{ $isUnread ? ' font-weight: 600;' : '' }}">{{ \Carbon\Carbon::parse($notif->created_at)->locale('id')->diffForHumans() }}</p>
                         </div>
-                        @if (in_array($notif->status, ['confirmed', 'selesai']))
-                            <a href="{{ $mapsUrl }}" target="_blank" style="display: inline-flex; text-decoration: none;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#02025b" stroke-width="2" style="cursor: pointer;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        @if($notifLink)
+                            <a href="{{ $notifLink }}" style="flex-shrink: 0; color: #02025b;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                             </a>
                         @endif
                     </div>
                     @empty
-                    @endforelse
-
-                    {{-- Confirmed match joins --}}
-                    @foreach($confirmedMatchNotifs as $cmp)
-                    @php
-                        $cm = $cmp->match;
-                    @endphp
-                    @if($cm)
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0;">
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <div style="width: 32px; height: 32px; background: #166534; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">
-                                {{ strtoupper(substr($cm->title, 0, 1)) }}
-                            </div>
-                            <div>
-                                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #166534;">Bergabung di {{ $cm->title }}</p>
-                                <p style="margin: 2px 0 0 0; font-size: 12px; color: #666;">
-                                    <span style="background: #bbf7d0; color: #166534; padding: 1px 6px; border-radius: 4px; font-weight: 600;">Dikonfirmasi</span>
-                                    {{ $cm->field?->name ?? 'Lapangan' }} &middot; {{ \Carbon\Carbon::parse($cm->date)->locale('id')->translatedFormat('j F Y') }}
-                                </p>
-                            </div>
-                        </div>
-                        <a href="{{ route('matches.show', $cm->id) }}" style="display: inline-flex; text-decoration: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                        </a>
-                    </div>
-                    @endif
-                    @endforeach
-
-                    @if($bookingNotifs->isEmpty() && $confirmedMatchNotifs->isEmpty())
                     <p style="text-align: center; color: #999; font-size: 13px; padding: 20px 0;">Belum ada notifikasi.</p>
-                    @endif
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -422,23 +549,139 @@
             </div>
 
             <!-- Rekomendasi -->
+            @php
+                $widgetRecItems = collect();
+                $seenIds = [];
+
+                // 1. Promo items — fields with active discounts (direct + global per owner)
+                $promoDirect = \App\Models\Field::where('is_available', true)
+                    ->whereHas('discounts', fn($q) => $q->active())
+                    ->with(['discounts' => fn($q) => $q->active()])
+                    ->inRandomOrder()
+                    ->take(3)
+                    ->get();
+
+                $globalOwnerIds = \App\Models\Discount::active()->whereNull('field_id')->pluck('owner_id')->unique()->toArray();
+                $promoGlobal = collect();
+                if (!empty($globalOwnerIds)) {
+                    $excludeIds = $promoDirect->pluck('id')->toArray();
+                    $promoGlobal = \App\Models\Field::where('is_available', true)
+                        ->whereNotIn('id', $excludeIds)
+                        ->whereIn('owner_id', $globalOwnerIds)
+                        ->inRandomOrder()
+                        ->take(3 - $promoDirect->count())
+                        ->get();
+                }
+
+                $promoFields = $promoDirect->concat($promoGlobal);
+
+                foreach ($promoFields as $f) {
+                    $discount = $f->discounts->first();
+                    if (!$discount) {
+                        $discount = \App\Models\Discount::where('owner_id', $f->owner_id)
+                            ->whereNull('field_id')
+                            ->active()
+                            ->first();
+                    }
+                    $badgeText = 'Promo';
+                    if ($discount) {
+                        $badgeText = $discount->type === 'percentage'
+                            ? "Promo {$discount->value}%"
+                            : 'Diskon Rp' . number_format($discount->value, 0, ',', '.');
+                    }
+                    $widgetRecItems->push((object)[
+                        'badgeType' => 'promo',
+                        'badgeText' => $badgeText,
+                        'name' => $f->name,
+                        'location' => $f->location,
+                        'url' => route('booking.show', $f->id),
+                    ]);
+                    $seenIds[] = $f->id;
+                }
+
+                // 2. Recommended based on user activity
+                if ($widgetRecItems->count() < 3) {
+                    $uSports = \App\Models\Booking::where('user_id', Auth::id())
+                        ->whereIn('status', [\App\Enums\BookingStatus::CONFIRMED, \App\Enums\BookingStatus::COMPLETED])
+                        ->with('field')
+                        ->get()
+                        ->pluck('field.type')
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->toArray();
+
+                    if (empty($uSports)) {
+                        $uSports = Auth::user()->sport_preference
+                            ? array_map('trim', explode(',', Auth::user()->sport_preference))
+                            : [];
+                    }
+
+                    if (!empty($uSports)) {
+                        $recFields = \App\Models\Field::where('is_available', true)
+                            ->whereNotIn('id', $seenIds)
+                            ->whereIn('type', $uSports)
+                            ->orderBy('rating', 'desc')
+                            ->take(3 - $widgetRecItems->count())
+                            ->get();
+
+                        foreach ($recFields as $f) {
+                            $widgetRecItems->push((object)[
+                                'badgeType' => 'recommended',
+                                'badgeText' => 'Recommended For You',
+                                'name' => $f->name,
+                                'location' => $f->location,
+                                'url' => route('booking.show', $f->id),
+                            ]);
+                            $seenIds[] = $f->id;
+                        }
+                    }
+                }
+
+                // 3. Popular items (most booked)
+                if ($widgetRecItems->count() < 3) {
+                    $popFields = \App\Models\Field::withCount('bookings')
+                        ->where('is_available', true)
+                        ->whereNotIn('id', $seenIds)
+                        ->orderBy('bookings_count', 'desc')
+                        ->take(3 - $widgetRecItems->count())
+                        ->get();
+
+                    foreach ($popFields as $f) {
+                        $widgetRecItems->push((object)[
+                            'badgeType' => 'popular',
+                            'badgeText' => 'Popular Choice',
+                            'name' => $f->name,
+                            'location' => $f->location,
+                            'url' => route('booking.show', $f->id),
+                        ]);
+                        $seenIds[] = $f->id;
+                    }
+                }
+            @endphp
             <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                         <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Rekomendasi</h4>
                     </div>
-                    <a href="{{ route('matches.index') }}" style="font-size: 12px; color: #666; font-weight: 600; text-decoration: none;">Lihat semua</a>
+                    <a href="{{ route('recommendation.index') }}" style="font-size: 12px; color: #666; font-weight: 600; text-decoration: none;">Lihat semua</a>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    @forelse($recommendedMatches as $rm)
+                    @forelse($widgetRecItems as $item)
                         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,77,.05);">
                             <div>
-                                <span style="background: #fee2e2; color: #e11d48; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">{{ $recommendedBadge ?: 'Untuk Anda' }}</span>
-                                <span style="font-size: 14px; font-weight: 800; color: #02025b; margin-left: 6px;">{{ $rm->title }}</span>
-                                <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">{{ $rm->field->name ?? '' }}</p>
+                                @if($item->badgeType === 'promo')
+                                    <span style="background: #bbf7d0; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">🟢 {{ $item->badgeText }}</span>
+                                @elseif($item->badgeType === 'recommended')
+                                    <span style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">⭐ {{ $item->badgeText }}</span>
+                                @else
+                                    <span style="background: #fee2e2; color: #e11d48; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">🔥 {{ $item->badgeText }}</span>
+                                @endif
+                                <span style="font-size: 14px; font-weight: 800; color: #02025b; margin-left: 6px;">{{ $item->name }}</span>
+                                <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">{{ $item->location ?: '' }}</p>
                             </div>
-                            <a href="{{ route('matches.show', $rm->id) }}" style="color: #02025b;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a>
+                            <a href="{{ $item->url }}" style="color: #02025b;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a>
                         </div>
                     @empty
                         <p style="margin: 0; font-size: 13px; color: #888;">Tidak ada rekomendasi.</p>
@@ -446,6 +689,7 @@
                 </div>
             </div>
 
+            @if($favoriteFields->isNotEmpty())
             <!-- Lapangan Favorit -->
             <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -455,57 +699,87 @@
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    @forelse($favoriteFields as $ff)
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,77,.05);">
-                            <div>
-                                <span style="font-size: 14px; font-weight: 800; color: #02025b;">{{ $ff->field->name ?? '' }}</span>
-                                <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">{{ $ff->field->location ?? '' }}</p>
+                    @foreach($favoriteFields->take(3) as $ff)
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,77,.05);">
+                            <div style="min-width:0; overflow:hidden;">
+                                <span style="font-size: 14px; font-weight: 800; color: #02025b; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $ff->field->name ?? '' }}</span>
+                                <p style="margin: 4px 0 0 0; font-size: 11px; color: #666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $ff->field->location ?? '' }}</p>
                             </div>
-                            <a href="{{ route('booking.show', $ff->field_id) }}" style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none;">Pesan Cepat</a>
+                            <a href="{{ route('booking.show', $ff->field_id) }}" style="flex-shrink:0; background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none;">Pesan Cepat</a>
                         </div>
-                    @empty
-                        <p style="margin: 0; font-size: 13px; color: #888;">Belum ada favorit.</p>
-                    @endforelse
+                    @endforeach
                 </div>
+                @if($favoriteFields->count() >= 4)
                 <a href="{{ route('favorite.index') }}" style="margin-top: auto; font-size: 13px; color: #666; font-weight: 600; text-decoration: none; text-align: right;">Lihat semua ></a>
+                @endif
             </div>
+            @endif
 
-            <!-- Badge Pemain -->
-            <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #02025b;">Badge Pemain</h4>
-                    </div>
-                </div>
-                
-                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="font-size: 13px; color: #666;">Level:</span>
-                        <span style="font-size: 13px; font-weight: 800; color: {{ Auth::user()->tierColor() }};">{{ Auth::user()->tierName() }}</span>
-                    </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
-                        <div style="height: 100%; width: {{ Auth::user()->progressPercentage() }}%; background: #3b82f6; border-radius: 6px;"></div>
-                    </div>
-                    <p style="margin: 0; font-size: 11px; color: #888; text-align: center;">{{ Auth::user()->points ?? 0 }} Points / {{ Auth::user()->nextTierTarget() }}</p>
+            <!-- Level Pemain -->
+            @php
+                $_bookings = \App\Models\Booking::where('user_id', Auth::id())
+                    ->whereIn('status', ['selesai', 'confirmed', 'pending'])
+                    ->count();
+                $_matches = \Illuminate\Support\Facades\DB::table('match_players')
+                    ->where('user_id', Auth::id())
+                    ->count();
+                $_reviews = \App\Models\Review::where('user_id', Auth::id())->count();
+                $_pts = ($_bookings * 1) + ($_matches * 2) + ($_reviews * 3);
+                $_tiers = [
+                    ['name' => 'Pemula', 'min' => 0, 'max' => 5,  'earn' => 1,  'color' => '#6b7280', 'bg' => '#f3f4f6'],
+                    ['name' => 'Aktif',  'min' => 6, 'max' => 20, 'earn' => 6,  'color' => '#1d6fcf', 'bg' => '#eff6ff'],
+                    ['name' => 'Pro',    'min' => 21,'max' => 999,'earn' => 21, 'color' => '#7c3aed', 'bg' => '#f5f3ff'],
+                ];
+                $_cur = $_tiers[0];
+                $_nxt = $_tiers[1];
+                foreach ($_tiers as $i => $t) {
+                    if ($_pts >= $t['earn']) { $_cur = $t; $_nxt = $_tiers[$i + 1] ?? null; }
+                }
+                $_pct = 100;
+                if ($_nxt) {
+                    $_tierRange = $_cur['max'] - $_cur['min'];
+                    $_tierProgress = max(0, $_pts - $_cur['min']);
+                    $_pct = $_tierRange > 0 ? min(100, round(($_tierProgress / $_tierRange) * 100)) : 100;
+                }
+                $_ptsToNext = $_nxt ? max(0, $_nxt['earn'] - $_pts) : 0;
+            @endphp
+            <div class="lvl-card">
+                <div class="lvl-card__head">
+                    <h4 class="lvl-card__title">Level Pemain</h4>
+                    <a href="{{ route('skill.index') }}" class="lvl-card__link">Detail</a>
                 </div>
 
-                <div class="badge-tiers">
-                    <div>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Pemula</p>
-                        <span style="font-size: 9px; color: #666;">0-20 Poin</span>
+                <div class="lvl-card__body">
+                    <div class="lvl-card__level-row">
+                        <span class="lvl-card__level-label">Level</span>
+                        <span class="lvl-card__level-name" style="color:{{ $_cur['color'] }}">{{ $_cur['name'] }}</span>
                     </div>
-                    <div>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#3b82f6"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Pro</p>
-                        <span style="font-size: 9px; color: #666;">20-50 Poin</span>
+                    <div class="lvl-card__track">
+                        <div class="lvl-card__bar" style="width:{{ $_pct }}%;background:{{ $_nxt ? $_nxt['color'] : $_cur['color'] }}"></div>
                     </div>
-                    <div>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#e11d48"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #02025b;">Master</p>
-                        <span style="font-size: 9px; color: #666;">>50 Poin</span>
+                    <p class="lvl-card__poin">
+                        {{ $_pts }} Poin
+                        @if($_nxt)· Butuh {{ $_ptsToNext }} poin lagi ke {{ $_nxt['name'] }}@endif
+                    </p>
+                </div>
+
+                <div class="lvl-card__tiers">
+                    @foreach($_tiers as $t)
+                    @php $earned = $_pts >= $t['earn']; $isCur = $t['name'] === $_cur['name']; @endphp
+                    <div class="lvl-card__tier {{ $earned ? 'is-earned' : '' }} {{ $isCur ? 'is-current' : '' }}" style="{{ $isCur ? '--tier-clr:' . $t['color'] : '' }}">
+                        <div class="lvl-card__tier-icon" style="background:{{ $earned ? $t['color'] : '#e2e8f0' }}">
+                            @if($loop->first)
+                            <svg viewBox="0 0 24 24" fill="{{ $earned ? '#fff' : '#94a3b8' }}"><path d="M12 22V12M12 12C12 12 7 11 5 7C3 3 7 2 9 3C11 4 12 7 12 7M12 12C12 12 17 10 18 6C19 2 15 2 13 3C11 4 12 7 12 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            @elseif($loop->iteration === 2)
+                            <svg viewBox="0 0 24 24" fill="{{ $earned ? '#fff' : '#94a3b8' }}"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
+                            @else
+                            <svg viewBox="0 0 24 24" fill="{{ $earned ? '#fff' : '#94a3b8' }}"><path d="M8 21H16M12 17V21M7 4H17V11C17 14.314 14.761 17 12 17C9.239 17 7 14.314 7 11V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 6H4C4 6 3 10 6 11M17 6H20C20 6 21 10 18 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            @endif
+                        </div>
+                        <p class="lvl-card__tier-name" style="color:{{ $earned ? $t['color'] : '#02025b' }};font-weight:{{ $isCur ? 800 : 600 }}">{{ $t['name'] }}</p>
+                        <span class="lvl-card__tier-range">{{ $t['min'] === 0 ? '0' : $t['min'] }}-{{ $t['max'] >= 999 ? '∞' : $t['max'] }} Poin</span>
                     </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -651,31 +925,69 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
             @foreach($fields as $field)
             @php $isFav = in_array($field->id, $favoriteIds ?? []); @endphp
+            @php
+                $hasPromo = $field->hasActivePromo();
+                $hasReviews = ($field->review_count ?? 0) > 0;
+            @endphp
             <div class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; cursor:pointer;" onclick="window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'">
+                {{-- GAMBAR --}}
                 <div style="position: relative; height: 200px; overflow: hidden;">
-                    <img src="{{ $field->image_url }}" 
+                    <img src="{{ $field->image_url }}"
                          alt="{{ $field->name }}"
                          style="width: 100%; height: 100%; object-fit: cover;"
-                     onerror="this.style.display='none'">
-                     <div style="position: absolute; top: 12px; left: 12px; display:flex; gap:6px;">
-                         <span onclick="event.stopPropagation();toggleFavorite({{ $field->id }}, this)" style="background:rgba(0,0,0,0.6); color:{{ $isFav ? '#EB5436' : 'white' }}; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; font-size:18px;" data-fav="{{ $isFav ? '1' : '0' }}">
-                             {{ $isFav ? '❤️' : '🤍' }}
-                         </span>
-                     </div>
-                    <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600;">
-                        <span style="display:inline-flex;vertical-align:-2px;margin-right:4px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 3L14.9 8.7L21 9.6L16.5 14L17.6 20L12 17.1L6.4 20L7.5 14L3 9.6L9.1 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                            </svg>
-                        </span>{{ number_format($field->rating ?? 4.5, 1) }}
+                         onerror="this.style.display='none'">
+                    {{-- Favorit (kiri atas) --}}
+                    <span onclick="event.stopPropagation();toggleFavorite({{ $field->id }}, this)" style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.6);color:{{ $isFav ? '#EB5436' : 'white' }};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:18px;z-index:2;" data-fav="{{ $isFav ? '1' : '0' }}">
+                        {{ $isFav ? '❤️' : '🤍' }}
+                    </span>
+                    {{-- Rating (kanan atas) --}}
+                    <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.8);color:white;padding:6px 14px;border-radius:50px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;z-index:2;">
+                        <span>⭐</span>
+                        @if($hasReviews)
+                            <span>{{ number_format($field->rating ?? 0, 1) }}</span>
+                        @else
+                            <span style="font-weight:400;">Baru</span>
+                        @endif
                     </div>
+                    {{-- Featured label --}}
+                    @if($field->featured)
+                    <div style="position:absolute;bottom:12px;left:12px;background:#02025b;color:white;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:3px;z-index:2;">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        Featured
+                    </div>
+                    @endif
                 </div>
-                <div style="padding: 18px; flex: 1; display: flex; flex-direction: column;">
-                    <h3 style="font-size: 18px; font-weight: 700; color: #001a4d; margin: 0 0 10px 0;">{{ $field->name }}</h3>
-                    <p style="color: #666; font-size: 13px; margin: 0 0 12px 0; flex: 1;">{{ $field->location }}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0;">
-                        <span style="font-size: 16px; font-weight: 700; color: #f59e0b;">{{ $field->formattedPrice() }}</span>
-                        <button type="button" onclick="event.stopPropagation();window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'" style="padding: 8px 16px; background: #f59e0b; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;">
+                {{-- KONTEN BAWAH GAMBAR --}}
+                <div style="padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column;">
+                    {{-- Promo badge --}}
+                    @if($hasPromo)
+                    <div style="margin-bottom:10px;">
+                        <span style="background:#dc2626;color:white;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
+                            🔥 {{ $field->promo_badge }}
+                        </span>
+                        <div style="font-size:10px;color:#94a3b8;margin-top:4px;">
+                            {{ $field->promo_start }} — {{ $field->promo_end }}
+                        </div>
+                    </div>
+                    @endif
+                    {{-- Nama --}}
+                    <h3 style="font-size: 18px; font-weight: 700; color: #001a4d; margin: 0 0 4px 0; line-height:1.3;">{{ $field->name }}</h3>
+                    {{-- Lokasi --}}
+                    <p style="color: #666; font-size: 13px; margin: 0 0 14px 0; display:flex;align-items:center;gap:4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {{ $field->location }}
+                    </p>
+                    {{-- Harga & Tombol --}}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0; margin-top:auto;">
+                        @if($hasPromo)
+                        <div style="display:flex; flex-direction:column; gap:1px;">
+                            <span style="font-size: 16px; font-weight: 700; color: #dc2626;">{{ $field->promo_price }}</span>
+                            <span style="font-size: 12px; color: #999; text-decoration: line-through;">{{ $field->formattedPrice() }}</span>
+                        </div>
+                        @else
+                        <span style="font-size: 16px; font-weight: 700; color: #001a4d;">{{ $field->formattedPrice() }}</span>
+                        @endif
+                        <button type="button" onclick="event.stopPropagation();window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'" style="padding: 8px 16px; background: #f59e0b; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; white-space:nowrap;">
                             Pesan →
                         </button>
                     </div>
@@ -791,7 +1103,7 @@
                         <p style="margin:2px 0 0; font-size:11px; color:#888;">
                             <span style="display:inline-flex;align-items:center;gap:2px;">
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                {{ $f->rating ?? '4.8' }}
+                                @if(($f->review_count ?? 0) > 0){{ number_format($f->rating ?? 0, 1) }}@else Baru @endif
                             </span>
                             &middot;
                             <span>{{ $f->type ?? 'Olahraga' }}</span>

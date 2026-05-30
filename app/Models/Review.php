@@ -12,11 +12,20 @@ class Review extends Model
         'booking_id',
         'rating',
         'review',
+        'photos',
     ];
 
     protected $casts = [
-        'rating' => 'integer',
+        'rating' => 'decimal:1',
+        'photos' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::created(fn(Review $r) => Field::recalculateStats($r->field_id));
+        static::updated(fn(Review $r) => Field::recalculateStats($r->field_id));
+        static::deleted(fn(Review $r) => Field::recalculateStats($r->field_id));
+    }
 
     public function user()
     {

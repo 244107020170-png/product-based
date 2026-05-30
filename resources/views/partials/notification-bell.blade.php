@@ -1,7 +1,6 @@
 @php
-    $unreadNotifs = auth()->user()->unreadNotifications;
-    $unreadCount = $unreadNotifs->count();
-    $latestNotifs = $unreadNotifs->take(5);
+    $unreadCount = auth()->user()->unreadNotifications()->count();
+    $allNotifs = auth()->user()->notifications()->orderBy('created_at', 'desc')->take(10)->get();
 @endphp
 <button type="button" class="player-dashboard-topbar__icon" id="notif-bell" style="position: relative;">
     <span class="player-inline-icon">
@@ -19,24 +18,47 @@
         @endif
     </div>
     <div style="max-height: 360px; overflow-y: auto;">
-        @if($latestNotifs->isEmpty())
+        @if($allNotifs->isEmpty())
             <div style="padding: 32px 18px; text-align: center; color: #9ca3af; font-size: 13px;">Belum ada notifikasi</div>
         @else
-            @foreach($latestNotifs as $notif)
-                @php $d = $notif->data; @endphp
-                <div style="padding: 12px 18px; border-bottom: 1px solid rgba(0,0,77,.04); background: #f0f7ff; display: flex; gap: 10px; align-items: flex-start;">
-                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; flex-shrink: 0; margin-top: 6px;"></span>
+            @foreach($allNotifs as $notif)
+                @php
+                    $d = $notif->data;
+                    $isUnread = is_null($notif->read_at);
+                    $_bookingId = $d['booking_id'] ?? null;
+                    $_notifType = $d['type'] ?? '';
+                    $_mapsLink = $d['maps_link'] ?? null;
+                    if (!$_mapsLink && $_bookingId && in_array($_notifType, ['booking_confirmed', 'booking_payment_received'])) {
+                        $_mapsLink = optional(optional(\App\Models\Booking::find($_bookingId))->field)->maps_link;
+                    }
+                @endphp
+                <div style="padding: 12px 18px; border-bottom: 1px solid rgba(0,0,77,.04); {{ $isUnread ? 'background: #f0f7ff;' : '' }} display: flex; gap: 10px; align-items: flex-start;">
+                    @if($isUnread)
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; flex-shrink: 0; margin-top: 6px;"></span>
+                    @else
+                        <span style="width: 8px; height: 8px; flex-shrink: 0; margin-top: 6px;"></span>
+                    @endif
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-size: 13px; color: #1f2937; line-height: 1.3;">
-                            <strong>{{ $d['user_name'] ?? 'Pemain' }}</strong>
                             @if(($d['type'] ?? '') === 'payment_claimed')
-                                mengklaim sudah bayar
+                                <strong>{{ $d['user_name'] ?? 'Pemain' }}</strong> mengklaim sudah bayar
                                 <strong>{{ $d['match_title'] ?? '' }}</strong>
+                            @elseif(($d['type'] ?? '') === 'payment_confirmed')
+                                pembayaran untuk
+                                <strong>{{ $d['match_title'] ?? '' }}</strong>
+                                dikonfirmasi
+                            @elseif(($d['type'] ?? '') === 'booking_payment_received')
+                                Pembayaran untuk <strong>{{ $d['field_name'] ?? '' }}</strong> diterima, menunggu konfirmasi owner
+                            @elseif(($d['type'] ?? '') === 'booking_confirmed')
+                                Booking <strong>{{ $d['field_name'] ?? '' }}</strong> telah dikonfirmasi
+                                @if(!empty($_mapsLink))
+                                    &nbsp;<a href="{{ $_mapsLink }}" target="_blank" rel="noopener noreferrer" style="color:#3b82f6;font-weight:600;text-decoration:none;white-space:nowrap;" title="Buka Google Maps"><svg viewBox="0 0 24 24" fill="none" width="16" height="16" style="vertical-align:middle;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#3b82f6"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg></a>
+                                @endif
                             @else
                                 {{ $d['message'] ?? '' }}
                             @endif
                         </div>
-                        <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">{{ \Carbon\Carbon::parse($notif->created_at)->locale('id')->diffForHumans() }}</div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;{{ $isUnread ? ' font-weight: 600;' : '' }}">{{ \Carbon\Carbon::parse($notif->created_at)->locale('id')->diffForHumans() }}</div>
                     </div>
                 </div>
             @endforeach

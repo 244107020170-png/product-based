@@ -14,7 +14,7 @@ class ActivityController extends Controller
         $user = Auth::user();
         $uid  = $user->id;
 
-        // ── Level & Points (sama dengan SkillController) ──────────────
+        // ── Level & Points ───────────────────────────────────────────
         $totalBookings = Booking::where('user_id', $uid)
             ->whereIn('status', ['selesai', 'confirmed', 'pending'])
             ->count();
@@ -23,8 +23,10 @@ class ActivityController extends Controller
             ->where('user_id', $uid)
             ->count();
 
-        // Poin: booking=1, match=2
-        $totalPoints = ($totalBookings * 1) + ($totalMatches * 2);
+        $totalReviews = \App\Models\Review::where('user_id', $uid)->count();
+
+        // Poin: booking=1, match=2, review=3
+        $totalPoints = ($totalBookings * 1) + ($totalMatches * 2) + ($totalReviews * 3);
 
         $levels = [
             ['name' => 'Beginner', 'min' => 0,  'max' => 5],
@@ -90,6 +92,23 @@ class ActivityController extends Controller
                 'points'     => +2,
                 'sport'      => $this->detectSport($row->field_name),
                 'created_at' => Carbon::parse($row->created_at),
+            ]);
+        }
+
+        // Review activities
+        $reviews = \App\Models\Review::with('field')
+            ->where('user_id', $uid)
+            ->latest('created_at')
+            ->take(10)
+            ->get();
+
+        foreach ($reviews as $rv) {
+            $activities->push([
+                'type'       => 'review',
+                'label'      => 'Kamu memberi ulasan untuk ' . ($rv->field?->name ?? 'Lapangan'),
+                'points'     => +3,
+                'sport'      => $this->detectSport($rv->field?->name ?? ''),
+                'created_at' => $rv->created_at,
             ]);
         }
 

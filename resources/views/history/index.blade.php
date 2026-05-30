@@ -50,6 +50,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
+        'resources/css/player-profile-view.css',
         'resources/css/player-history.css',
         'resources/js/player-history.js',
     ])
@@ -167,7 +168,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
             {{-- ======= HISTORY PAGE ======= --}}
             <div class="history-page">
 
-                <h1 class="history-page__title">Histori Pemesanan</h1>
+                <h1 class="history-page__title">Histori</h1>
 
                 {{-- ── Stats ── --}}
                 <div class="history-stats">
@@ -179,7 +180,6 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                             Semua
                         </span>
                     </button>
-
                     <button type="button" class="history-stat-card{{ $statusFilter === 'selesai' ? ' is-active' : '' }}"
                         data-stat-filter="selesai">
                         <span class="history-stat-card__number">{{ $totalSelesai }}</span>
@@ -188,7 +188,6 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                             Selesai
                         </span>
                     </button>
-
                     <button type="button" class="history-stat-card{{ $statusFilter === 'akan_datang' ? ' is-active' : '' }}"
                         data-stat-filter="akan_datang">
                         <span class="history-stat-card__number">{{ $totalAkan }}</span>
@@ -197,7 +196,6 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                             Akan Datang
                         </span>
                     </button>
-
                     <button type="button" class="history-stat-card{{ $statusFilter === 'dibatalkan' ? ' is-active' : '' }}"
                         data-stat-filter="dibatalkan">
                         <span class="history-stat-card__number">{{ $totalDibatal }}</span>
@@ -222,8 +220,6 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                 <option value="terbawah" {{ $sortHarga === 'terbawah' ? 'selected' : '' }}>Terbawah</option>
                             </select>
                         </div>
-
-                        {{-- Total Pengeluaran --}}
                     <div class="history-total-card" aria-label="Total pengeluaran">
                         <span class="history-total-card__icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
@@ -235,14 +231,23 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                         </span>
                         <div class="history-total-card__body">
                             <p class="history-total-card__label">Total Pengeluaran</p>
-                            <p class="history-total-card__amount">
-                                Rp{{ number_format($totalPengeluaran, 0, ',', '.') }}
-                            </p>
+                            <p class="history-total-card__amount">Rp{{ number_format($totalPengeluaran, 0, ',', '.') }}</p>
                         </div>
                         <span class="history-total-card__arrow" aria-hidden="true"></span>
                     </div>
                 </div>
                 </form>
+
+                {{-- ── Tabs ── --}}
+                <div class="hist-tabs-wrap">
+                    <div class="hist-tabs" role="tablist">
+                        <button class="hist-tab is-active" data-histab="pesanan" role="tab" aria-selected="true" aria-controls="histab-pesanan">Pesanan</button>
+                        <button class="hist-tab" data-histab="ulasan" role="tab" aria-selected="false" aria-controls="histab-ulasan">Ulasan</button>
+                    </div>
+                </div>
+
+                {{-- ── TAB PESANAN ── --}}
+                <div class="profview-panel is-active" id="histab-pesanan" role="tabpanel">
 
                 {{-- ── Booking List ── --}}
                 <div class="history-list" id="history-booking-list">
@@ -271,7 +276,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                             $startH      = \Carbon\Carbon::parse($booking->start_time);
                             $endH        = \Carbon\Carbon::parse($booking->end_time);
                             $hours       = max(1, $startH->diffInHours($endH));
-                            $price       = $field ? $field->price_per_hour * $hours : 0;
+                            $price       = $booking->total_price;
                         @endphp
 
                         <article class="history-card"
@@ -317,9 +322,22 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                         <p class="history-card__location">{{ $field->location ?? '-' }}</p>
                                     </div>
 
-                                    <span class="history-status {{ $statusInfo['class'] }}">
-                                        {{ $statusInfo['label'] }}
-                                    </span>
+                                    <div style="text-align:right;flex-shrink:0;">
+                                        <span class="history-status {{ $statusInfo['class'] }}">
+                                            {{ $statusInfo['label'] }}
+                                        </span>
+                                        @if($statusKey === 'selesai')
+                                            @if($booking->review)
+                                            <div style="margin-top:6px;">
+                                                <span class="hist-rv-badge hist-rv-badge--done">🟢 Sudah Direview</span>
+                                            </div>
+                                            @else
+                                            <div style="margin-top:6px;">
+                                                <span class="hist-rv-badge hist-rv-badge--pending">🟡 Menunggu Review</span>
+                                            </div>
+                                            @endif
+                                        @endif
+                                    </div>
                                 </div>
 
                                 <div class="history-card__meta">
@@ -345,6 +363,11 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                     </span>
 
                                     <div class="history-card__actions">
+                                        @if($statusKey === 'selesai' && !$booking->review)
+                                            <button type="button" class="hbtn hbtn--review" onclick="openReviewModal({{ $booking->id }}, '{{ addslashes($field->name ?? 'Lapangan') }}', {{ $field->id ?? 'null' }})">
+                                                ⭐ Beri Review
+                                            </button>
+                                        @endif
                                         <a href="{{ route('booking.detail', $booking->id) }}" class="hbtn hbtn--outline">Rincian</a>
                                         <a href="{{ url('/fields') }}" class="hbtn hbtn--primary" id="rebook-booking-{{ $booking->id }}">
                                             Pesan Lagi
@@ -458,9 +481,190 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
 
                 </div>{{-- /history-list --}}
 
+                </div>{{-- /TAB PESANAN --}}
+
+                {{-- ── TAB ULASAN ── --}}
+                <div class="profview-panel" id="histab-ulasan" role="tabpanel">
+                    @if($userReviews->isNotEmpty())
+                    <div class="hist-reviews-list">
+                        @foreach($userReviews as $rv)
+                        @php
+                            $rvField = $rv->field;
+                            $photos = $rv->photos ?? [];
+                        @endphp
+                        <div class="hist-review-card">
+                            <div class="hist-review-card__avatar">
+                                <img src="{{ $profileAvatar }}" alt="">
+                            </div>
+                            <div class="hist-review-card__body">
+                                <div class="hist-review-card__top">
+                                    <div>
+                                        <p class="hist-review-card__field">{{ $rvField?->name ?? 'Lapangan' }}</p>
+                                        <div class="hist-review-card__stars">
+                                            @for($i = 1; $i <= 5; $i++)
+                                            <span style="color:{{ $i <= $rv->rating ? '#f59e0b' : '#e2e8f0' }};">★</span>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    <span class="hist-review-card__date">{{ \Carbon\Carbon::parse($rv->created_at)->locale('id')->translatedFormat('j F Y') }}</span>
+                                </div>
+                                @if($rv->review)
+                                <p class="hist-review-card__text">{{ $rv->review }}</p>
+                                @endif
+                                @if(count($photos) > 0)
+                                <div class="hist-review-card__photos">
+                                    @foreach($photos as $photo)
+                                    <a href="{{ asset('storage/'.$photo) }}" target="_blank" class="hist-review-card__photo">
+                                        <img src="{{ asset('storage/'.$photo) }}" alt="Foto review">
+                                    </a>
+                                    @endforeach
+                                    @if(count($photos) > 3)
+                                    <div class="hist-review-card__photo-more">+{{ count($photos) - 3 }}</div>
+                                    @endif
+                                </div>
+                                @endif
+                                <a href="{{ route('booking.detail', $rv->booking_id) }}" class="hist-review-card__detail">Lihat Detail</a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <div class="history-empty">
+                        <span class="history-empty__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2L15 8L22 9L17 14L18 21L12 17.5L6 21L7 14L2 9L9 8L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <p class="history-empty__text">Belum ada review</p>
+                        <p class="history-empty__sub">Selesaikan booking-mu dan beri rating untuk lapangan yang kamu pakai!</p>
+                    </div>
+                    @endif
+                </div>{{-- /TAB ULASAN --}}
+
             </div>{{-- /history-page --}}
 
         </main>
     </div>
+
+    {{-- Review Modal --}}
+    <div id="reviewModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);justify-content:center;align-items:center;padding:20px;" onclick="if(event.target===this)closeReviewModal()">
+        <div style="background:white;border-radius:20px;padding:28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto;">
+            <button type="button" onclick="closeReviewModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;line-height:1;">&times;</button>
+            <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Review</h3>
+            <p id="reviewModalFieldName" style="margin:0 0 16px;font-size:13px;color:#64748b;"></p>
+
+            <form id="reviewForm" method="POST" action="{{ route('review.store') }}" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="field_id" id="reviewFieldId">
+                <input type="hidden" name="booking_id" id="reviewBookingId">
+
+                {{-- Rating --}}
+                <div style="margin-bottom:16px;">
+                    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Rating <span style="color:#dc2626;">*</span></p>
+                    <div id="halfStarContainer" style="display:flex;gap:2px;flex-direction:row-reverse;justify-content:flex-end;">
+                        @for($i = 5; $i >= 1; $i--)
+                        <div class="hstar" data-star="{{ $i }}" style="position:relative;width:32px;height:32px;cursor:pointer;">
+                            <span class="hstar-bg" style="position:absolute;inset:0;font-size:32px;line-height:1;color:#e2e8f0;pointer-events:none;">★</span>
+                            <span class="hstar-fill" id="hsf-{{ $i }}" style="position:absolute;inset:0;font-size:32px;line-height:1;color:#f59e0b;overflow:hidden;width:0%;pointer-events:none;">★</span>
+                            <span class="hstar-left" onclick="setHalfRating({{ $i - 0.5 }})" style="position:absolute;top:0;left:0;bottom:0;width:50%;z-index:2;cursor:pointer;"></span>
+                            <span class="hstar-right" onclick="setHalfRating({{ $i }})" style="position:absolute;top:0;right:0;bottom:0;width:50%;z-index:2;cursor:pointer;"></span>
+                        </div>
+                        @endfor
+                    </div>
+                    <p id="ratingDisplay" style="margin:6px 0 0;font-size:12px;color:#94a3b8;">Klik bintang untuk memberi rating</p>
+                    <input type="hidden" name="rating" id="reviewRating" value="0">
+                </div>
+
+                {{-- Review text --}}
+                <div style="margin-bottom:16px;">
+                    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Ulasan <span style="color:#dc2626;">*</span></p>
+                    <textarea name="review" id="reviewText" rows="4" placeholder="Tulis ulasan kamu di sini (minimal 10 karakter)..." style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,0,77,.15);font-size:14px;outline:none;resize:none;box-sizing:border-box;font-family:inherit;"></textarea>
+                </div>
+
+                {{-- Photo upload --}}
+                <div style="margin-bottom:16px;">
+                    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Foto <span style="color:#94a3b8;font-weight:400;">(opsional)</span></p>
+                    <label style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;border:1px dashed rgba(0,0,77,.2);background:#f8fafc;cursor:pointer;transition:all .2s;font-size:13px;color:#64748b;" onmouseover="this.style.borderColor='#EB5436'" onmouseout="this.style.borderColor='rgba(0,0,77,.2)'">
+                        <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="7.5" cy="9.5" r="1.5" fill="currentColor"/><path d="M3 16L8 11L12 15L16 10L21 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <span id="reviewPhotoLabel">Tambahkan foto</span>
+                        <input type="file" name="photos[]" id="reviewPhotos" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="updatePhotoLabel(this)">
+                    </label>
+                    <p style="margin:6px 0 0;font-size:11px;color:#94a3b8;">Maksimal 5 foto (JPEG, PNG, WebP). Maks 5MB per foto.</p>
+                </div>
+
+                <p id="reviewError" style="display:none;color:#dc2626;font-size:12px;margin:6px 0 0;"></p>
+                <button type="submit" id="reviewSubmitBtn" style="width:100%;margin-top:8px;padding:14px;background:#EB5436;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Review</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function setHalfRating(val) {
+        document.getElementById('reviewRating').value = val;
+        document.getElementById('ratingDisplay').textContent = val + ' dari 5 bintang';
+        for (var i = 1; i <= 5; i++) {
+            var fill = document.getElementById('hsf-' + i);
+            if (val >= i) fill.style.width = '100%';
+            else if (val >= i - 0.5) fill.style.width = '50%';
+            else fill.style.width = '0%';
+        }
+    }
+    function resetHalfRating() {
+        setHalfRating(0);
+        document.getElementById('ratingDisplay').textContent = 'Klik bintang untuk memberi rating';
+    }
+    function openReviewModal(bookingId, fieldName, fieldId) {
+        document.getElementById('reviewBookingId').value = bookingId;
+        document.getElementById('reviewFieldId').value = fieldId;
+        document.getElementById('reviewModalFieldName').textContent = fieldName;
+        resetHalfRating();
+        document.getElementById('reviewText').value = '';
+        document.getElementById('reviewError').style.display = 'none';
+        document.getElementById('reviewPhotoLabel').textContent = 'Tambahkan foto';
+        document.getElementById('reviewPhotos').value = '';
+        document.getElementById('reviewModal').style.display = 'flex';
+    }
+    function closeReviewModal() { document.getElementById('reviewModal').style.display = 'none'; }
+    function updatePhotoLabel(input) {
+        var label = document.getElementById('reviewPhotoLabel');
+        if (input.files.length > 0) {
+            label.textContent = input.files.length + ' foto dipilih';
+        } else {
+            label.textContent = 'Tambahkan foto';
+        }
+    }
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+        var ratingEl = document.getElementById('reviewRating');
+        var review = document.getElementById('reviewText').value.trim();
+        var errorEl = document.getElementById('reviewError');
+        if (parseFloat(ratingEl.value) === 0) { e.preventDefault(); errorEl.textContent = 'Pilih rating terlebih dahulu.'; errorEl.style.display = 'block'; return; }
+        if (review.length < 10) { e.preventDefault(); errorEl.textContent = 'Review minimal 10 karakter.'; errorEl.style.display = 'block'; return; }
+        errorEl.style.display = 'none';
+    });
+    </script>
+
+    {{-- Tab switching JS --}}
+    <script>
+    (function(){
+        var tabs = document.querySelectorAll('[data-histab]');
+        var panels = {
+            pesanan: document.getElementById('histab-pesanan'),
+            ulasan: document.getElementById('histab-ulasan'),
+        };
+        tabs.forEach(function(t) {
+            t.addEventListener('click', function() {
+                tabs.forEach(function(x) {
+                    x.classList.remove('is-active');
+                    x.setAttribute('aria-selected', 'false');
+                });
+                Object.values(panels).forEach(function(p) { if (p) p.classList.remove('is-active'); });
+                t.classList.add('is-active');
+                t.setAttribute('aria-selected', 'true');
+                var target = panels[t.getAttribute('data-histab')];
+                if (target) target.classList.add('is-active');
+            });
+        });
+    })();
+    </script>
 </body>
 </html>

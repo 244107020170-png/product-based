@@ -208,16 +208,95 @@ Route::get('/dashboard', function () {
                 ->get();
         }
 
-        $favoriteFields = \App\Models\Favorite::with('field')->where('user_id', $user->id)->limit(3)->get();
+        $favoriteFields = \App\Models\Favorite::with('field')->where('user_id', $user->id)->get();
         $favoriteIds = \App\Models\Favorite::where('user_id', $user->id)->pluck('field_id')->toArray();
+
+        // FIELD RECOMMENDATION
+        $userSports = array_unique(array_merge($userBookingSports, $userMatchSports, $userSportPref));
+
+        $recommendedFields = collect();
+        $recommendedFieldBadge = '';
+
+        // Priority 1: items with active promos matching user's sports
+        if (!empty($userSports)) {
+            $recommendedFields = \App\Models\Field::where('is_available', true)
+                ->whereIn('type', $userSports)
+                ->whereHas('discounts', function ($q) { $q->active(); })
+                ->orderBy('featured', 'desc')
+                ->orderBy('rating', 'desc')
+                ->take(4)
+                ->get();
+
+            if ($recommendedFields->isNotEmpty()) {
+                $recommendedFieldBadge = 'Promo Spesial';
+            }
+        }
+
+        // Priority 2: popular items (most booked)
+        if ($recommendedFields->isEmpty()) {
+            $recommendedFields = \App\Models\Field::withCount('bookings')
+                ->where('is_available', true)
+                ->orderBy('bookings_count', 'desc')
+                ->orderBy('featured', 'desc')
+                ->orderBy('rating', 'desc')
+                ->take(4)
+                ->get();
+
+            if ($recommendedFields->isNotEmpty()) {
+                $recommendedFieldBadge = 'Popular Choice';
+            }
+        }
+
+        // Priority 3: activity-based (user's preferred sports)
+        if ($recommendedFields->isEmpty() && !empty($userSports)) {
+            $recommendedFields = \App\Models\Field::whereIn('type', $userSports)
+                ->where('is_available', true)
+                ->orderBy('featured', 'desc')
+                ->orderBy('review_count', 'desc')
+                ->orderBy('rating', 'desc')
+                ->take(4)
+                ->get();
+
+            if ($recommendedFields->isNotEmpty()) {
+                $recommendedFieldBadge = 'Recommended For You';
+            }
+        }
+
+        // Priority 4: fallback — any available fields
+        if ($recommendedFields->isEmpty()) {
+            $recommendedFields = \App\Models\Field::withCount('bookings')
+                ->where('is_available', true)
+                ->orderBy('bookings_count', 'desc')
+                ->orderBy('featured', 'desc')
+                ->orderBy('rating', 'desc')
+                ->take(4)
+                ->get();
+        }
+
+        // Sort fields: featured+promo -> featured only -> promo only -> normal
+        $discountIds = \App\Models\Discount::active()->whereNotNull('field_id')->pluck('field_id')->unique()->toArray();
+        $globalOwnerIds = \App\Models\Discount::active()->whereNull('field_id')->pluck('owner_id')->unique()->toArray();
+        $fields = $fields->sortByDesc(function ($f) use ($discountIds, $globalOwnerIds) {
+            $hasPromo = in_array($f->id, $discountIds) || in_array($f->owner_id, $globalOwnerIds);
+            $isFeatured = $f->featured ?? false;
+            if ($isFeatured && $hasPromo) return 3;
+            if ($isFeatured) return 2;
+            if ($hasPromo)   return 1;
+            return 0;
+        })->values();
         
         return view('fields.index', compact(
             'fields', 'upcomingBooking', 'upcomingJoin', 'confirmedMatchNotifs',
             'recommendedMatches', 'pesanLagiFields', 'favoriteFields', 'previousFieldIds',
-            'recommendedBadge', 'favoriteIds', 'isNearby', 'nearbyMessage'
+            'recommendedBadge', 'favoriteIds', 'isNearby', 'nearbyMessage', 'recommendedFields',
+            'recommendedFieldBadge'
         ));
     }
 })->middleware(['auth'])->name('dashboard');
+
+Route::get('/rekomendasi', function () {
+    return view('pages.rekomendasi');
+})->name('recommendation.index');
 
 Route::get('/explore', function () {
     return view('pages.preview');
@@ -300,8 +379,29 @@ Route::middleware('auth')->group(function () {
                 $q->where('owner_id', $user->id);
             })->whereIn('status', ['completed', 'confirmed'])->count() * 50000;
 
-            return view('owner.dashboard', compact('fieldCount', 'bookingCount', 'todayBooking', 'monthlyRevenue'));
+            $reviewStats = \App\Models\Review::whereHas('field', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            });
+            $avgRating = round($reviewStats->avg('rating') ?? 0, 1);
+            $totalReviews = $reviewStats->count();
+            $recentReviews = (clone $reviewStats)->with('user', 'field')->latest()->take(5)->get();
+
+            return view('owner.dashboard', compact(
+                'fieldCount', 'bookingCount', 'todayBooking', 'monthlyRevenue',
+                'avgRating', 'totalReviews', 'recentReviews',
+            ));
         })->name('owner.dashboard');
+
+        Route::get('/history', function () {
+            $user = auth()->user();
+            $fields = \App\Models\Field::withCount('bookings', 'reviews')->where('owner_id', $user->id)->get();
+            $allReviews = \App\Models\Review::with('user', 'field')
+                ->whereHas('field', fn($q) => $q->where('owner_id', $user->id))
+                ->latest()->get();
+            $avgRating = round(\App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->avg('rating') ?? 0, 1);
+            $totalReviews = \App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->count();
+            return view('owner.history', compact('fields', 'allReviews', 'avgRating', 'totalReviews'));
+        })->name('owner.history');
 
         Route::get('/kelolaBooking', function () {
             $user = auth()->user();
@@ -379,8 +479,12 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/kelolaLapangan', function () {
             $user = auth()->user();
-            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
-            return view('owner.kelolaLapangan', compact('fields'));
+            $fields = \App\Models\Field::withCount('reviews')->where('owner_id', $user->id)->get();
+            $totalRating = \App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->avg('rating');
+            $allReviews = \App\Models\Review::with('user', 'field')
+                ->whereHas('field', fn($q) => $q->where('owner_id', $user->id))
+                ->latest()->get();
+            return view('owner.kelolaLapangan', compact('fields', 'totalRating', 'allReviews'));
         })->name('owner.kelolaLapangan');
 
         Route::get('/tambahLapangan', function () {
@@ -391,6 +495,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/fields/store', [OwnerFieldController::class, 'store'])->name('owner.field.store');
         Route::put('/fields/{field}/update', [OwnerFieldController::class, 'update'])->name('owner.field.update');
         Route::delete('/fields/{field}', [OwnerFieldController::class, 'destroy'])->name('owner.field.destroy');
+
+        Route::post('/fields/{field}/toggle-featured', function (\App\Models\Field $field) {
+            if ($field->owner_id !== auth()->id()) abort(403);
+            $field->update(['featured' => !$field->featured]);
+            return response()->json(['success' => true, 'featured' => $field->fresh()->featured]);
+        })->name('owner.field.toggleFeatured');
 
         // ── JADWAL & SLOT (AJAX) ──────────────────────────────────
 
@@ -543,6 +653,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/bookings/{booking}', [BookingController::class, 'detail'])->name('booking.detail');
     Route::post('/bookings/{booking}/pay', [BookingController::class, 'pay'])->name('booking.pay');
+    Route::get('/payment/{booking}', [BookingController::class, 'paymentPage'])->name('booking.payment');
 
     Route::get('/matches', [ActivityController::class, 'index'])->name('activity.index');
     Route::get('/cari-tim', [MatchController::class, 'index'])->name('matches.index');
@@ -579,20 +690,28 @@ Route::middleware('auth')->group(function () {
         if ($sport) {
             $query->where('sport_preference', 'like', '%' . $sport . '%');
         }
-        if ($skill) {
-            $query->where('skill_level', $skill);
-        }
 
         $partners = $query->get()->map(function ($u) {
+            $b = \App\Models\Booking::where('user_id', $u->id)->whereIn('status', ['selesai','confirmed','pending'])->count();
+            $m = \Illuminate\Support\Facades\DB::table('match_players')->where('user_id', $u->id)->count();
+            $r = \App\Models\Review::where('user_id', $u->id)->count();
+            $pts = ($b * 1) + ($m * 2) + ($r * 3);
+            $level = $pts >= 21 ? 'Pro' : ($pts >= 6 ? 'Aktif' : 'Pemula');
             return [
-                'id' => $u->id,
-                'name' => $u->name,
-                'avatar' => $u->avatarUrl(),
+                'id'               => $u->id,
+                'name'             => $u->name,
+                'avatar'           => $u->avatarUrl(),
                 'sport_preference' => $u->sport_preference,
-                'skill_level' => $u->skill_level,
-                'phone' => $u->phone,
+                'level'            => $level,
+                'points'           => $pts,
+                'phone'            => $u->phone,
             ];
         });
+
+        if ($skill) {
+            $partners = $partners->filter(fn($p) => strtolower($p['level']) === strtolower($skill));
+            $partners = $partners->values();
+        }
 
         return response()->json($partners);
     })->name('partner.data');

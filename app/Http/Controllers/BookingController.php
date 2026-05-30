@@ -173,6 +173,36 @@ class BookingController extends Controller
         return view('booking.detail', compact('booking'));
     }
 
+    /**
+     * Auto-process payment when QR code is scanned / clicked
+     */
+    public function paymentPage(Booking $booking)
+    {
+        if ($booking->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $booking->load('field', 'user');
+
+        if ($booking->status !== BookingStatus::WAITING_PAYMENT) {
+            return redirect()->route('booking.detail', $booking->id);
+        }
+
+        if ($booking->payment_deadline && now()->greaterThan($booking->payment_deadline)) {
+            $booking->update(['status' => BookingStatus::EXPIRED]);
+            return redirect()->route('booking.detail', $booking->id)->with('error', 'Waktu pembayaran telah kadaluarsa.');
+        }
+
+        $booking->update([
+            'status' => BookingStatus::WAITING_CONFIRMATION,
+            'paid_at' => now(),
+        ]);
+
+        $booking->user->notify(new \App\Notifications\BookingPaymentReceived($booking));
+
+        return redirect()->route('booking.detail', $booking->id)->with('success', 'Pembayaran berhasil! Silakan tunggu konfirmasi owner.');
+    }
+
     public function pay(Booking $booking)
     {
         if ($booking->user_id !== auth()->id()) {
@@ -210,6 +240,9 @@ class BookingController extends Controller
             'status' => BookingStatus::CONFIRMED,
             'confirmed_at' => now(),
         ]);
+
+        $booking->load('user');
+        $booking->user->notify(new \App\Notifications\BookingConfirmed($booking));
 
         return back()->with('success', 'Booking telah dikonfirmasi.');
     }

@@ -6,22 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Field extends Model
 {
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url', 'has_active_promo', 'promo_price', 'promo_badge', 'promo_price_raw', 'promo_start', 'promo_end'];
 
     protected $fillable = [
         'name',
         'description',
         'type',
         'location',
+        'maps_link',
         'price_per_hour',
         'open_time',
         'close_time',
         'owner_id',
         'image',
         'facilities',
-        'rating',
-        'review_count',
         'is_available',
+        'featured',
         'verification_status',
         'verification_notes',
         'verified_at',
@@ -33,6 +33,7 @@ class Field extends Model
         'rating' => 'float',
         'verified_at' => 'datetime',
         'is_available' => 'boolean',
+        'featured' => 'boolean',
     ];
 
     public function owner()
@@ -75,6 +76,27 @@ class Field extends Model
         return $this->hasMany(Holiday::class);
     }
 
+    public function discounts()
+    {
+        return $this->hasMany(Discount::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public static function recalculateStats(int $fieldId): void
+    {
+        $field = static::find($fieldId);
+        if (!$field) return;
+        $avg = Review::where('field_id', $fieldId)->avg('rating');
+        $count = Review::where('field_id', $fieldId)->count();
+        $field->rating = round($avg ?? 0, 1);
+        $field->review_count = $count;
+        $field->save();
+    }
+
     /**
      * Get the best available image URL for this field.
      * - Owner uploaded image → use it
@@ -90,40 +112,116 @@ class Field extends Model
         $typeLower = $this->type ? strtolower(trim($this->type)) : '';
 
         $sportImages = [
-            'futsal'    => 'futsal.jpg',
-            'badminton' => 'badminton.jpg',
-            'basket'    => 'basket.jpg',
-            'voli'      => 'volley.jpg',
-            'volley'    => 'volley.jpg',
-            'tennis'    => 'default.jpg',
-            'tenis'     => 'default.jpg',
-            'golf'      => 'default.jpg',
-            'renang'    => 'default.jpg',
-            'panahan'   => 'default.jpg',
-            'lari'      => 'default.jpg',
-            'sepeda'    => 'default.jpg',
-            'tinju'     => 'default.jpg',
-            'bela diri' => 'default.jpg',
-            'yoga'      => 'default.jpg',
-            'fitness'   => 'default.jpg',
-            'hiking'    => 'default.jpg',
-            'padel'     => 'default.jpg',
-            'baseball'  => 'default.jpg',
-            'rugby'     => 'default.jpg',
-            'senam'     => 'default.jpg',
+            'futsal'    => 'futsal.svg',
+            'badminton' => 'badminton.svg',
+            'basket'    => 'basket.svg',
+            'voli'      => 'volley.svg',
+            'volley'    => 'volley.svg',
+            'tennis'    => 'tennis.svg',
+            'tenis'     => 'tennis.svg',
+            'golf'      => 'golf.svg',
+            'renang'    => 'renang.svg',
+            'panahan'   => 'panahan.svg',
+            'lari'      => 'lari.svg',
+            'sepeda'    => 'sepeda.svg',
+            'tinju'     => 'tinju.svg',
+            'bela diri' => 'bela-diri.svg',
+            'yoga'      => 'yoga.svg',
+            'fitness'   => 'fitness.svg',
+            'hiking'    => 'hiking.svg',
+            'padel'     => 'padel.svg',
+            'baseball'  => 'baseball.svg',
+            'rugby'     => 'rugby.svg',
+            'senam'     => 'senam.svg',
         ];
 
-        $file = $sportImages[$typeLower] ?? 'default.jpg';
+        $file = $sportImages[$typeLower] ?? 'default.svg';
 
         return asset('assets/images/sports/' . $file);
     }
 
-    /**
-     * Get formatted price with currency
-     */
     public function formattedPrice(): string
     {
         return 'Rp' . number_format($this->price_per_hour, 0, ',', '.') . '/jam';
+    }
+
+    public function hasActivePromo(): bool
+    {
+        if ($this->discounts()->active()->exists()) {
+            return true;
+        }
+        return \App\Models\Discount::where('owner_id', $this->owner_id)
+            ->whereNull('field_id')
+            ->active()
+            ->exists();
+    }
+
+    public function getHasActivePromoAttribute(): bool
+    {
+        return $this->hasActivePromo();
+    }
+
+    public function getActivePromoAttribute()
+    {
+        $direct = $this->discounts()->active()->orderBy('value', 'desc')->first();
+        if ($direct) return $direct;
+        return \App\Models\Discount::where('owner_id', $this->owner_id)
+            ->whereNull('field_id')
+            ->active()
+            ->orderBy('value', 'desc')
+            ->first();
+    }
+
+    public function getPromoPriceAttribute(): ?string
+    {
+        $promo = $this->activePromo;
+        if (!$promo) return null;
+
+        $discounted = $this->calculateDiscountedPrice($this->price_per_hour, $promo);
+        return 'Rp' . number_format($discounted, 0, ',', '.') . '/jam';
+    }
+
+    public function getPromoPriceRawAttribute(): ?int
+    {
+        $promo = $this->activePromo;
+        if (!$promo) return null;
+
+        return $this->calculateDiscountedPrice($this->price_per_hour, $promo);
+    }
+
+    public function getPromoBadgeAttribute(): ?string
+    {
+        $promo = $this->activePromo;
+        if (!$promo) return null;
+
+        if ($promo->type === 'percentage') {
+            return 'Diskon ' . (int) $promo->value . '%';
+        }
+        return 'Diskon Rp' . number_format((int) $promo->value, 0, ',', '.');
+    }
+
+    public function getPromoStartAttribute(): ?string
+    {
+        $promo = $this->activePromo;
+        if (!$promo) return null;
+
+        return $promo->start_date->format('d M Y');
+    }
+
+    public function getPromoEndAttribute(): ?string
+    {
+        $promo = $this->activePromo;
+        if (!$promo) return null;
+
+        return $promo->end_date->format('d M Y');
+    }
+
+    private function calculateDiscountedPrice(int $price, Discount $promo): int
+    {
+        if ($promo->type === 'percentage') {
+            return (int) round($price * (1 - $promo->value / 100));
+        }
+        return max(0, $price - (int) $promo->value);
     }
 
     /**

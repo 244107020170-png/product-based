@@ -523,16 +523,16 @@
                             <div class="w-full mt-5">
                                 <div class="flex justify-between items-center text-[9px] font-extrabold font-archivo tracking-wider uppercase opacity-75 mb-1.5">
                                     <span>Progress</span>
-                                    <span>{{ $userSkill['progress'] }}/5</span>
+                                    <span>{{ $userSkill['progressPct'] }}%</span>
                                 </div>
                                 <div class="w-full h-2.5 bg-white/15 rounded-full overflow-hidden border border-white/10">
-                                    <div class="h-full bg-gradient-to-r from-yellow-300 to-yellow-400 rounded-full transition-all duration-500 shadow-inner" style="width: {{ ($userSkill['progress'] / 5) * 100 }}%"></div>
+                                    <div class="h-full bg-gradient-to-r from-yellow-300 to-yellow-400 rounded-full transition-all duration-500 shadow-inner" style="width: {{ $userSkill['progressPct'] }}%"></div>
                                 </div>
                             </div>
                             
                             <div class="flex items-center gap-1.5 mt-4 text-[10px] font-semibold opacity-70 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <span>{{ $userSkill['totalBookings'] + $userSkill['totalMatches'] }} aktivitas</span>
+                                <span>{{ $userSkill['totalPoints'] }} poin</span>
                             </div>
                         </div>
                     </div>
@@ -629,12 +629,18 @@
                                 <option value="{{ $ps }}">{{ $fullSportEmoji[$ps] ?? '🏆' }} {{ $ps }}</option>
                             @endforeach
                         </select>
-                        <select id="partnerSkillFilter" onchange="filterPartners()" class="partner-filter-select">
-                            <option value="">Semua Level</option>
-                            <option value="pemula">🌱 Pemula</option>
-                            <option value="menengah">⭐ Menengah</option>
-                            <option value="ahli">🏆 Ahli</option>
-                        </select>
+                        <div class="partner-level-wrap" id="partnerLevelWrap">
+                            <button type="button" class="partner-level-btn" id="partnerLevelBtn" onclick="toggleLevelDropdown()">
+                                <span id="partnerLevelLabel">🌱 Semua Level</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                            <div class="partner-level-dropdown" id="partnerLevelDropdown">
+                                <button type="button" class="partner-level-option" data-value="" onclick="selectLevel('')">🌱 Semua Level</button>
+                                <button type="button" class="partner-level-option" data-value="pemula" onclick="selectLevel('pemula')">🌱 Pemula</button>
+                                <button type="button" class="partner-level-option" data-value="aktif" onclick="selectLevel('aktif')">⭐ Aktif</button>
+                                <button type="button" class="partner-level-option" data-value="pro" onclick="selectLevel('pro')">🏆 Pro</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="partnerList" class="partner-grid">
@@ -657,6 +663,71 @@
             }
             .partner-filter-select:focus {
                 border-color: #EB5436;
+            }
+            .partner-level-wrap {
+                position: relative;
+            }
+            .partner-level-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 12px;
+                border-radius: 10px;
+                border: 1px solid rgba(0,0,77,.1);
+                background: white;
+                font-size: 12px;
+                font-weight: 600;
+                color: #02025b;
+                cursor: pointer;
+                font-family: inherit;
+                transition: border-color .18s;
+                white-space: nowrap;
+            }
+            .partner-level-btn:hover {
+                border-color: #EB5436;
+            }
+            .partner-level-btn:focus {
+                outline: none;
+                border-color: #EB5436;
+            }
+            .partner-level-dropdown {
+                position: absolute;
+                top: calc(100% + 4px);
+                right: 0;
+                min-width: 180px;
+                background: #fff;
+                border: 1px solid rgba(0,0,77,.1);
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0,0,0,.1);
+                z-index: 50;
+                padding: 6px;
+                display: none;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .partner-level-dropdown.is-open {
+                display: flex;
+            }
+            .partner-level-option {
+                padding: 8px 12px;
+                border-radius: 8px;
+                border: none;
+                background: transparent;
+                font-size: 12px;
+                font-weight: 600;
+                color: #02025b;
+                cursor: pointer;
+                text-align: left;
+                font-family: inherit;
+                transition: background .15s;
+                white-space: nowrap;
+            }
+            .partner-level-option:hover {
+                background: #f1f5f9;
+            }
+            .partner-level-option.is-active {
+                background: #eef2ff;
+                color: #4338ca;
             }
             .partner-grid {
                 display: grid;
@@ -754,9 +825,31 @@
             </style>
 
             <script>
+            /* ── Level dropdown ── */
+            var _selectedLevel = '';
+            function toggleLevelDropdown() {
+                document.getElementById('partnerLevelDropdown').classList.toggle('is-open');
+            }
+            function selectLevel(val) {
+                _selectedLevel = val;
+                var labels = {'':'🌱 Semua Level','pemula':'🌱 Pemula','aktif':'⭐ Aktif','pro':'🏆 Pro'};
+                document.getElementById('partnerLevelLabel').textContent = labels[val] || '🌱 Semua Level';
+                document.getElementById('partnerLevelDropdown').classList.remove('is-open');
+                document.querySelectorAll('.partner-level-option').forEach(function(b) {
+                    b.classList.toggle('is-active', b.dataset.value === val);
+                });
+                filterPartners();
+            }
+            document.addEventListener('click', function(e) {
+                var wrap = document.getElementById('partnerLevelWrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    document.getElementById('partnerLevelDropdown').classList.remove('is-open');
+                }
+            });
+
             function filterPartners() {
                 var sport = document.getElementById('partnerSportFilter').value;
-                var skill = document.getElementById('partnerSkillFilter').value;
+                var skill = _selectedLevel;
                 var container = document.getElementById('partnerList');
                 container.innerHTML = '<div class="partner-empty">Memuat data partner...</div>';
 
@@ -776,7 +869,7 @@
                         html += '<div class="partner-card__name">' + p.name + '</div>';
                         html += '<div class="partner-card__meta">';
                         if (p.sport_preference) html += '<span class="partner-card__sport">' + p.sport_preference + '</span>';
-                        if (p.skill_level) html += '<span class="partner-card__skill">' + ({pemula:'Pemula',menengah:'Menengah',ahli:'Ahli'}[p.skill_level] || p.skill_level) + '</span>';
+                        if (p.level) html += '<span class="partner-card__skill">' + p.level + '</span>';
                         html += '</div></div>';
                         html += '<a href="' + waUrl + '" target="_blank" class="partner-card__invite">💬 Ajak</a>';
                         html += '</div>';
@@ -1066,7 +1159,7 @@
                                     <p class="text-xs text-slate-500 mt-0.5 truncate" x-text="f.location || 'Lokasi tidak tersedia'"></p>
                                     <p class="text-xs text-slate-400 mt-1">
                                         <span class="text-amber-500">&#9733;</span>
-                                        <span x-text="f.rating || '4.8'"></span>
+                                        <span x-text="f.rating ?? '—'"></span>
                                         <span class="mx-1">&middot;</span>
                                         <span x-text="f.type"></span>
                                     </p>

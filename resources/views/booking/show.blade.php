@@ -11,7 +11,10 @@
     $prefillStart = request('start_time', '');
     $prefillEnd = request('end_time', '');
 
-    $visibleFields = ['id', 'name', 'location', 'price_per_hour', 'image', 'image_url', 'facilities', 'rating'];
+    $field->load('discounts');
+
+    $visibleFields = ['id', 'name', 'location', 'price_per_hour', 'image', 'image_url', 'facilities', 'rating',
+        'promo_price', 'promo_badge', 'promo_price_raw', 'promo_start', 'promo_end', 'has_active_promo'];
     $selectedFieldJson = $field->makeVisible($visibleFields);
     $allFieldsJson = $allFields->map(fn($f) => $f->makeVisible($visibleFields))->toArray();
     
@@ -93,8 +96,13 @@
         .bk-time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .bk-time-pill { padding: 8px 4px; text-align: center; border: 1px solid #666; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: #333; }
         .bk-time-pill:hover:not(.disabled) { background: #e8e4d9; }
-        .bk-time-pill.selected { background: #00004d; color: white; border-color: #00004d; }
+        .bk-time-pill.selected-start { background: #00004d; color: white; border-color: #00004d; }
+        .bk-time-pill.selected-end { background: #1e40af; color: white; border-color: #1e40af; }
+        .bk-time-pill.in-range { background: #dbeafe; color: #1e3a5f; border-color: #93c5fd; }
+        .bk-time-pill.clickable { cursor: pointer; }
+        .bk-time-pill.not-clickable { opacity: 0.4; cursor: not-allowed; }
         .bk-time-pill.full { background: #d32f2f; color: white; border-color: #d32f2f; cursor: not-allowed; opacity: 0.9; }
+        .bk-time-pill.selected-start.full, .bk-time-pill.selected-end.full { display: none; }
         
         /* Sub-field Grid */
         .bk-subfield-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -105,6 +113,12 @@
         
         /* Summary Box */
         .bk-summary { border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .bk-summary-placeholder { border: 1px dashed #d4cbb8; border-radius: 12px; padding: 24px; background: #FAF8F1; }
+        .bk-selanjutnya-btn { width: 100%; background: #00004d; color: white; border: none; border-radius: 8px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .bk-selanjutnya-btn:hover { background: #000033; }
+        .bk-selanjutnya-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .bk-summary-section { overflow: hidden; transition: max-height 0.5s ease, opacity 0.4s ease; max-height: 0; opacity: 0; }
+        .bk-summary-section.open { max-height: 800px; opacity: 1; }
         .bk-summary-title { font-size: 18px; font-weight: 700; color: #000; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         
         .bk-divider { height: 1px; background: #e2e8f0; margin: 16px 0; }
@@ -228,6 +242,12 @@
                 {{-- Info --}}
                 <div class="bk-info">
                     <h1 x-text="selectedField.name"></h1>
+                    <template x-if="selectedField.has_active_promo">
+                        <div style="display:inline-flex;align-items:center;gap:6px;background:#dc2626;color:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:800;margin-bottom:10px;">
+                            <span>🔥</span>
+                            <span x-text="selectedField.promo_badge"></span>
+                        </div>
+                    </template>
                     <div class="bk-meta">
                         <div class="bk-meta-item">
                             <span class="bk-icon" style="color: #ff4d4d;">
@@ -244,7 +264,7 @@
                                     <path d="M12 3L14.9 8.7L21 9.6L16.5 14L17.6 20L12 17.1L6.4 20L7.5 14L3 9.6L9.1 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
                                 </svg>
                             </span>
-                            <span x-text="selectedField.rating || '4.8'"></span>
+                            <span x-text="selectedField.rating ?? '—'"></span>
                         </div>
                         <div class="bk-meta-item">
                             <span class="bk-icon" style="color: #b45309;">
@@ -255,7 +275,15 @@
                                     <path d="M9.5 16C10 16.7 10.9 17 12 17C13.5 17 14.7 16.1 14.9 14.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </span>
-                            <span x-text="formatPrice(selectedField.price_per_hour) + ' / jam'"></span>
+                            <template x-if="selectedField.has_active_promo">
+                                <span>
+                                    <span style="font-weight:800;color:#dc2626;" x-text="formatPrice(selectedField.promo_price_raw) + ' / jam'"></span>
+                                    <span style="text-decoration:line-through;color:#999;font-size:12px;margin-left:6px;" x-text="formatPrice(selectedField.price_per_hour) + ' / jam'"></span>
+                                </span>
+                            </template>
+                            <template x-if="!selectedField.has_active_promo">
+                                <span x-text="formatPrice(selectedField.price_per_hour) + ' / jam'"></span>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -306,15 +334,23 @@
                     </div>
                 </div>
                 
-                {{-- Jam --}}
+                {{-- Jam Mulai → Jam Selesai --}}
                 <div class="bk-input-group" style="position: relative;">
-                    <label class="bk-label">Pilih Jam</label>
+                    <label class="bk-label">Jam Main</label>
                     <div class="bk-input-box" @click="showTimeDropdown = !showTimeDropdown; showFieldDropdown = false">
-                        <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <span style="color: #666;">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                             </span>
-                            <span x-text="selectedTimeDisplay || 'Pilih Waktu'" :style="!selectedTimeDisplay && 'color: #94a3b8'"></span>
+                            <template x-if="!selectedStartTime">
+                                <span style="color:#94a3b8;">Pilih Jam Mulai</span>
+                            </template>
+                            <template x-if="selectedStartTime && !selectedEndTime">
+                                <span><span style="font-weight:800;color:#00004d;" x-text="selectedStartTime"></span><span style="margin:0 4px;color:#94a3b8;"> → </span><span style="color:#94a3b8;">Pilih Jam Selesai</span></span>
+                            </template>
+                            <template x-if="selectedStartTime && selectedEndTime">
+                                <span><span style="font-weight:800;color:#00004d;" x-text="selectedStartTime"></span><span style="margin:0 4px;"> → </span><span style="font-weight:800;color:#00004d;" x-text="selectedEndTime"></span></span>
+                            </template>
                         </div>
                         <span style="color: #666;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -322,19 +358,72 @@
                     </div>
                     
                     <div class="bk-dropdown" :class="{ 'open': showTimeDropdown }">
-                        <div class="bk-time-grid">
-                            <template x-for="time in availableTimes" :key="time.start">
-                                <div class="bk-time-pill" 
-                                     :class="{ 
-                                        'selected': selectedTime === time.start,
-                                        'full': time.isFull,
-                                        'disabled': time.isFull 
-                                     }"
-                                     @click="if(!time.isFull) { selectedTime = time.start; selectedTimeDisplay = time.display; selectedTimeSlot = time; showTimeDropdown = false; calculateTotal(); checkSubfieldsAvailability(); }">
-                                    <span x-text="time.start"></span>
+                        <template x-if="timeSelectionPhase === 'start'">
+                            <div>
+                                <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:10px;">Pilih Jam Mulai</div>
+                                <div class="bk-time-grid">
+                                    <template x-for="time in availableTimes" :key="time.start">
+                                        <div class="bk-time-pill" 
+                                             :class="{ 
+                                                'selected-start': selectedStartTime === time.start,
+                                                'full': time.isFull,
+                                                'disabled': time.isFull 
+                                             }"
+                                             @click="if(!time.isFull) { selectedStartTime = time.start; timeSelectionPhase = 'end'; }">
+                                            <span x-text="time.start"></span>
+                                        </div>
+                                    </template>
                                 </div>
-                            </template>
-                        </div>
+                            </div>
+                        </template>
+                        <template x-if="timeSelectionPhase === 'end'">
+                            <div>
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:600;color:#666;">
+                                    <span>Jam Mulai: <strong style="color:#00004d;" x-text="selectedStartTime"></strong></span>
+                                    <span style="color:#94a3b8;">→</span>
+                                    <span>Pilih Jam Selesai</span>
+                                    <button type="button" @click="selectedStartTime='';selectedEndTime='';timeSelectionPhase='start'" style="margin-left:auto;background:none;border:none;color:#dc2626;font-size:12px;cursor:pointer;text-decoration:underline;">Ubah</button>
+                                </div>
+                                <div class="bk-time-grid">
+                                    <template x-for="time in availableTimes.filter(t => t.start > selectedStartTime)" :key="time.start">
+                                        <div class="bk-time-pill" 
+                                             :class="{ 
+                                                'selected-end': selectedEndTime === time.start,
+                                                'in-range': selectedEndTime && time.start > selectedStartTime && time.start < selectedEndTime,
+                                                'full': time.isFull,
+                                                'clickable': !time.isFull
+                                             }"
+                                             @click="if(!time.isFull) { selectedEndTime = time.start; timeSelectionPhase = 'complete'; showTimeDropdown = false; calculateTotal(); checkSubfieldsAvailability(); }">
+                                            <span x-text="time.start"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="timeSelectionPhase === 'complete'">
+                            <div>
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:600;color:#666;">
+                                    <span style="font-weight:800;color:#00004d;" x-text="selectedStartTime"></span>
+                                    <span>→</span>
+                                    <span style="font-weight:800;color:#00004d;" x-text="selectedEndTime"></span>
+                                    <span style="margin-left:auto;color:#16a34a;">✓ Dipilih</span>
+                                    <button type="button" @click="selectedStartTime='';selectedEndTime='';timeSelectionPhase='start'" style="margin-left:8px;background:none;border:none;color:#dc2626;font-size:12px;cursor:pointer;text-decoration:underline;">Ubah</button>
+                                </div>
+                                <div class="bk-time-grid">
+                                    <template x-for="time in availableTimes.filter(t => t.start > selectedStartTime)" :key="time.start">
+                                        <div class="bk-time-pill" 
+                                             :class="{ 
+                                                'selected-end': selectedEndTime === time.start,
+                                                'in-range': time.start > selectedStartTime && time.start < selectedEndTime,
+                                                'full': time.isFull
+                                             }"
+                                             @click="selectedStartTime='';selectedEndTime='';timeSelectionPhase='start'; showTimeDropdown = false;">
+                                            <span x-text="time.start"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
                 
@@ -374,46 +463,116 @@
             
             {{-- Ringkasan --}}
             <div class="bk-form-right">
-                <div class="bk-summary">
-                    <div class="bk-summary-title">Ringkasan Pesanan</div>
-                    
-                    <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-                        <span class="bk-icon" style="color: #ff4d4d; margin-top: 2px;">
-                            <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                                <circle cx="12" cy="10.5" r="2.4" fill="currentColor"/>
-                            </svg>
-                        </span>
-                        <div>
-                            <div style="font-weight: 700; color: #000; font-size: 14px;" x-text="selectedField.name"></div>
-                            <div style="font-size: 12px; color: #666; margin-top: 2px;" x-text="selectedField.location"></div>
+                {{-- Placeholder / Selanjutnya --}}
+                <template x-if="!showSummary">
+                    <div class="bk-summary-placeholder">
+                        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                            <span class="bk-icon" style="color: #ff4d4d; margin-top: 2px;">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                    <circle cx="12" cy="10.5" r="2.4" fill="currentColor"/>
+                                </svg>
+                            </span>
+                            <div>
+                                <div style="font-weight: 700; color: #000; font-size: 14px;" x-text="selectedField.name"></div>
+                                <div style="font-size: 12px; color: #666; margin-top: 2px;" x-text="selectedField.location"></div>
+                            </div>
+                        </div>
+                        <template x-if="selectedField.has_active_promo">
+                            <div>
+                                <div style="display:inline-flex;align-items:center;gap:6px;background:#dc2626;color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;">
+                                    <span>🔥</span>
+                                    <span x-text="selectedField.promo_badge"></span>
+                                </div>
+                                <div style="font-size:10px;color:#94a3b8;margin-top:4px;">
+                                    <span x-text="selectedField.promo_start"></span>
+                                    <span>&nbsp;—&nbsp;</span>
+                                    <span x-text="selectedField.promo_end"></span>
+                                </div>
+                            </div>
+                        </template>
+                        <div style="margin: 16px 0; text-align: center; color: #94a3b8; font-size: 14px;">
+                            <template x-if="!isFormComplete">
+                                <span>Lengkapi data pemesanan untuk melihat ringkasan</span>
+                            </template>
+                            <template x-if="isFormComplete">
+                                <span style="color:#16a34a;font-weight:600;">✓ Semua data lengkap</span>
+                            </template>
+                        </div>
+                        <button class="bk-selanjutnya-btn" :disabled="!isFormComplete" @click="revealSummary()">
+                            <span>⬇</span>
+                            <span>Selanjutnya</span>
+                        </button>
+                    </div>
+                </template>
+                
+                {{-- Full Summary --}}
+                <template x-if="showSummary">
+                    <div class="bk-summary-section" :class="{ 'open': showSummary }">
+                        <div class="bk-summary">
+                            <div class="bk-summary-title">Ringkasan Pesanan</div>
+                            
+                            <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                                <span class="bk-icon" style="color: #ff4d4d; margin-top: 2px;">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                        <circle cx="12" cy="10.5" r="2.4" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <div style="font-weight: 700; color: #000; font-size: 14px;" x-text="selectedField.name"></div>
+                                    <div style="font-size: 12px; color: #666; margin-top: 2px;" x-text="selectedField.location"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="bk-divider"></div>
+                            
+                            <template x-if="selectedField.has_active_promo">
+                                <div>
+                                    <div class="bk-sum-row" style="color:#999;">
+                                        <span>Harga Asli</span>
+                                        <span class="bk-sum-val" style="text-decoration:line-through;color:#999;" x-text="formatPrice(selectedField.price_per_hour * duration)"></span>
+                                    </div>
+                                    <div class="bk-sum-row" style="color:#dc2626;">
+                                        <span x-text="selectedField.promo_badge"></span>
+                                        <span class="bk-sum-val" style="color:#dc2626;font-weight:800;" x-text="'-' + formatPrice((selectedField.price_per_hour - selectedField.promo_price_raw) * duration)"></span>
+                                    </div>
+                                    <div class="bk-sum-row" style="border-bottom:1px dashed #e2e8f0;padding-bottom:12px;margin-bottom:12px;">
+                                        <span style="font-weight:700;color:#000;font-size:15px;">Harga Setelah Diskon</span>
+                                        <span style="font-weight:800;color:#16a34a;font-size:17px;" x-text="formatPrice(selectedField.promo_price_raw * duration)"></span>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="!selectedField.has_active_promo">
+                                <div class="bk-sum-row">
+                                    <span>Harga</span>
+                                    <span class="bk-sum-val" x-text="formatPrice(selectedField.price_per_hour) + '/jam'"></span>
+                                </div>
+                            </template>
+                            <div class="bk-sum-row">
+                                <span>Durasi</span>
+                                <span class="bk-sum-val" x-text="duration + ' Jam'"></span>
+                            </div>
+                            <div class="bk-sum-row" style="font-weight:700;color:#000;font-size:15px;border-bottom:1px dashed #e2e8f0;padding-bottom:12px;margin-bottom:12px;">
+                                <span>Subtotal</span>
+                                <span class="bk-sum-val" style="font-weight:800;color:#000;font-size:17px;" x-text="formatPrice(effectivePrice * duration)"></span>
+                            </div>
+                            <div class="bk-sum-row">
+                                <span>Biaya Admin</span>
+                                <span class="bk-sum-val" x-text="formatPrice(adminFee)"></span>
+                            </div>
+                            
+                            <div class="bk-divider"></div>
+                            
+                            <div class="bk-total-row">
+                                <span>Total</span>
+                                <span x-text="formatPrice(totalPrice)"></span>
+                            </div>
+                            
+                            <button class="bk-btn-submit" @click.prevent="submitBooking()">Lanjut Pembayaran</button>
                         </div>
                     </div>
-                    
-                    <div class="bk-divider"></div>
-                    
-                    <div class="bk-sum-row">
-                        <span>Harga /jam</span>
-                        <span class="bk-sum-val" x-text="formatPrice(selectedField.price_per_hour)"></span>
-                    </div>
-                    <div class="bk-sum-row">
-                        <span>Durasi</span>
-                        <span class="bk-sum-val">1 Jam</span>
-                    </div>
-                    <div class="bk-sum-row">
-                        <span>Biaya Admin</span>
-                        <span class="bk-sum-val" x-text="formatPrice(adminFee)"></span>
-                    </div>
-                    
-                    <div class="bk-divider"></div>
-                    
-                    <div class="bk-total-row">
-                        <span>Total</span>
-                        <span x-text="formatPrice(totalPrice)"></span>
-                    </div>
-                    
-                    <button class="bk-btn-submit" @click.prevent="submitBooking()">Booking Sekarang</button>
-                </div>
+                </template>
             </div>
         </div>
         
@@ -447,9 +606,10 @@ function bookingApp() {
         selectedSubfield: { id: 2, name: 'Lapangan B', isFull: false },
         
         selectedDate: '',
-        selectedTime: '',
-        selectedTimeDisplay: '',
-        selectedTimeSlot: null,
+        selectedStartTime: '',
+        selectedEndTime: '',
+        timeSelectionPhase: 'start',
+        showSummary: false,
         
         showFasilitas: true, // Based on screenshot it's open by default
         showTimeDropdown: false,
@@ -457,6 +617,7 @@ function bookingApp() {
         
         adminFee: 2000,
         totalPrice: 0,
+        promoTotalPrice: 0,
         
         checkSubfieldsAvailability() {
             // When time changes, we randomly mock some subfields being full
@@ -477,7 +638,6 @@ function bookingApp() {
             const prefillStart = '{{ $prefillStart }}';
             const prefillEnd = '{{ $prefillEnd }}';
 
-            this.calculateTotal();
             this.$nextTick(() => {
                 const picker = flatpickr(this.$refs.dateInput, {
                     minDate: 'today',
@@ -496,13 +656,13 @@ function bookingApp() {
                 }
 
                 if (prefillStart && prefillEnd) {
-                    const display = prefillStart + ' - ' + prefillEnd;
-                    this.selectedTime = prefillStart;
-                    this.selectedTimeDisplay = display;
-                    this.selectedTimeSlot = { start: prefillStart, end: prefillEnd, display: display };
+                    this.selectedStartTime = prefillStart;
+                    this.selectedEndTime = prefillEnd;
+                    this.timeSelectionPhase = 'complete';
                     this.calculateTotal();
                     this.checkSubfieldsAvailability();
                 }
+                this.calculateTotal();
             });
             
             // Close dropdowns on outside click
@@ -532,20 +692,48 @@ function bookingApp() {
             return facilities.map(f => ({ name: f, icon: facilityIcons[f] || checkIcon }));
         },
         
+        get duration() {
+            if (!this.selectedStartTime || !this.selectedEndTime) return 0;
+            var start = parseInt(this.selectedStartTime.split(':')[0]);
+            var end = parseInt(this.selectedEndTime.split(':')[0]);
+            return Math.max(0, end - start);
+        },
+        
+        get effectivePrice() {
+            var base = parseInt(this.selectedField.price_per_hour);
+            if (this.selectedField.has_active_promo && this.selectedField.promo_price_raw) {
+                return parseInt(this.selectedField.promo_price_raw);
+            }
+            return base;
+        },
+        
         formatPrice(price) {
             return 'Rp' + parseInt(price).toLocaleString('id-ID');
         },
         
         calculateTotal() {
-            this.totalPrice = parseInt(this.selectedField.price_per_hour) + this.adminFee;
+            var price = this.effectivePrice;
+            var hrs = this.duration;
+            this.totalPrice = (price * hrs) + this.adminFee;
+            this.promoTotalPrice = (price * hrs) + this.adminFee;
+        },
+        
+        get isTimeComplete() {
+            return this.selectedStartTime && this.selectedEndTime;
+        },
+        get isFormComplete() {
+            return this.selectedDate && this.isTimeComplete && this.selectedSubfield;
+        },
+        revealSummary() {
+            this.showSummary = true;
+            this.$nextTick(() => {
+                const el = this.$el.querySelector('.bk-form-right');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
         },
         
         submitBooking() {
-            if (!this.selectedDate || !this.selectedTime || !this.selectedTimeSlot) {
-                showToast('Pilih tanggal dan jam terlebih dahulu', 'error');
-                return;
-            }
-            if (!this.selectedDate || !this.selectedTime) {
+            if (!this.selectedDate || !this.selectedStartTime || !this.selectedEndTime) {
                 showToast('Pilih tanggal dan jam terlebih dahulu', 'error');
                 return;
             }
@@ -559,8 +747,8 @@ function bookingApp() {
                 body: JSON.stringify({
                     field_id: this.selectedField.id,
                     date: this.selectedDate,
-                    start_time: this.selectedTimeSlot.start,
-                    end_time: this.selectedTimeSlot.end,
+                    start_time: this.selectedStartTime,
+                    end_time: this.selectedEndTime,
                     sport: this.privateSport || undefined,
                 })
             })

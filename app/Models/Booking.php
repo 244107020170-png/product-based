@@ -68,10 +68,26 @@ class Booking extends Model
         return $this->belongsTo(Field::class);
     }
 
-    /**
-     * Calculate total price based on field price_per_hour and booking duration.
-     */
-    public function getTotalPriceAttribute(): int
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+
+    public function getOriginalTotalPriceAttribute(): int
+    {
+        if (!$this->field) return 0;
+        $start = \Carbon\Carbon::parse($this->start_time);
+        $end   = \Carbon\Carbon::parse($this->end_time);
+        $hours = max(1, $start->diffInHours($end));
+        return $this->field->price_per_hour * $hours;
+    }
+
+    public function getDiscountAmountAttribute(): int
+    {
+        return $this->original_total_price - $this->subtotal_price;
+    }
+
+    public function getSubtotalPriceAttribute(): int
     {
         if (!$this->field) return 0;
 
@@ -79,7 +95,30 @@ class Booking extends Model
         $end   = \Carbon\Carbon::parse($this->end_time);
         $hours = max(1, $start->diffInHours($end));
 
-        return ($this->field->price_per_hour * $hours) + 2000; // + Rp2000 admin fee
+        $pricePerHour = $this->field->price_per_hour;
+
+        $promo = $this->field->discounts()->active()->first();
+        if (!$promo) {
+            $promo = \App\Models\Discount::where('owner_id', $this->field->owner_id)
+                ->whereNull('field_id')
+                ->active()
+                ->first();
+        }
+
+        if ($promo) {
+            if ($promo->type === 'percentage') {
+                $pricePerHour = (int) round($pricePerHour * (1 - $promo->value / 100));
+            } else {
+                $pricePerHour = max(0, $pricePerHour - (int) $promo->value);
+            }
+        }
+
+        return $pricePerHour * $hours;
+    }
+
+    public function getTotalPriceAttribute(): int
+    {
+        return $this->subtotal_price + 2000;
     }
 
     /**

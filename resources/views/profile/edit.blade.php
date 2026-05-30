@@ -197,15 +197,18 @@
                             <label>Level Keahlian</label>
                             <div style="padding:13px 16px; border-radius:14px; background:rgba(0,0,77,.04); border:1.5px solid rgba(0,0,77,.08); font-size:.93rem; font-weight:700; color:rgba(0,0,77,.5); display:flex; align-items:center; gap:8px;">
                                 @php
-                                    $skillLabels = ['pemula' => 'Pemula', 'menengah' => 'Menengah', 'ahli' => 'Ahli'];
-                                    $skillEmojis = ['pemula' => '🌱', 'menengah' => '⭐', 'ahli' => '🏆'];
-                                    $currentSkill = $user->skill_level ?: 'pemula';
+                                    $_pBookings = \App\Models\Booking::where('user_id', $user->id)->whereIn('status', ['selesai','confirmed','pending'])->count();
+                                    $_pMatches = \Illuminate\Support\Facades\DB::table('match_players')->where('user_id', $user->id)->count();
+                                    $_pReviews = \App\Models\Review::where('user_id', $user->id)->count();
+                                    $_pPoints = ($_pBookings * 1) + ($_pMatches * 2) + ($_pReviews * 3);
+                                    if ($_pPoints >= 21) { $_pLevel = 'Pro'; $_pEmoji = '🏆'; }
+                                    elseif ($_pPoints >= 6) { $_pLevel = 'Aktif'; $_pEmoji = '⭐'; }
+                                    else { $_pLevel = 'Pemula'; $_pEmoji = '🌱'; }
                                 @endphp
-                                <span>{{ $skillEmojis[$currentSkill] ?? '🌱' }}</span>
-                                <span>{{ $skillLabels[$currentSkill] ?? 'Pemula' }}</span>
+                                <span>{{ $_pEmoji }}</span>
+                                <span>{{ $_pLevel }}</span>
                             </div>
-                            <input type="hidden" name="skill_level" value="{{ $currentSkill }}">
-                            <p style="font-size:0.78rem;color:rgba(0,0,77,.5);margin:4px 0 0;">Level ditentukan otomatis berdasarkan aktivitas dan pencapaianmu.</p>
+                            <p style="font-size:0.78rem;color:rgba(0,0,77,.5);margin:4px 0 0;">Level ditentukan otomatis berdasarkan aktivitas dan pencapaianmu ({{ $_pPoints }} poin).</p>
                         </div>
 
                         <div class="profile-form__group">

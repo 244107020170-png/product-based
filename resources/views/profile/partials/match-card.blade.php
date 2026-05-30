@@ -10,13 +10,13 @@
         <h3 class="profview-match-card__title">{{ $match['title'] }}</h3>
 
         <dl class="profview-match-card__details">
-            <dt>Tim Host</dt>
+            <dt>Nama Tim</dt>
             <dd class="sep">:</dd>
-            <dd>{{ $match['host'] }}</dd>
+            <dd>{{ $match['team'] }}</dd>
 
-            <dt>Jumlah anggota</dt>
+            <dt>Olahraga</dt>
             <dd class="sep">:</dd>
-            <dd>{{ $match['members'] }}</dd>
+            <dd>{{ $match['sport'] }}</dd>
 
             <dt>Lokasi</dt>
             <dd class="sep">:</dd>
@@ -29,6 +29,10 @@
             <dt>Tanggal</dt>
             <dd class="sep">:</dd>
             <dd>{{ $match['tanggal'] }}</dd>
+
+            <dt>Status</dt>
+            <dd class="sep">:</dd>
+            <dd><span class="history-status {{ $match['statusClass'] }}">{{ $match['status'] }}</span></dd>
         </dl>
     </div>
 </article>
