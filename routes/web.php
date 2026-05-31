@@ -510,14 +510,7 @@ Route::middleware('auth')->group(function () {
         })->name('owner.dashboard');
 
         Route::get('/history', function () {
-            $user = auth()->user();
-            $fields = \App\Models\Field::withCount('bookings', 'reviews')->where('owner_id', $user->id)->get();
-            $allReviews = \App\Models\Review::with('user', 'field')
-                ->whereHas('field', fn($q) => $q->where('owner_id', $user->id))
-                ->latest()->get();
-            $avgRating = round(\App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->avg('rating') ?? 0, 1);
-            $totalReviews = \App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->count();
-            return view('owner.history', compact('fields', 'allReviews', 'avgRating', 'totalReviews'));
+            return redirect()->route('owner.kelolaLapangan');
         })->name('owner.history');
 
         Route::get('/kelolaBooking', function () {
@@ -612,12 +605,14 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/kelolaLapangan', function () {
             $user = auth()->user();
-            $fields = \App\Models\Field::withCount('reviews')->where('owner_id', $user->id)->get();
-            $totalRating = \App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->avg('rating');
+            $fields = \App\Models\Field::withCount('reviews', 'bookings')->where('owner_id', $user->id)->get();
+            $totalRating = round(\App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->avg('rating') ?? 0, 1);
             $allReviews = \App\Models\Review::with('user', 'field')
                 ->whereHas('field', fn($q) => $q->where('owner_id', $user->id))
                 ->latest()->get();
-            return view('owner.kelolaLapangan', compact('fields', 'totalRating', 'allReviews'));
+            $avgRating = $totalRating;
+            $totalReviews = \App\Models\Review::whereHas('field', fn($q) => $q->where('owner_id', $user->id))->count();
+            return view('owner.kelolaLapangan', compact('fields', 'totalRating', 'allReviews', 'avgRating', 'totalReviews'));
         })->name('owner.kelolaLapangan');
 
         Route::get('/tambahLapangan', function () {
@@ -699,6 +694,55 @@ Route::middleware('auth')->group(function () {
             }
         })->name('owner.holidays.toggle');
 
+        Route::post('/slots/save-all', function () {
+            $user = auth()->user();
+            $data = request()->all();
+
+            if (!empty($data['slots'])) {
+                foreach ($data['slots'] as $s) {
+                    $field = \App\Models\Field::findOrFail($s['field_id']);
+                    if ($field->owner_id !== $user->id) abort(403);
+
+                    if (isset($s['_delete']) && $s['_delete']) {
+                        Slot::where('field_id', $s['field_id'])
+                            ->where('date', $s['date'])
+                            ->where('hour', $s['hour'])
+                            ->delete();
+                    } else {
+                        Slot::updateOrCreate(
+                            ['field_id' => $s['field_id'], 'date' => $s['date'], 'hour' => $s['hour']],
+                            ['status' => $s['status']]
+                        );
+                    }
+                }
+            }
+
+            if (!empty($data['holidays'])) {
+                foreach ($data['holidays'] as $h) {
+                    $field = \App\Models\Field::findOrFail($h['field_id']);
+                    if ($field->owner_id !== $user->id) abort(403);
+
+                    if ($h['is_holiday']) {
+                        Holiday::updateOrCreate(
+                            ['field_id' => $h['field_id'], 'date' => $h['date']],
+                            ['is_holiday' => true]
+                        );
+                        foreach (range(8, 22) as $hour) {
+                            Slot::updateOrCreate(
+                                ['field_id' => $h['field_id'], 'date' => $h['date'], 'hour' => $hour],
+                                ['status' => 'tutup']
+                            );
+                        }
+                    } else {
+                        Holiday::where('field_id', $h['field_id'])->where('date', $h['date'])->delete();
+                        Slot::where('field_id', $h['field_id'])->where('date', $h['date'])->whereIn('hour', range(8, 22))->delete();
+                    }
+                }
+            }
+
+            return response()->json(['success' => true]);
+        })->name('owner.slots.saveAll');
+
         // ── PEMELIHARAAN KONTROL ──────────────────────────────────
 
         Route::get('/pemeliharaanKontrol', function () {
@@ -773,6 +817,35 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/bookings/{booking}/reject-payment', [BookingController::class, 'rejectPayment'])
             ->name('owner.booking.rejectPayment');
+
+        // ── BANTUAN OWNER ─────────────────────────────────────────
+
+        Route::get('/bantuan', function () {
+            return view('owner.bantuan');
+        })->name('owner.bantuan');
+
+        // ── NOTIFIKASI OWNER ──────────────────────────────────────
+
+        Route::get('/notifikasi', function () {
+            $notifications = auth()->user()->notifications()
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            return view('owner.notifikasi', compact('notifications'));
+        })->name('owner.notifikasi');
+
+        Route::post('/notifications/{id}/read', function ($id) {
+            $notification = auth()->user()->notifications()->findOrFail($id);
+            $notification->markAsRead();
+
+            return back()->with('success', 'Notifikasi ditandai sudah dibaca.');
+        })->name('owner.notifications.read');
+
+        Route::post('/notifications/mark-all-read', function () {
+            auth()->user()->unreadNotifications->markAsRead();
+
+            return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
+        })->name('owner.notifications.markAllRead');
     });
 
     /* PLAYER */
@@ -871,6 +944,38 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [App\Http\Controllers\NotificationsController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationsController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+
+    /* CLAIM PROMO */
+    Route::post('/promo/claim', function () {
+        $data = request()->validate([
+            'code' => 'required|string|max:50',
+        ]);
+
+        $discount = \App\Models\Discount::active()
+            ->where('code', $data['code'])
+            ->first();
+
+        if (!$discount) {
+            return back()->with('error', 'Kode promo tidak valid atau sudah kedaluwarsa.');
+        }
+
+        if ($discount->usage_limit && $discount->usage_count >= $discount->usage_limit) {
+            return back()->with('error', 'Kode promo sudah mencapai batas pemakaian.');
+        }
+
+        $discount->increment('usage_count');
+
+        try {
+            $owner = $discount->owner;
+            if ($owner) {
+                $owner->notify(new \App\Notifications\Owner\OwnerPromoClaimed($discount, auth()->user()));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal notifikasi promo: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Promo "' . $discount->name . '" berhasil diklaim!');
+    })->name('promo.claim');
 
 });
 

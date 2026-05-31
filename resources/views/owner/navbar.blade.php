@@ -12,10 +12,10 @@
     
     {{-- LOGO --}}
     <div>
-        <div class="sidebar-logo">
-            <img src="{{ asset('assets/images/logo/logo.png') }}" alt="Logo">
-            <p>Portal Pemilik</p>
-        </div>
+        <a href="/owner/dashboard" class="sidebar-logo" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 0;">
+            <img src="{{ asset('assets/images/logo/logo.png') }}" alt="Logo" style="display:block;">
+            <p style="text-align:center;margin:5px 0 0 0;">Portal Pemilik</p>
+        </a>
 
         <nav class="sidebar-menu">
 
@@ -49,10 +49,7 @@
                 <span>Pemeliharaan Kontrol</span>
             </a>
 
-            <a href="/owner/history" class="menu-item {{ Request::is('owner/history*') ? 'active' : '' }}">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>Histori</span>
-            </a>
+
 
         </nav>
     </div>

@@ -5,13 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ isset($field) ? 'Ubah Lapangan' : 'Tambah Lapangan' }}</title>
 
-    @php
-        $referer = request()->headers->get('referer');
-        $previousUrl = url()->previous();
-        $currentUrl = url()->current();
-        $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
-        $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : '/owner/kelolaLapangan';
-    @endphp
+@php
+    $referer = request()->headers->get('referer');
+    $previousUrl = url()->previous();
+    $currentUrl = url()->current();
+    $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
+    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : '/owner/kelolaLapangan';
+
+    function facilityIcon($name) {
+        $map = [
+            'wifi' => 'fa-wifi', 'wi-fi' => 'fa-wifi',
+            'parkir' => 'fa-car', 'parkir luas' => 'fa-car', 'parkiran' => 'fa-car',
+            'ac' => 'fa-fan', 'kipas' => 'fa-fan', 'kipas angin' => 'fa-fan', 'air conditioner' => 'fa-fan',
+            'toilet' => 'fa-shower', 'kamar mandi' => 'fa-shower', 'wc' => 'fa-shower',
+            'mushala' => 'fa-mosque', 'musholla' => 'fa-mosque', 'masjid' => 'fa-mosque', 'musala' => 'fa-mosque',
+            'kantin' => 'fa-utensils', 'restoran' => 'fa-utensils', 'warung' => 'fa-utensils',
+            'kafe' => 'fa-mug-saucer', 'cafe' => 'fa-mug-saucer', 'kopi' => 'fa-mug-saucer',
+            'kursi' => 'fa-chair', 'tempat duduk' => 'fa-chair', 'bangku' => 'fa-chair',
+            'ruang ganti' => 'fa-door-open', 'ganti' => 'fa-door-open', 'locker room' => 'fa-door-open',
+            'rumput' => 'fa-leaf', 'rumput premium' => 'fa-leaf', 'sintetis' => 'fa-leaf',
+            'lampu' => 'fa-lightbulb', 'led' => 'fa-lightbulb', 'pencahayaan' => 'fa-lightbulb', 'lighting' => 'fa-lightbulb',
+            'kolam renang' => 'fa-water', 'renang' => 'fa-water', 'swimming pool' => 'fa-water', 'kolam' => 'fa-water',
+            'gym' => 'fa-dumbbell', 'fitnes' => 'fa-dumbbell', 'fitness' => 'fa-dumbbell', 'olahraga' => 'fa-dumbbell',
+            'basket' => 'fa-basketball', 'bola basket' => 'fa-basketball',
+            'futsal' => 'fa-futbol', 'bola' => 'fa-futbol', 'sepak bola' => 'fa-futbol',
+            'badminton' => 'fa-table-tennis-paddle-ball', 'bulutangkis' => 'fa-table-tennis-paddle-ball',
+            'loker' => 'fa-cabinet-filing', 'lemari' => 'fa-cabinet-filing',
+            'tv' => 'fa-tv', 'televisi' => 'fa-tv', 'layar' => 'fa-tv',
+            'proyektor' => 'fa-projector', 'projector' => 'fa-projector',
+            'sound system' => 'fa-music', 'speaker' => 'fa-music', 'musik' => 'fa-music', 'audio' => 'fa-music',
+            'cctv' => 'fa-video', 'kamera' => 'fa-video', 'keamanan' => 'fa-shield-halved', 'security' => 'fa-shield-halved',
+            'meja' => 'fa-table', 'tabel' => 'fa-table',
+            'payung' => 'fa-umbrella', 'tenda' => 'fa-campground', 'gazebo' => 'fa-campground',
+            'taman' => 'fa-tree', 'pohon' => 'fa-tree', 'hijau' => 'fa-tree',
+            'sepeda' => 'fa-bicycle', 'bike' => 'fa-bicycle', 'parkir sepeda' => 'fa-bicycle',
+            'air minum' => 'fa-bottle-water', 'dispenser' => 'fa-bottle-water', 'minum' => 'fa-bottle-water',
+            'minuman' => 'fa-mug-saucer', 'snack' => 'fa-cookie', 'makanan' => 'fa-cookie',
+            'trampolin' => 'fa-children', 'anak' => 'fa-children', 'kids' => 'fa-children',
+        ];
+        $key = strtolower(trim($name));
+        return $map[$key] ?? 'fa-circle-check';
+    }
+@endphp
 
     <!-- Panggil file CSS baru di sini -->
     @vite([
@@ -44,9 +79,14 @@
             </div>
 
             <div class="topbar-right">
-                <button class="notif-btn"><i class="fa-solid fa-bell"></i></button>
+                <a href="{{ route('owner.notifikasi') }}" class="notif-btn" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;position:relative;">
+                    <i class="fa-solid fa-bell"></i>
+                    @if(auth()->user()->unreadNotifications()->count() > 0)
+                        <span style="position:absolute;top:2px;right:2px;width:10px;height:10px;background:#ef4444;border:2px solid #fff;border-radius:50%;"></span>
+                    @endif
+                </a>
                 <button class="notif-btn" onclick="toggleFaqPopup()"><i class="fa-solid fa-headset"></i></button>
-                <button class="notif-btn question"><i class="fa-solid fa-circle-question"></i></button>
+                <a href="{{ route('owner.bantuan') }}" class="notif-btn question" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fa-solid fa-circle-question"></i></a>
                 <div class="profile-box">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
@@ -89,9 +129,12 @@
                         <label>Jenis Olahraga</label>
                         <select name="type" class="form-control" required>
                             <option value="">Pilih Kategori</option>
-                            <option value="Futsal" {{ (isset($field) && $field->type == 'Futsal') ? 'selected' : '' }}>Futsal</option>
-                            <option value="Basket" {{ (isset($field) && $field->type == 'Basket') ? 'selected' : '' }}>Basket</option>
-                            <option value="Badminton" {{ (isset($field) && $field->type == 'Badminton') ? 'selected' : '' }}>Badminton</option>
+                            @php
+                                $sportList = ['Futsal','Badminton','Basket','Voli','Tennis','Golf','Renang','Panahan','Lari','Sepeda','Tinju','Bela Diri','Yoga','Fitness','Hiking','Padel','Baseball','Rugby','Senam'];
+                            @endphp
+                            @foreach($sportList as $sport)
+                            <option value="{{ $sport }}" {{ (isset($field) && $field->type == $sport) ? 'selected' : '' }}>{{ $sport }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -120,8 +163,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Google Maps Link <span style="color:#94a3b8;font-weight:400;">(opsional)</span></label>
-                        <input type="url" name="maps_link" class="form-control" value="{{ isset($field) ? $field->maps_link : '' }}" placeholder="https://maps.app.goo.gl/...">
+                        <label>Google Maps Link <span style="color:#dc2626;font-weight:400;">*</span></label>
+                        <input type="url" name="maps_link" class="form-control" value="{{ isset($field) ? $field->maps_link : '' }}" placeholder="https://maps.app.goo.gl/..." required>
                         <small class="form-help">Tempel link Google Maps untuk arah ke lapangan</small>
                     </div>
                 </div>
@@ -177,11 +220,11 @@
                     </div>
                 </div>
 
-                {{-- Fasilitas (Checkbox) --}}
+                {{-- Fasilitas (Checkbox + Custom) --}}
                 <div class="facilities-section">
                     @php $facilitiesArray = isset($field) && $field->facilities ? (is_array($field->facilities) ? $field->facilities : json_decode($field->facilities, true) ?? []) : []; @endphp
                     <label class="section-label">Fasilitas Lapangan</label>
-                    <div class="checkbox-group">
+                    <div class="checkbox-group" id="facility-checkboxes">
                         <label class="checkbox-label">
                             <input type="checkbox" name="facilities[]" value="WiFi" {{ in_array('WiFi', $facilitiesArray) ? 'checked' : '' }}> 
                             <i class="fa-solid fa-wifi"></i> Wi-Fi
@@ -202,6 +245,30 @@
                             <input type="checkbox" name="facilities[]" value="Mushala" {{ in_array('Mushala', $facilitiesArray) ? 'checked' : '' }}> 
                             <i class="fa-solid fa-mosque"></i> Mushala
                         </label>
+
+                        {{-- Custom facilities from DB --}}
+                        @php
+                            $builtin = ['WiFi','Toilet','Parkir','AC','Mushala'];
+                            $customFacilities = array_values(array_filter($facilitiesArray, fn($f) => !in_array($f, $builtin)));
+                        @endphp
+                        @foreach($customFacilities as $cf)
+                        <div class="custom-facility-tag" data-facility="{{ $cf }}">
+                            <input type="hidden" name="facilities[]" value="{{ $cf }}">
+                            <span class="cf-icon"><i class="fa-solid {{ facilityIcon($cf) }}"></i></span>
+                            <span class="cf-name">{{ $cf }}</span>
+                            <button type="button" class="cf-remove" onclick="this.closest('.custom-facility-tag').remove()">&times;</button>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Custom facility input --}}
+                    <div class="custom-facility-input-wrap">
+                        <label class="custom-facility-label">Lainnya:</label>
+                        <div class="custom-facility-row">
+                            <input type="text" id="custom-facility-input" placeholder="Tulis fasilitas..." maxlength="50">
+                            <button type="button" id="custom-facility-add" class="add-btn" style="padding:8px 16px;font-size:13px;">Tambah</button>
+                        </div>
+                        <div id="custom-facility-suggestions" class="cf-suggestions"></div>
                     </div>
                 </div>
 
@@ -219,7 +286,119 @@
     </main>
 </div>
 
+<style>
+.custom-facility-tag {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:#f0fdf4;
+    border:1px solid #bbf7d0;
+    border-radius:999px;
+    padding:4px 12px 4px 8px;
+    font-size:13px;
+    font-weight:500;
+    color:#166534;
+}
+.custom-facility-tag .cf-icon {
+    display:flex;
+    align-items:center;
+    font-size:14px;
+}
+.custom-facility-tag .cf-remove {
+    background:none;
+    border:none;
+    color:#dc2626;
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+    padding:0 2px;
+}
+.custom-facility-input-wrap {
+    margin-top:12px;
+}
+.custom-facility-label {
+    font-size:13px;
+    font-weight:600;
+    color:#334155;
+    margin-bottom:6px;
+    display:block;
+}
+.custom-facility-row {
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.custom-facility-row input {
+    flex:1;
+    min-width:140px;
+    padding:8px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:13px;
+    outline:none;
+    font-family:inherit;
+}
+.custom-facility-row input:focus {
+    border-color:#dc2626;
+    box-shadow:0 0 0 2px rgba(220,38,38,.1);
+}
+.cf-suggestions {
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:8px;
+}
+.cf-suggestion {
+    padding:4px 12px;
+    background:#f1f5f9;
+    border-radius:999px;
+    font-size:12px;
+    cursor:pointer;
+    border:1px solid #e2e8f0;
+    transition:all .15s;
+    color:#334155;
+}
+.cf-suggestion:hover {
+    background:#dc2626;
+    color:#fff;
+    border-color:#dc2626;
+}
+</style>
+
 <script>
+    const facilityIconMap = {
+        'wifi': 'fa-wifi', 'wi-fi': 'fa-wifi',
+        'parkir': 'fa-car', 'parkir luas': 'fa-car', 'parkiran': 'fa-car',
+        'ac': 'fa-fan', 'kipas': 'fa-fan', 'kipas angin': 'fa-fan',
+        'toilet': 'fa-shower', 'kamar mandi': 'fa-shower', 'wc': 'fa-shower',
+        'mushala': 'fa-mosque', 'musholla': 'fa-mosque', 'masjid': 'fa-mosque',
+        'kantin': 'fa-utensils', 'restoran': 'fa-utensils',
+        'kafe': 'fa-mug-saucer', 'cafe': 'fa-mug-saucer',
+        'kursi': 'fa-chair', 'bangku': 'fa-chair',
+        'ruang ganti': 'fa-door-open', 'ganti': 'fa-door-open',
+        'rumput': 'fa-leaf', 'rumput premium': 'fa-leaf', 'sintetis': 'fa-leaf',
+        'lampu': 'fa-lightbulb', 'led': 'fa-lightbulb', 'lighting': 'fa-lightbulb',
+        'kolam renang': 'fa-water', 'renang': 'fa-water', 'kolam': 'fa-water',
+        'gym': 'fa-dumbbell', 'fitnes': 'fa-dumbbell', 'fitness': 'fa-dumbbell',
+        'basket': 'fa-basketball', 'badminton': 'fa-table-tennis-paddle-ball',
+        'futsal': 'fa-futbol', 'sepak bola': 'fa-futbol',
+        'loker': 'fa-cabinet-filing',
+        'tv': 'fa-tv', 'proyektor': 'fa-projector',
+        'sound system': 'fa-music', 'speaker': 'fa-music', 'musik': 'fa-music',
+        'cctv': 'fa-video', 'keamanan': 'fa-shield-halved', 'security': 'fa-shield-halved',
+        'meja': 'fa-table', 'payung': 'fa-umbrella', 'tenda': 'fa-campground', 'gazebo': 'fa-campground',
+        'taman': 'fa-tree', 'sepeda': 'fa-bicycle',
+        'dispenser': 'fa-bottle-water', 'air minum': 'fa-bottle-water',
+        'mushola': 'fa-mosque',
+    };
+
+    function getFacilityIcon(name) {
+        const key = name.toLowerCase().trim();
+        return facilityIconMap[key] || 'fa-circle-check';
+    }
+
+    const builtinFacilities = ['WiFi','Toilet','Parkir','AC','Mushala'];
+
     document.addEventListener('DOMContentLoaded', function () {
 
         document.querySelectorAll('.time-trigger').forEach(trigger => {
@@ -256,6 +435,84 @@
         document.addEventListener('click', function () {
             document.querySelectorAll('.time-dropdown.open').forEach(d => d.classList.remove('open'));
         });
+
+        // Custom facility input
+        var facilityInput = document.getElementById('custom-facility-input');
+        var facilityAdd = document.getElementById('custom-facility-add');
+        var facilityCheckboxes = document.getElementById('facility-checkboxes');
+        var suggestionsBox = document.getElementById('custom-facility-suggestions');
+
+        var suggestionPool = ['Kantin','Kursi','Ruang Ganti','Rumput Premium','Lampu LED','Taman','Loker','TV','Proyektor','Sound System','CCTV','Meja','Gazebo','Kolam Renang','Gym','Trampolin','Payung','Tenda','Dispenser','Air Minum','Kafe','Tempat Parkir Sepeda','Free WiFi'];
+
+        function showSuggestions(filter) {
+            suggestionsBox.innerHTML = '';
+            var f = filter.toLowerCase().trim();
+            if (!f || f.length < 1) { suggestionsBox.style.display = 'none'; return; }
+            var matches = suggestionPool.filter(function(s) {
+                return s.toLowerCase().indexOf(f) !== -1;
+            });
+            if (matches.length === 0) { suggestionsBox.style.display = 'none'; return; }
+            suggestionsBox.style.display = 'flex';
+            matches.forEach(function(s) {
+                var el = document.createElement('span');
+                el.className = 'cf-suggestion';
+                el.textContent = s;
+                el.addEventListener('click', function() {
+                    facilityInput.value = s;
+                    suggestionsBox.style.display = 'none';
+                    facilityInput.focus();
+                });
+                suggestionsBox.appendChild(el);
+            });
+        }
+
+        function addCustomFacility(name) {
+            name = name.trim();
+            if (!name) return;
+            if (builtinFacilities.indexOf(name) !== -1) {
+                var cb = facilityCheckboxes.querySelector('input[value="' + name + '"]');
+                if (cb) { cb.checked = true; }
+                return;
+            }
+            var existing = facilityCheckboxes.querySelector('.custom-facility-tag[data-facility="' + name.replace(/"/g, '&quot;') + '"]');
+            if (existing) return;
+            var div = document.createElement('div');
+            div.className = 'custom-facility-tag';
+            div.setAttribute('data-facility', name);
+            div.innerHTML = '<input type="hidden" name="facilities[]" value="' + name.replace(/"/g, '&quot;') + '">' +
+                '<span class="cf-icon"><i class="fa-solid ' + getFacilityIcon(name) + '"></i></span>' +
+                '<span class="cf-name">' + name + '</span>' +
+                '<button type="button" class="cf-remove" onclick="this.closest(\'.custom-facility-tag\').remove()">&times;</button>';
+            facilityCheckboxes.appendChild(div);
+        }
+
+        if (facilityAdd) {
+            facilityAdd.addEventListener('click', function() {
+                addCustomFacility(facilityInput.value);
+                facilityInput.value = '';
+                suggestionsBox.style.display = 'none';
+            });
+        }
+
+        if (facilityInput) {
+            facilityInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomFacility(this.value);
+                    this.value = '';
+                    suggestionsBox.style.display = 'none';
+                }
+            });
+            facilityInput.addEventListener('input', function() {
+                showSuggestions(this.value);
+            });
+            facilityInput.addEventListener('blur', function() {
+                setTimeout(function() { suggestionsBox.style.display = 'none'; }, 200);
+            });
+            facilityInput.addEventListener('focus', function() {
+                if (this.value.trim()) showSuggestions(this.value);
+            });
+        }
 
     });
 </script>

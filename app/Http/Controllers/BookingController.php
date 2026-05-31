@@ -6,6 +6,8 @@ use App\Enums\BookingStatus;
 use App\Models\Field;
 use App\Models\Booking;
 use App\Models\Matchs;
+use App\Notifications\Owner\OwnerNewBooking;
+use App\Notifications\Owner\OwnerPaymentReceived;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -116,6 +118,15 @@ class BookingController extends Controller
                 }
             }
 
+            try {
+                $owner = $booking->field->owner;
+                if ($owner && $owner->id !== auth()->id()) {
+                    $owner->notify(new OwnerNewBooking($booking));
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Gagal notifikasi owner: ' . $e->getMessage());
+            }
+
             if ($this->isJsonRequest($request)) {
                 return response()->json([
                     'success' => true,
@@ -207,6 +218,15 @@ class BookingController extends Controller
 
         $booking->user->notify(new \App\Notifications\BookingPaymentReceived($booking));
 
+        try {
+            $owner = $booking->field->owner;
+            if ($owner) {
+                $owner->notify(new OwnerPaymentReceived($booking));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Gagal notifikasi owner: ' . $e->getMessage());
+        }
+
         return redirect()->route('booking.detail', $booking->id)->with('success', 'Pembayaran berhasil! Silakan tunggu konfirmasi owner.');
     }
 
@@ -229,6 +249,15 @@ class BookingController extends Controller
             'status' => BookingStatus::WAITING_CONFIRMATION,
             'paid_at' => now(),
         ]);
+
+        try {
+            $owner = $booking->field->owner;
+            if ($owner) {
+                $owner->notify(new OwnerPaymentReceived($booking));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Gagal notifikasi owner: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Kami menerima notifikasi pembayaran Anda. Silakan tunggu konfirmasi owner.');
     }

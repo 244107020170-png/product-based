@@ -24,9 +24,14 @@
                 <input type="text" placeholder="Cari pemesanan, pelanggan...">
             </div>
             <div class="topbar-right">
-                <button class="notif-btn"><i class="fa-solid fa-bell"></i></button>
+                <a href="{{ route('owner.notifikasi') }}" class="notif-btn" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;position:relative;">
+                    <i class="fa-solid fa-bell"></i>
+                    @if(auth()->user()->unreadNotifications()->count() > 0)
+                        <span style="position:absolute;top:2px;right:2px;width:10px;height:10px;background:#ef4444;border:2px solid #fff;border-radius:50%;"></span>
+                    @endif
+                </a>
                 <button class="notif-btn" onclick="toggleFaqPopup()"><i class="fa-solid fa-headset"></i></button>
-                <button class="notif-btn question"><i class="fa-solid fa-circle-question"></i></button>
+                <a href="{{ route('owner.bantuan') }}" class="notif-btn question" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fa-solid fa-circle-question"></i></a>
                 <div class="profile-box">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
@@ -65,7 +70,7 @@
             <div class="stats-card">
                 <div>
                     <p>Rating & Ulasan</p>
-                    <h2 style="display:flex;align-items:center;gap:6px;color:#c2410c;font-size:1.9rem;font-weight:400;">
+                    <h2 style="display:flex;align-items:center;gap:6px;color:#c2410c;font-size:32px;font-weight:400;">
                         <span style="color:#f59e0b;">★</span> {{ $avgRating ?? 0 }}
                         <span style="font-size:13px;color:#94a3b8;font-weight:400;">({{ $totalReviews ?? 0 }})</span>
                     </h2>
@@ -75,7 +80,7 @@
             <div class="stats-card">
                 <div>
                     <p>Pendapatan Bulan Ini</p>
-                    <h2 class="red-text">Rp {{ number_format($monthlyRevenue ?? 0, 0, ',', '.') }}</h2>
+                    <h2 class="red-text" style="white-space:nowrap;">Rp {{ number_format($monthlyRevenue ?? 0, 0, ',', '.') }}</h2>
                 </div>
                 <div class="stats-icon red"><i class="fa-solid fa-dollar-sign"></i></div>
             </div>
@@ -176,7 +181,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         @foreach($fields as $f)
-                        <div class="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                        <div class="bg-white rounded-[15px] overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                             <div class="h-32 relative bg-gray-200">
                                 <img src="{{ $f->image_url }}" alt="{{ $f->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                                 <span class="absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full

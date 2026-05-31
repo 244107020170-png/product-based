@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Field;
 use App\Models\Review;
+use App\Notifications\Owner\OwnerNewReview;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
 {
@@ -47,7 +49,7 @@ class ReviewController extends Controller
             }
         }
 
-        Review::create([
+        $review = Review::create([
             'user_id' => $user->id,
             'field_id' => $validated['field_id'],
             'booking_id' => $validated['booking_id'],
@@ -55,6 +57,15 @@ class ReviewController extends Controller
             'review' => $validated['review'],
             'photos' => $photos,
         ]);
+
+        try {
+            $owner = $review->field?->owner;
+            if ($owner) {
+                $owner->notify(new OwnerNewReview($review));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Gagal notifikasi owner review: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Review berhasil dikirim! Terima kasih atas masukan Anda.');
     }

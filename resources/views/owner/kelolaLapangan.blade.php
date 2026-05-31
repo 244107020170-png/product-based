@@ -1,3 +1,39 @@
+@php
+function facilityIcon($name) {
+    $map = [
+        'wifi' => 'fa-wifi', 'wi-fi' => 'fa-wifi',
+        'parkir' => 'fa-car', 'parkir luas' => 'fa-car', 'parkiran' => 'fa-car',
+        'ac' => 'fa-fan', 'kipas' => 'fa-fan', 'kipas angin' => 'fa-fan', 'air conditioner' => 'fa-fan',
+        'toilet' => 'fa-shower', 'kamar mandi' => 'fa-shower', 'wc' => 'fa-shower',
+        'mushala' => 'fa-mosque', 'musholla' => 'fa-mosque', 'masjid' => 'fa-mosque', 'musala' => 'fa-mosque',
+        'kantin' => 'fa-utensils', 'restoran' => 'fa-utensils', 'warung' => 'fa-utensils',
+        'kafe' => 'fa-mug-saucer', 'cafe' => 'fa-mug-saucer', 'kopi' => 'fa-mug-saucer',
+        'kursi' => 'fa-chair', 'tempat duduk' => 'fa-chair', 'bangku' => 'fa-chair',
+        'ruang ganti' => 'fa-door-open', 'ganti' => 'fa-door-open', 'locker room' => 'fa-door-open',
+        'rumput' => 'fa-leaf', 'rumput premium' => 'fa-leaf', 'sintetis' => 'fa-leaf',
+        'lampu' => 'fa-lightbulb', 'led' => 'fa-lightbulb', 'pencahayaan' => 'fa-lightbulb', 'lighting' => 'fa-lightbulb',
+        'kolam renang' => 'fa-water', 'renang' => 'fa-water', 'swimming pool' => 'fa-water', 'kolam' => 'fa-water',
+        'gym' => 'fa-dumbbell', 'fitnes' => 'fa-dumbbell', 'fitness' => 'fa-dumbbell', 'olahraga' => 'fa-dumbbell',
+        'basket' => 'fa-basketball', 'bola basket' => 'fa-basketball',
+        'futsal' => 'fa-futbol', 'bola' => 'fa-futbol', 'sepak bola' => 'fa-futbol',
+        'badminton' => 'fa-table-tennis-paddle-ball', 'bulutangkis' => 'fa-table-tennis-paddle-ball',
+        'loker' => 'fa-cabinet-filing', 'lemari' => 'fa-cabinet-filing',
+        'tv' => 'fa-tv', 'televisi' => 'fa-tv', 'layar' => 'fa-tv',
+        'proyektor' => 'fa-projector', 'projector' => 'fa-projector',
+        'sound system' => 'fa-music', 'speaker' => 'fa-music', 'musik' => 'fa-music', 'audio' => 'fa-music',
+        'cctv' => 'fa-video', 'kamera' => 'fa-video', 'keamanan' => 'fa-shield-halved', 'security' => 'fa-shield-halved',
+        'meja' => 'fa-table', 'tabel' => 'fa-table',
+        'payung' => 'fa-umbrella', 'tenda' => 'fa-campground', 'gazebo' => 'fa-campground',
+        'taman' => 'fa-tree', 'pohon' => 'fa-tree', 'hijau' => 'fa-tree',
+        'sepeda' => 'fa-bicycle', 'bike' => 'fa-bicycle', 'parkir sepeda' => 'fa-bicycle',
+        'air minum' => 'fa-bottle-water', 'dispenser' => 'fa-bottle-water', 'minum' => 'fa-bottle-water',
+        'minuman' => 'fa-mug-saucer', 'snack' => 'fa-cookie', 'makanan' => 'fa-cookie',
+        'trampolin' => 'fa-children', 'anak' => 'fa-children', 'kids' => 'fa-children',
+    ];
+    $key = strtolower(trim($name));
+    return $map[$key] ?? 'fa-circle-check';
+}
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,16 +68,19 @@
             </div>
 
             <div class="topbar-right">
-                <button class="notif-btn">
+                <a href="{{ route('owner.notifikasi') }}" class="notif-btn" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;position:relative;">
                     <i class="fa-solid fa-bell"></i>
-                </button>
+                    @if(auth()->user()->unreadNotifications()->count() > 0)
+                        <span style="position:absolute;top:2px;right:2px;width:10px;height:10px;background:#ef4444;border:2px solid #fff;border-radius:50%;"></span>
+                    @endif
+                </a>
 
                 <button class="notif-btn">
                     <i class="fa-solid fa-headset"></i>
                 </button>
-                <button class="notif-btn question">
+                <a href="{{ route('owner.bantuan') }}" class="notif-btn question" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
                     <i class="fa-solid fa-circle-question"></i>
-                </button>
+                </a>
 
                 <div class="profile-box">
                     <div>
@@ -86,7 +125,7 @@
             <div class="stats-card">
                 <div>
                     <p>Tersedia</p>
-                    <h2 class="green-text">{{ count($fields) }}</h2>
+                    <h2 class="green-text">{{ $fields->where('is_available', true)->count() }}</h2>
                 </div>
 
                 <div class="stats-icon green">
@@ -121,173 +160,247 @@
         </div>
 
 
-        {{-- FILTER --}}
-        <div class="filter-section">
-            <select>
-                <option>Filter</option>
-                <option>Futsal</option>
-                <option>Basket</option>
-                <option>Badminton</option>
-            </select>
-
-            <button>
-                <i class="fa-solid fa-rotate-right"></i>
-                Reset Filter
-            </button>
+        {{-- Tabs --}}
+        <div style="display:flex;margin-top:24px;margin-bottom:24px;position:relative;">
+            <button class="kl-tab is-active" data-kltab="lapangan" style="flex:1;padding:12px 0;border:none;background:transparent;font-weight:700;font-size:14px;color:#dc2626;cursor:pointer;transition:color .2s;text-align:center;position:relative;z-index:1;">Lapangan</button>
+            <button class="kl-tab" data-kltab="ulasan" style="flex:1;padding:12px 0;border:none;background:transparent;font-weight:700;font-size:14px;color:#94a3b8;cursor:pointer;transition:color .2s;text-align:center;position:relative;z-index:1;">Ulasan</button>
+            {{-- baseline --}}
+            <div style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#e2e8f0;"></div>
+            {{-- active indicator --}}
+            <div id="kl-active-indicator" style="position:absolute;bottom:0;left:0;width:50%;height:2px;background:#dc2626;transition:left .25s ease;z-index:2;"></div>
         </div>
 
+        {{-- TAB LAPANGAN --}}
+        <div class="kl-tabpanel is-active" data-klpanel="lapangan">
+            {{-- FILTER --}}
+            @php
+            $sportList = ['Futsal','Badminton','Basket','Voli','Tennis','Golf','Renang','Panahan','Lari','Sepeda','Tinju','Bela Diri','Yoga','Fitness','Hiking','Padel','Baseball','Rugby','Senam'];
+            $sportColors = [
+                'Futsal'    => ['bg'=>'#eff6ff','text'=>'#2563eb'],
+                'Badminton' => ['bg'=>'#ecfdf5','text'=>'#059669'],
+                'Basket'    => ['bg'=>'#fff7ed','text'=>'#ea580c'],
+                'Voli'      => ['bg'=>'#f5f3ff','text'=>'#7c3aed'],
+                'Tennis'    => ['bg'=>'#fefce8','text'=>'#ca8a04'],
+                'Golf'      => ['bg'=>'#f0fdf4','text'=>'#16a34a'],
+                'Renang'    => ['bg'=>'#ecfeff','text'=>'#0891b2'],
+                'Panahan'   => ['bg'=>'#fff1f2','text'=>'#e11d48'],
+                'Lari'      => ['bg'=>'#eef2ff','text'=>'#4f46e5'],
+                'Sepeda'    => ['bg'=>'#fdf2f8','text'=>'#db2777'],
+                'Tinju'     => ['bg'=>'#fef2f2','text'=>'#dc2626'],
+                'Bela Diri' => ['bg'=>'#f8fafc','text'=>'#475569'],
+                'Yoga'      => ['bg'=>'#f5f3ff','text'=>'#8b5cf6'],
+                'Fitness'   => ['bg'=>'#f7fee7','text'=>'#65a30d'],
+                'Hiking'    => ['bg'=>'#fafaf9','text'=>'#78716c'],
+                'Padel'     => ['bg'=>'#f0fdfa','text'=>'#0d9488'],
+                'Baseball'  => ['bg'=>'#fffbeb','text'=>'#d97706'],
+                'Rugby'     => ['bg'=>'#f5f5f5','text'=>'#525252'],
+                'Senam'     => ['bg'=>'#f0f9ff','text'=>'#0284c7'],
+            ];
+            @endphp
+            <div class="filter-section">
+                <select id="filter-type">
+                    <option value="">Semua Kategori</option>
+                    @foreach($sportList as $s)
+                    <option value="{{ $s }}">{{ $s }}</option>
+                    @endforeach
+                </select>
 
-        {{-- FIELD CARD --}}
-        <div class="field-grid">
+                <button id="filter-reset">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    Reset Filter
+                </button>
+            </div>
 
-            @forelse ($fields as $field)
-            <div class="field-card">
+            {{-- FIELD CARD --}}
+            <div class="field-grid" id="field-grid">
+                @forelse ($fields as $field)
+                <div class="field-card" data-type="{{ $field->type ?? '' }}">
+                    <div class="field-image">
+                        <img src="{{ $field->image_url }}" alt="{{ $field->name }}" onerror="this.style.display='none'">
+                        <span class="badge" style="background:{{ ($sportColors[$field->type] ?? null) ? $sportColors[$field->type]['bg'] : '#fee2e2' }};color:{{ ($sportColors[$field->type] ?? null) ? $sportColors[$field->type]['text'] : '#b91c1c' }};">{{ $field->type ?? 'Olahraga' }}</span>
+                    </div>
+                    <div class="field-content">
+                        <div class="field-top">
+                            <div>
+                                <h3>{{ $field->name }}</h3>
+                                <p>{{ $field->type ?? 'Olahraga' }}</p>
+                            </div>
+                            <h4>Rp{{ number_format($field->price_per_hour ?? 0, 0, ',', '.') }}</h4>
+                        </div>
+                        <div class="facility-icons">
+                            @php
+                                $facArr = $field->facilities ? (is_array($field->facilities) ? $field->facilities : json_decode($field->facilities, true) ?? []) : [];
+                            @endphp
+                            @foreach($facArr as $fac)
+                            <span title="{{ $fac }}"><i class="fa-solid {{ facilityIcon($fac) }}"></i></span>
+                            @endforeach
+                        </div>
+                        <div class="field-info">
+                            <span><i class="fa-regular fa-clock"></i> {{ $field->open_time ?? '08:00' }} - {{ $field->close_time ?? '22:00' }}</span>
+                            <span>⭐ {{ $field->rating ?? '0' }} <span style="font-size:11px;color:#94a3b8;">({{ $field->reviews_count ?? 0 }})</span></span>
+                        </div>
+                        <div class="field-actions">
+                            <button class="edit-btn" onclick="location.href='{{ route('owner.field.edit', $field->id) }}'">Ubah</button>
+                            <button class="schedule-btn" onclick="location.href='{{ url('owner/jadwalDanSlot?field_id=' . $field->id) }}'">Jadwal</button>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="grid-column:1/-1;text-align:center;padding:40px;">
+                    <i class="fa-solid fa-inbox" style="font-size:48px;color:#ccc;margin-bottom:16px;display:block;"></i>
+                    <h3 style="color:#888;font-size:18px;margin-bottom:8px;">Belum ada lapangan</h3>
+                    <p style="color:#aaa;margin-bottom:20px;">Mulai tambahkan lapangan untuk memulai bisnis Anda</p>
+                    <a href="{{ route('owner.tambahLapangan') }}" style="display:inline-block;background:linear-gradient(135deg,#ff4d4d,#ff2e63);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">
+                        <i class="fa-solid fa-plus"></i> Tambah Lapangan
+                    </a>
+                </div>
+                @endforelse
+            </div>
+        </div>
 
-                <div class="field-image">
-                    <img src="{{ $field->image_url }}" alt="{{ $field->name }}" onerror="this.style.display='none'">
+        {{-- TAB ULASAN --}}
+        <div class="kl-tabpanel" data-klpanel="ulasan" style="display:none;">
+            {{-- Summary stats --}}
+            <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:180px;background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.04);display:flex;align-items:center;gap:14px;">
+                    <div style="width:48px;height:48px;border-radius:14px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">⭐</div>
+                    <div>
+                        <p style="margin:0 0 2px;font-size:12px;font-weight:600;color:#94a3b8;">Rata-rata Penilaian</p>
+                        <p style="margin:0;font-size:22px;font-weight:800;color:#1e293b;">{{ $avgRating }}</p>
+                    </div>
+                </div>
+                <div style="flex:1;min-width:180px;background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.04);display:flex;align-items:center;gap:14px;">
+                    <div style="width:48px;height:48px;border-radius:14px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">
+                        <i class="fa-regular fa-message" style="font-size:22px;color:#2563eb;"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0 0 2px;font-size:12px;font-weight:600;color:#94a3b8;">Total Review</p>
+                        <p style="margin:0;font-size:22px;font-weight:800;color:#1e293b;">{{ $totalReviews }}</p>
+                    </div>
+                </div>
+            </div>
 
-                    <span class="badge">{{ $field->type ?? 'Olahraga' }}</span>
-                    @if($field->featured)
-                    <span style="position:absolute;top:10px;right:10px;background:#02025b;color:white;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:4px;">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        Featured
-                    </span>
+            @if($allReviews->count())
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                @foreach($allReviews as $rv)
+                <div style="background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:36px;height:36px;border-radius:50%;background:#EB5436;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;">
+                                {{ strtoupper(substr($rv->user?->name ?? '?', 0, 1)) }}
+                            </div>
+                            <div>
+                                <p style="margin:0;font-size:13px;font-weight:600;color:#1e293b;">{{ $rv->user?->name ?? 'Anonim' }}</p>
+                                <p style="margin:0;font-size:12px;color:#94a3b8;">{{ $rv->field?->name ?? '-' }}</p>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="display:flex;gap:2px;justify-content:flex-end;">
+                                @for($i = 1; $i <= 5; $i++)
+                                <span style="font-size:16px;color:{{ $i <= $rv->rating ? '#f59e0b' : '#e2e8f0' }};">★</span>
+                                @endfor
+                            </div>
+                            <span style="font-size:11px;color:#94a3b8;">{{ \Carbon\Carbon::parse($rv->created_at)->locale('id')->translatedFormat('j M Y') }}</span>
+                        </div>
+                    </div>
+                    @if($rv->review)
+                    <p style="margin:10px 0 0;font-size:13px;color:#475569;line-height:1.5;font-style:italic;">"{{ $rv->review }}"</p>
                     @endif
                 </div>
-
-                <div class="field-content">
-                    <div class="field-top">
-                        <div>
-                            <h3>{{ $field->name }}</h3>
-                            <p>{{ $field->type ?? 'Olahraga' }}</p>
-                        </div>
-
-                        <h4>Rp{{ number_format($field->price_per_hour ?? 0, 0, ',', '.') }}</h4>
-                    </div>
-
-                    <div class="facility-icons">
-                        <span><i class="fa-solid fa-wifi"></i></span>
-                        <span><i class="fa-solid fa-shower"></i></span>
-                        <span><i class="fa-solid fa-car"></i></span>
-                        <span><i class="fa-solid fa-fan"></i></span>
-                    </div>
-
-                    <div class="field-info">
-                        <span>
-                            <i class="fa-regular fa-clock"></i>
-                            {{ $field->open_time ?? '08:00' }} - {{ $field->close_time ?? '22:00' }}
-                        </span>
-
-                        <span>
-                            ⭐ {{ $field->rating ?? '0' }}
-                            <span style="font-size:11px;color:#94a3b8;">({{ $field->reviews_count ?? 0 }})</span>
-                        </span>
-                    </div>
-
-                    <div class="field-actions">
-                        <button class="edit-btn">Ubah</button>
-                        <button class="schedule-btn">Jadwal</button>
-                        <button class="featured-btn" onclick="event.preventDefault();toggleFeatured({{ $field->id }}, this)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;color:{{ $field->featured ? '#fbbf24' : '#999' }};">
-                            <i class="fa-solid {{ $field->featured ? 'fa-star' : 'fa-regular fa-star' }}"></i>
-                        </button>
-                        <button class="more-btn">
-                            <i class="fa-solid fa-ellipsis"></i>
-                        </button>
-                    </div>
-                </div>
+                @endforeach
             </div>
-            @empty
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                <i class="fa-solid fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 16px; display: block;"></i>
-                <h3 style="color: #888; font-size: 18px; margin-bottom: 8px;">Belum ada lapangan</h3>
-                <p style="color: #aaa; margin-bottom: 20px;">Mulai tambahkan lapangan untuk memulai bisnis Anda</p>
-                <a href="{{ route('owner.tambahLapangan') }}" style="display: inline-block; background: linear-gradient(135deg, #ff4d4d, #ff2e63); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                    <i class="fa-solid fa-plus"></i> Tambah Lapangan
-                </a>
+            @else
+            <div style="text-align:center;padding:60px 20px;color:#94a3b8;">
+                <i class="fa-regular fa-star" style="font-size:48px;margin-bottom:16px;display:block;"></i>
+                <p style="font-weight:700;margin:0 0 6px;">Belum ada review</p>
+                <p style="font-size:13px;margin:0;">Review dari pelanggan akan muncul di sini.</p>
             </div>
-            @endforelse
-
+            @endif
         </div>
-
-        {{-- Review List --}}
-        @if($allReviews->count())
-        <div style="margin-top:32px;">
-            <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:16px;">📝 Semua Review</h3>
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);">
-                <div class="overflow-x-auto">
-                    <table style="width:100%;border-collapse:collapse;">
-                        <thead>
-                            <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
-                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Pengguna</th>
-                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Lapangan</th>
-                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Penilaian</th>
-                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Ulasan</th>
-                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Tanggal</th>
-                            </tr>
-                        </thead>
-                        <tbody style="border-bottom:1px solid #e2e8f0;">
-                            @foreach($allReviews as $rv)
-                            <tr style="border-bottom:1px solid #f1f5f9;">
-                                <td style="padding:14px 16px;">
-                                    <div style="display:flex;align-items:center;gap:10px;">
-                                        <div style="width:34px;height:34px;border-radius:50%;background:#EB5436;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">
-                                            {{ strtoupper(substr($rv->user?->name ?? '?', 0, 1)) }}
-                                        </div>
-                                        <span style="font-size:13px;font-weight:600;color:#1e293b;">{{ $rv->user?->name ?? 'Anonim' }}</span>
-                                    </div>
-                                </td>
-                                <td style="padding:14px 16px;font-size:13px;color:#475569;">{{ $rv->field?->name ?? '-' }}</td>
-                                <td style="padding:14px 16px;">
-                                    <div style="display:flex;gap:2px;">
-                                        @for($i = 1; $i <= 5; $i++)
-                                        <span style="font-size:14px;color:{{ $i <= $rv->rating ? '#f59e0b' : '#e2e8f0' }};">★</span>
-                                        @endfor
-                                    </div>
-                                </td>
-                                <td style="padding:14px 16px;font-size:13px;color:#64748b;max-width:250px;">
-                                    @if($rv->review)
-                                    <span style="font-style:italic;">"{{ \Illuminate\Support\Str::limit($rv->review, 60) }}"</span>
-                                    @else
-                                    <span style="color:#94a3b8;">-</span>
-                                    @endif
-                                </td>
-                                <td style="padding:14px 16px;font-size:12px;color:#94a3b8;">{{ \Carbon\Carbon::parse($rv->created_at)->locale('id')->translatedFormat('j M Y') }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        @endif
 
     </main>
 
 </div>
 
 @include('owner.faq-popup')
-<script>
-function toggleFeatured(fieldId, btn) {
-    fetch('{{ url("owner/fields") }}/' + fieldId + '/toggle-featured', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json'
-        }
-    }).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.success) {
-            var icon = btn.querySelector('i');
-            if (data.featured) {
-                icon.className = 'fa-solid fa-star';
-                btn.style.color = '#fbbf24';
-            } else {
-                icon.className = 'fa-regular fa-star';
-                btn.style.color = '#999';
-            }
-            location.reload();
-        }
-    });
+
+<style>
+.kl-tabpanel { display: none; }
+.kl-tabpanel.is-active { display: block; }
+.filter-section select,
+.filter-section button { height:42px; padding:0 16px; font-size:13px; border-radius:10px; }
+.field-card { border-radius:25px; }
+.stats-card { border-radius:25px; }
+.field-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.field-actions .edit-btn,
+.field-actions .schedule-btn { flex:1; min-width:80px; padding:10px; font-size:13px; border-radius:10px; }
+@media (max-width:768px) {
+    .filter-section { flex-wrap:wrap; }
+    .filter-section select,
+    .filter-section button { flex:1; min-width:120px; }
+    .field-actions .edit-btn,
+    .field-actions .schedule-btn { padding:8px; font-size:12px; }
 }
+@media (max-width:480px) {
+    .field-actions { flex-direction:column; }
+    .field-actions .edit-btn,
+    .field-actions .schedule-btn { width:100%; }
+}
+</style>
+<script>
+(function(){
+    // tabs
+    var tabs = document.querySelectorAll('.kl-tab');
+    var indicator = document.getElementById('kl-active-indicator');
+    var panels = {};
+    document.querySelectorAll('.kl-tabpanel').forEach(function(p) {
+        panels[p.getAttribute('data-klpanel')] = p;
+    });
+    tabs.forEach(function(t) {
+        t.addEventListener('click', function() {
+            tabs.forEach(function(x) {
+                x.classList.remove('is-active');
+                x.style.color = '#94a3b8';
+            });
+            Object.values(panels).forEach(function(p) { if (p) p.classList.remove('is-active'); p.style.display = 'none'; });
+            t.classList.add('is-active');
+            t.style.color = '#dc2626';
+            var target = panels[t.getAttribute('data-kltab')];
+            if (target) { target.classList.add('is-active'); target.style.display = 'block'; }
+            if (indicator) {
+                indicator.style.left = t === tabs[0] ? '0' : '50%';
+            }
+        });
+    });
+
+    // filter by type
+    var filterSelect = document.getElementById('filter-type');
+    var resetBtn = document.getElementById('filter-reset');
+    var cards = document.querySelectorAll('#field-grid .field-card');
+
+    function applyFilter(val) {
+        cards.forEach(function(c) {
+            if (!val || c.getAttribute('data-type') === val) {
+                c.style.display = '';
+            } else {
+                c.style.display = 'none';
+            }
+        });
+    }
+
+    if (filterSelect) {
+        filterSelect.addEventListener('change', function() {
+            applyFilter(this.value);
+        });
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            filterSelect.value = '';
+            applyFilter('');
+        });
+    }
+})();
 </script>
 </body>
 </html>

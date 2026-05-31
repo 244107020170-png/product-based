@@ -33,16 +33,19 @@
             </div>
 
             <div class="topbar-right">
-                <button class="notif-btn">
+                <a href="{{ route('owner.notifikasi') }}" class="notif-btn" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;position:relative;">
                     <i class="fa-solid fa-bell"></i>
-                </button>
+                    @if(auth()->user()->unreadNotifications()->count() > 0)
+                        <span style="position:absolute;top:2px;right:2px;width:10px;height:10px;background:#ef4444;border:2px solid #fff;border-radius:50%;"></span>
+                    @endif
+                </a>
 
                 <button class="notif-btn" onclick="toggleFaqPopup()">
                     <i class="fa-solid fa-headset"></i>
                 </button>
-                <button class="notif-btn question">
+                <a href="{{ route('owner.bantuan') }}" class="notif-btn question" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
                     <i class="fa-solid fa-circle-question"></i>
-                </button>
+                </a>
 
                 <div class="profile-box">
                     <div>

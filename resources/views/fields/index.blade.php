@@ -124,12 +124,15 @@
     <header class="player-dashboard-topbar">
         <div class="player-dashboard-topbar__left">
             <button type="button" class="player-dashboard-topbar__menu" data-sidebar-open><span></span><span></span><span></span></button>
-            <label class="player-search" for="fields-search" style="max-width:320px;">
-                <span class="player-search__icon">
-                    <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.75" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                </span>
-                <input id="fields-search" type="search" placeholder="Cari lapangan...">
-            </label>
+            <div class="player-search-wrapper">
+                <label class="player-search" for="fields-search">
+                    <span class="player-search__icon">
+                        <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.75" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    </span>
+                    <input id="fields-search" type="search" placeholder="Cari lapangan...">
+                </label>
+                <div class="search-suggestions" id="search-suggestions"></div>
+            </div>
             @if(!empty($isNearby))
                 <a href="{{ route('dashboard') }}" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:white; color:#02025b; border:1.5px solid rgba(0,0,77,.12); border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; text-decoration:none; transition:all .2s;" onmouseover="this.style.borderColor='#EB5436'" onmouseout="this.style.borderColor='rgba(0,0,77,.12)'">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -159,12 +162,28 @@
             <div style="position: relative;">
                 @include('partials.notification-bell')
             </div>
-            <a href="{{ route('profile.show') }}" class="player-profile-pill">
-                <span class="player-profile-pill__avatar">
-                    <img src="{{ $userAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile" onerror="this.src='{{ asset('assets/images/characters/' . (Auth::user()->gender === 'perempuan' ? 'profil2.png' : 'profil1.png')) }}'">
-                </span>
-                <span class="player-profile-pill__name">{{ $userName }}</span>
-            </a>
+            <div class="profile-dropdown-wrap">
+                <button class="player-profile-pill" id="profile-dropdown-trigger" style="border:none;background:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;font-family:inherit;border-radius:16px;">
+                    <span class="player-profile-pill__avatar" style="width:44px;height:44px;">
+                        <img src="{{ $userAvatar }}" alt="Profil" class="player-avatar-image player-avatar-image--profile" onerror="this.src='{{ asset('assets/images/characters/' . (Auth::user()->gender === 'perempuan' ? 'profil2.png' : 'profil1.png')) }}'">
+                    </span>
+                    <span class="player-profile-pill__name" style="font-size:0.95rem;">{{ $userName }}</span>
+                </button>
+                <div class="profile-dropdown-menu" id="profile-dropdown-menu">
+                    <a href="{{ route('profile.show') }}" class="profile-dropdown-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Profil Saya
+                    </a>
+                    <div class="profile-dropdown-divider"></div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="profile-dropdown-item" style="color:#dc2626;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -344,8 +363,33 @@
                     font-size: 8px;
                 }
             }
+            .player-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; align-self: flex-start; }
+            .player-sidebar__inner { height: 100%; }
+            .player-search-wrapper { position: relative; flex:1; max-width:360px; }
+            .player-search { width:100%; margin-left:0; }
+            @media (min-width:1024px) { .player-search-wrapper { max-width:480px; } }
+            @media (max-width:640px) { .player-search-wrapper { max-width:200px; } }
+            .search-suggestions { position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; border-radius:14px; box-shadow:0 12px 40px rgba(0,0,77,.15); z-index:100; display:none; max-height:280px; overflow-y:auto; padding:8px 0; }
+            .search-suggestions.is-visible { display:block; }
+            .search-suggestion-item { display:flex; align-items:center; gap:10px; padding:10px 16px; cursor:pointer; transition:background .15s; font-size:13px; color:#02025b; }
+            .search-suggestion-item:hover { background:#f5f5ff; }
+            .search-suggestion-item .ss-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:16px; }
+            .search-suggestion-item .ss-text { flex:1; min-width:0; }
+            .search-suggestion-item .ss-text strong { font-weight:700; }
+            .search-suggestion-item .ss-text small { display:block; font-size:11px; color:#94a3b8; }
+            .search-result-overlay { display:none; }
+            .search-result-overlay.is-active { display:block; }
+            .dashboard-section { transition:opacity .2s; }
+            .dashboard-section.is-hidden { display:none !important; }
+            .profile-dropdown-wrap { position:relative; }
+            .profile-dropdown-menu { position:absolute; top:calc(100% + 8px); right:0; background:#fff; border-radius:14px; box-shadow:0 12px 40px rgba(0,0,77,.15); z-index:200; min-width:180px; padding:8px; display:none; opacity:0; transform:translateY(-6px); transition:opacity .2s ease,transform .2s ease; }
+            .profile-dropdown-menu.is-visible { display:block; opacity:1; transform:translateY(0); }
+            .profile-dropdown-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; text-decoration:none; color:#02025b; font-size:13px; font-weight:600; transition:background .15s; cursor:pointer; border:none; background:none; width:100%; text-align:left; font-family:inherit; }
+            .profile-dropdown-item:hover { background:#f5f5ff; }
+            .profile-dropdown-divider { height:1px; background:#e2e8f0; margin:4px 8px; }
         </style>
 
+        <div id="dashboard-above-sections" class="dashboard-section">
         <!-- NEW DASHBOARD HEADER -->
         <div class="dashboard-header-flex">
             <h1 style="font-size: 28px; font-weight: 800; color: #02025b; margin: 0;"></h1>
@@ -919,9 +963,10 @@
             </div>
         </div>
         @endif
+        </div>{{-- /dashboard-above-sections --}}
 
         <!-- LAPANGAN TERSEDIA (Original Section) -->
-        <div style="margin-bottom: 30px;">
+        <div id="lapangan-section-header" class="dashboard-section" style="margin-bottom: 30px;">
             <h2 style="font-size: 24px; font-weight: 800; color: #02025b; margin-bottom: 10px; display:flex; align-items:center; gap:8px;">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
                     <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
@@ -981,14 +1026,15 @@
             @endif
         </div>
         @else
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+        <div id="field-card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
             @foreach($fields as $field)
             @php $isFav = in_array($field->id, $favoriteIds ?? []); @endphp
             @php
                 $hasPromo = $field->hasActivePromo();
                 $hasReviews = ($field->review_count ?? 0) > 0;
+                $_searchText = strtolower(($field->name ?? '') . ' ' . ($field->location ?? '') . ' ' . ($field->type ?? ''));
             @endphp
-            <div class="field-card" style="text-decoration: none; color: inherit; transition: all 0.3s ease; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; cursor:pointer;" onclick="window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'">
+            <div class="field-card" data-search="{{ $_searchText }}" style="text-decoration: none; color: inherit; transition: all 0.3s ease; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; cursor:pointer;" onclick="window.location.href='{{ route('booking.show', array_filter(['field' => $field->id, 'sport' => $selectedSport])) }}'">
                 {{-- GAMBAR --}}
                 <div style="position: relative; height: 200px; overflow: hidden;">
                     <img src="{{ $field->image_url }}"
@@ -1457,6 +1503,145 @@ function joinDashCommunity(communityId, btn) {
         btn.textContent = 'Gabung';
     });
 }
+</script>
+
+{{-- Search + Profile Dropdown JS --}}
+<script>
+(function(){
+    // ── Profile Dropdown ──
+    var trigger = document.getElementById('profile-dropdown-trigger');
+    var menu = document.getElementById('profile-dropdown-menu');
+    if (trigger && menu) {
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('is-visible');
+        });
+        document.addEventListener('click', function(e) {
+            if (!menu.contains(e.target) && e.target !== trigger) {
+                menu.classList.remove('is-visible');
+            }
+        });
+    }
+
+    // ── Search ──
+    var searchInput = document.getElementById('fields-search');
+    var suggestions = document.getElementById('search-suggestions');
+    var aboveSections = document.getElementById('dashboard-above-sections');
+    var lapanganHeader = document.getElementById('lapangan-section-header');
+    var fieldGrid = document.getElementById('field-card-grid');
+    var fieldCards = fieldGrid ? fieldGrid.querySelectorAll('.field-card') : [];
+
+    // Build suggestion pool
+    var suggestionPool = [];
+    var fieldData = [];
+    fieldCards.forEach(function(card) {
+        var searchText = card.getAttribute('data-search') || '';
+        var nameEl = card.querySelector('h3');
+        var name = nameEl ? nameEl.textContent.trim() : '';
+        if (name && fieldData.indexOf(name) === -1) {
+            suggestionPool.push({ label: name, type: 'field', icon: '🏟️' });
+            fieldData.push(name);
+        }
+        // Extract type from search text (last word after location)
+        var parts = searchText.split(' ');
+        for (var i = 0; i < parts.length; i++) {
+            var word = parts[i].trim();
+            if (word && ['futsal','badminton','basket','voli','tennis','golf','renang','panahan','lari','sepeda','tinju','bela diri','yoga','fitness','hiking','padel','baseball','rugby','senam'].indexOf(word) !== -1) {
+                var sportLabel = word.charAt(0).toUpperCase() + word.slice(1);
+                if (fieldData.indexOf(sportLabel) === -1) {
+                    suggestionPool.push({ label: sportLabel, type: 'sport', icon: '🏅' });
+                    fieldData.push(sportLabel);
+                }
+            }
+        }
+    });
+
+    function doSearch(query) {
+        query = query.toLowerCase().trim();
+
+        if (query.length === 0) {
+            // Reset — show everything
+            if (aboveSections) aboveSections.classList.remove('is-hidden');
+            if (lapanganHeader) lapanganHeader.classList.remove('is-hidden');
+            fieldCards.forEach(function(c) { c.style.display = ''; });
+            suggestions.classList.remove('is-visible');
+            suggestions.innerHTML = '';
+            return;
+        }
+
+        // Hide sections above
+        if (aboveSections) aboveSections.classList.add('is-hidden');
+        if (lapanganHeader) lapanganHeader.classList.add('is-hidden');
+
+        // Filter cards
+        var matchCount = 0;
+        fieldCards.forEach(function(card) {
+            var haystack = (card.getAttribute('data-search') || '').toLowerCase();
+            if (haystack.indexOf(query) !== -1) {
+                card.style.display = '';
+                matchCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Show suggestions
+        var filtered = [];
+        for (var i = 0; i < suggestionPool.length; i++) {
+            if (filtered.length >= 5) break;
+            if (suggestionPool[i].label.toLowerCase().indexOf(query) !== -1) {
+                filtered.push(suggestionPool[i]);
+            }
+        }
+        if (filtered.length > 0) {
+            suggestions.innerHTML = filtered.map(function(s) {
+                return '<div class="search-suggestion-item" data-suggest="' + s.label.replace(/"/g, '&quot;') + '">' +
+                    '<span class="ss-icon">' + s.icon + '</span>' +
+                    '<span class="ss-text"><strong>' + s.label + '</strong><small>' + (s.type === 'sport' ? 'Kategori Olahraga' : 'Nama Lapangan') + '</small></span>' +
+                    '</div>';
+            }).join('');
+            suggestions.classList.add('is-visible');
+            // Click suggestion fills input
+            suggestions.querySelectorAll('.search-suggestion-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    searchInput.value = this.getAttribute('data-suggest');
+                    doSearch(searchInput.value);
+                    suggestions.classList.remove('is-visible');
+                });
+            });
+        } else {
+            suggestions.classList.remove('is-visible');
+        }
+
+        // Show "no results" if needed
+        var existingNoResult = document.getElementById('search-no-result');
+        if (matchCount === 0) {
+            if (!existingNoResult) {
+                var noResult = document.createElement('div');
+                noResult.id = 'search-no-result';
+                noResult.style.cssText = 'text-align:center;padding:60px 20px;color:#94a3b8;';
+                noResult.innerHTML = '<span style="font-size:48px;display:block;margin-bottom:16px;">🔍</span><p style="font-weight:700;margin:0 0 4px;">Lapangan tidak ditemukan</p><p style="font-size:13px;margin:0;">Coba kata kunci lain</p>';
+                if (fieldGrid) fieldGrid.parentElement.appendChild(noResult);
+            }
+        } else {
+            if (existingNoResult) existingNoResult.remove();
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            doSearch(this.value);
+        });
+    }
+
+    // Close suggestions on click outside
+    document.addEventListener('click', function(e) {
+        var wrapper = document.querySelector('.player-search-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            suggestions.classList.remove('is-visible');
+        }
+    });
+})();
 </script>
 </body>
 </html>
