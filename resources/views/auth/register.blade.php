@@ -87,13 +87,13 @@
                         </div>
 
                         <div class="register-field register-field--password">
-                            <label for="password" class="sr-only">Password</label>
+                            <label for="password" class="sr-only">Kata Sandi</label>
                             <div class="register-password-wrap">
                                 <input
                                     id="password"
                                     type="password"
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder="Kata Sandi"
                                     class="register-input register-input--password"
                                     required
                                     autocomplete="new-password"
@@ -123,13 +123,13 @@
                         </div>
 
                         <div class="register-field register-field--password">
-                            <label for="password_confirmation" class="sr-only">Konfirmasi Password</label>
+                            <label for="password_confirmation" class="sr-only">Konfirmasi Kata Sandi</label>
                             <div class="register-password-wrap">
                                 <input
                                     id="password_confirmation"
                                     type="password"
                                     name="password_confirmation"
-                                    placeholder="Konfirmasi Password"
+                                    placeholder="Konfirmasi Kata Sandi"
                                     class="register-input register-input--password"
                                     required
                                     autocomplete="new-password"
@@ -176,13 +176,13 @@
                         </div>
 
                         <div class="register-field">
-                            <label for="username" class="sr-only">Username</label>
+                            <label for="username" class="sr-only">Nama Pengguna</label>
                             <input
                                 id="username"
                                 type="text"
                                 name="username"
                                 value="{{ old('username') }}"
-                                placeholder="Username"
+                                placeholder="Nama Pengguna"
                                 class="register-input"
                                 autocomplete="username"
                             >

@@ -6,7 +6,7 @@
     $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('login');
 
     $categories = [
-        'Booking & Lapangan' => [
+        'Pemesanan & Lapangan' => [
             [
                 'q' => 'Bagaimana cara booking lapangan?',
                 'a' => 'Masuk ke menu Lapangan, pilih lapangan, tentukan tanggal dan jam, lalu klik booking. Pastikan kamu sudah login agar proses bisa dilakukan.',
@@ -28,7 +28,7 @@
                 'a' => 'Klik lapangan pada daftar, lalu detail seperti lokasi, harga, dan fasilitas akan ditampilkan.',
             ],
         ],
-        'Public Match' => [
+        'Pertandingan Umum' => [
             [
                 'q' => 'Apa itu public match?',
                 'a' => 'Public match adalah pertandingan terbuka yang bisa diikuti oleh pengguna lain tanpa harus membuat tim sendiri.',

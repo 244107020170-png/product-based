@@ -182,7 +182,7 @@
                         </div>
 
                         <div class="profile-form__group">
-                            <label for="pf-username">Username</label>
+                            <label for="pf-username">Nama Pengguna</label>
                             <div class="profile-form__input-prefix-wrap">
                                 <span class="profile-form__prefix">@</span>
                                 <input id="pf-username" name="username" type="text"

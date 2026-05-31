@@ -36,7 +36,7 @@
         <div class="topbar">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search bookings, customers...">
+                <input type="text" placeholder="Cari pemesanan, pelanggan...">
             </div>
             <div class="topbar-right">
                 <button class="notif-btn"><i class="fa-solid fa-bell"></i></button>
@@ -47,7 +47,7 @@
                         <h5>{{ auth()->user()->name }}</h5>
                         <p>Profil Pemilik</p>
                     </div>
-                    <img src="https://i.pravatar.cc/100" alt="Profile">
+                    <img src="https://i.pravatar.cc/100" alt="Profil">
                 </div>
             </div>
         </div>
@@ -85,14 +85,14 @@
                 </div>
                 <div class="stats-card">
                     <div>
-                        <p>Total Booking</p>
+                        <p>Total Pemesanan</p>
                         <h2 class="yellow-text">{{ $fields->sum('bookings_count') }}</h2>
                     </div>
                     <div class="stats-icon yellow"><i class="fa-solid fa-calendar-days"></i></div>
                 </div>
                 <div class="stats-card">
                     <div>
-                        <p>Rating Rata-rata</p>
+                        <p>Rata-rata Penilaian</p>
                         <h2 class="red-text" style="display:flex;align-items:center;gap:4px;"><span style="color:#f59e0b;">★</span> {{ $avgRating }}</h2>
                     </div>
                     <div class="stats-icon" style="background:#fef3c7;color:#f59e0b;"><i class="fa-solid fa-star"></i></div>
@@ -107,7 +107,7 @@
                                 <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Lapangan</th>
                                 <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Lokasi</th>
                                 <th style="text-align:center;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Rating</th>
-                                <th style="text-align:center;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Total Booking</th>
+                                <th style="text-align:center;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Total Pemesanan</th>
                                 <th style="text-align:center;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Status</th>
                             </tr>
                         </thead>
@@ -155,7 +155,7 @@
                 <div style="flex:1;min-width:180px;background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.04);display:flex;align-items:center;gap:14px;">
                     <div style="width:48px;height:48px;border-radius:14px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">⭐</div>
                     <div>
-                        <p style="margin:0 0 2px;font-size:12px;font-weight:600;color:#94a3b8;">Rating Rata-rata</p>
+                        <p style="margin:0 0 2px;font-size:12px;font-weight:600;color:#94a3b8;">Rata-rata Penilaian</p>
                         <p style="margin:0;font-size:22px;font-weight:800;color:#1e293b;">{{ $avgRating }}</p>
                     </div>
                 </div>

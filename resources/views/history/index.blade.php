@@ -249,209 +249,149 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                 {{-- ── TAB PESANAN ── --}}
                 <div class="profview-panel is-active" id="histab-pesanan" role="tabpanel">
 
-                {{-- ── Booking List ── --}}
+                {{-- ── Unified Booking + Match List ── --}}
                 <div class="history-list" id="history-booking-list">
 
-                    @forelse ($bookings as $booking)
-                        @php
-                            $field       = $booking->field;
-                            $statusKey   = $booking->status ?? 'pending';
-
-                            // Auto-Selesai: if date has passed and not cancelled/expired/rejected
-                            $isPast = false;
-                            if (!in_array($statusKey, $nonSelesaiStatuses)) {
-                                $bookingDate = \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
-                                $bookingEnd = \Carbon\Carbon::parse($bookingDate.' '.$booking->end_time);
-                                $isPast = $bookingEnd->isPast();
-                            }
-                            if ($isPast) {
-                                $statusKey = 'selesai';
-                            }
-
-                            $statusInfo  = $statusMap[$statusKey] ?? ['label' => ucfirst($statusKey), 'class' => 'history-status--pending', 'filter' => $statusKey];
-
-                            $bookingDate = \Carbon\Carbon::parse($booking->date)->locale('id')->translatedFormat('j M Y');
-                            $timeRange   = \Carbon\Carbon::parse($booking->start_time)->format('H:i').' - '.\Carbon\Carbon::parse($booking->end_time)->format('H:i');
-
-                            $startH      = \Carbon\Carbon::parse($booking->start_time);
-                            $endH        = \Carbon\Carbon::parse($booking->end_time);
-                            $hours       = max(1, $startH->diffInHours($endH));
-                            $price       = $booking->total_price;
-                        @endphp
-
-                        <article class="history-card"
-                            data-booking-status="{{ $statusInfo['filter'] ?? 'unknown' }}"
-                            data-booking-id="{{ $booking->id }}"
-                            id="booking-{{ $booking->id }}">
-
-                            {{-- Image --}}
-                            <div class="history-card__image">
-                                @if ($field)
-                                    <img src="{{ $field->image_url }}" alt="{{ $field->name ?? 'Lapangan' }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                                    <div class="history-card__image-placeholder" aria-hidden="true" style="display:none">
-                                        <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
-                                            <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                                            <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                            <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
-                                        </svg>
-                                    </div>
-                                @else
-                                    <div class="history-card__image-placeholder" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
-                                            <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                                            <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                            <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
-                                        </svg>
-                                    </div>
-                                @endif
-                            </div>
-
-                            {{-- Body --}}
-                            <div class="history-card__body">
-                                <div class="history-card__header">
-                                    <div>
-                                        <div class="history-card__title">
-                                            <span class="history-card__pin" aria-hidden="true">
-                                                <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
-                                                    <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" fill="#ef4444" stroke="#ef4444" stroke-width="1.2"/>
-                                                    <circle cx="12" cy="10.5" r="2" fill="#fff"/>
-                                                </svg>
-                                            </span>
-                                            <h2 class="history-card__name">{{ $field->name ?? 'Lapangan' }}</h2>
+                    @forelse ($allItems as $item)
+                        @if ($item['type'] === 'booking')
+                            @php
+                                $booking = $item['original'];
+                                $field   = $booking->field;
+                                $statusKey = $item['status_key'];
+                                $statusInfo = $statusMap[$statusKey] ?? ['label' => ucfirst($statusKey), 'class' => 'history-status--pending', 'filter' => $statusKey];
+                                $bookingDate = \Carbon\Carbon::parse($booking->date)->locale('id')->translatedFormat('j M Y');
+                                $timeRange   = \Carbon\Carbon::parse($booking->start_time)->format('H:i').' - '.\Carbon\Carbon::parse($booking->end_time)->format('H:i');
+                                $price       = $booking->total_price;
+                            @endphp
+                            <article class="history-card"
+                                data-booking-status="{{ $statusInfo['filter'] ?? 'unknown' }}"
+                                data-booking-id="{{ $booking->id }}"
+                                id="booking-{{ $booking->id }}">
+                                <div class="history-card__image">
+                                    @if ($field)
+                                        <img src="{{ $field->image_url }}" alt="{{ $field->name ?? 'Lapangan' }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                        <div class="history-card__image-placeholder" aria-hidden="true" style="display:none">
+                                            <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+                                                <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
+                                            </svg>
                                         </div>
-                                        <p class="history-card__location">{{ $field->location ?? '-' }}</p>
-                                    </div>
-
-                                    <div style="text-align:right;flex-shrink:0;">
-                                        <span class="history-status {{ $statusInfo['class'] }}">
-                                            {{ $statusInfo['label'] }}
-                                        </span>
-                                        @if($statusKey === 'selesai')
-                                            @if($booking->review)
-                                            <div style="margin-top:6px;">
-                                                <span class="hist-rv-badge hist-rv-badge--done">🟢 Sudah Direview</span>
+                                    @else
+                                        <div class="history-card__image-placeholder" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+                                                <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M7 8V5.5M12 8V5.5M17 8V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M3 13H21" stroke="currentColor" stroke-width="1.8"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="history-card__body">
+                                    <div class="history-card__header">
+                                        <div>
+                                            <div class="history-card__title">
+                                                <span class="history-card__pin" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
+                                                        <path d="M12 20.5C12 20.5 18 14.73 18 10.5C18 7.19 15.31 4.5 12 4.5C8.69 4.5 6 7.19 6 10.5C6 14.73 12 20.5 12 20.5Z" fill="#ef4444" stroke="#ef4444" stroke-width="1.2"/>
+                                                        <circle cx="12" cy="10.5" r="2" fill="#fff"/>
+                                                    </svg>
+                                                </span>
+                                                <h2 class="history-card__name">{{ $field->name ?? 'Lapangan' }}</h2>
                                             </div>
-                                            @else
-                                            <div style="margin-top:6px;">
-                                                <span class="hist-rv-badge hist-rv-badge--pending">🟡 Menunggu Review</span>
-                                            </div>
+                                            <p class="history-card__location">{{ $field->location ?? '-' }}</p>
+                                        </div>
+                                        <div style="text-align:right;flex-shrink:0;">
+                                            <span class="history-status {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
+                                            @if($statusKey === 'selesai')
+                                                @if(in_array($field->id, $reviewedFieldIds))
+                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--done">🟢 Sudah Direview</span></div>
+                                                @else
+                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--pending">🟡 Menunggu Review</span></div>
+                                                @endif
                                             @endif
-                                        @endif
+                                        </div>
+                                    </div>
+                                    <div class="history-card__meta">
+                                        <span class="history-card__meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                                            {{ $bookingDate }}
+                                        </span>
+                                        <span class="history-card__meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12.5L15 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            {{ $timeRange }}
+                                        </span>
+                                    </div>
+                                    <div class="history-card__footer">
+                                        <span class="history-card__price">Rp{{ number_format($price, 0, ',', '.') }}</span>
+                                        <div class="history-card__actions">
+                                            @if($statusKey === 'selesai' && !in_array($field->id, $reviewedFieldIds))
+                                                <button type="button" class="hbtn hbtn--review" onclick="openReviewModal({{ $booking->id }}, '{{ addslashes($field->name ?? 'Lapangan') }}', {{ $field->id ?? 'null' }})">⭐ Beri Review</button>
+                                            @endif
+                                            <a href="{{ route('booking.detail', $booking->id) }}" class="hbtn hbtn--outline">Rincian</a>
+                                            <a href="{{ url('/fields') }}" class="hbtn hbtn--primary" id="rebook-booking-{{ $booking->id }}">Pesan Lagi</a>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div class="history-card__meta">
-                                    <span class="history-card__meta-item">
-                                        <svg viewBox="0 0 24 24" fill="none">
-                                            <rect x="3.5" y="5.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
-                                            <path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                            </article>
+                        @else
+                            @php
+                                $mj = $item['original'];
+                                $cm = $mj->match;
+                                $mStatusKey = $item['status_key'];
+                                $mStatusInfo = $statusMap[$mStatusKey] ?? ['label' => 'Selesai', 'class' => 'history-status--selesai', 'filter' => 'selesai'];
+                                $mDate = \Carbon\Carbon::parse($cm->date)->locale('id')->translatedFormat('j M Y');
+                                $mTime = $cm->time ? substr($cm->time, 0, 5) . ' WIB' : '-';
+                            @endphp
+                            <article class="history-card"
+                                data-booking-status="{{ $mStatusInfo['filter'] ?? 'selesai' }}"
+                                data-booking-id="match-{{ $mj->id }}">
+                                <div class="history-card__image">
+                                    <div class="history-card__image-placeholder" aria-hidden="true" style="background: #f0fdf4;">
+                                        <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+                                            <path d="M17 10H7M17 14H7M12 2L15 8H9L12 2Z" stroke="#166534" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <rect x="4" y="8" width="16" height="13" rx="2" stroke="#166534" stroke-width="1.8"/>
                                         </svg>
-                                        {{ $bookingDate }}
-                                    </span>
-                                    <span class="history-card__meta-item">
-                                        <svg viewBox="0 0 24 24" fill="none">
-                                            <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/>
-                                            <path d="M12 7.5V12.5L15 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        {{ $timeRange }}
-                                    </span>
-                                </div>
-
-                                <div class="history-card__footer">
-                                    <span class="history-card__price">
-                                        Rp{{ number_format($price, 0, ',', '.') }}
-                                    </span>
-
-                                    <div class="history-card__actions">
-                                        @if($statusKey === 'selesai' && !$booking->review)
-                                            <button type="button" class="hbtn hbtn--review" onclick="openReviewModal({{ $booking->id }}, '{{ addslashes($field->name ?? 'Lapangan') }}', {{ $field->id ?? 'null' }})">
-                                                ⭐ Beri Review
-                                            </button>
-                                        @endif
-                                        <a href="{{ route('booking.detail', $booking->id) }}" class="hbtn hbtn--outline">Rincian</a>
-                                        <a href="{{ url('/fields') }}" class="hbtn hbtn--primary" id="rebook-booking-{{ $booking->id }}">
-                                            Pesan Lagi
-                                        </a>
                                     </div>
                                 </div>
-                            </div>
-                        </article>
+                                <div class="history-card__body">
+                                    <div class="history-card__header">
+                                        <div>
+                                            <div class="history-card__title">
+                                                <span class="history-card__pin" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
+                                                        <circle cx="12" cy="12" r="10" fill="#166534" stroke="#166534" stroke-width="1.2"/>
+                                                        <path d="M12 6V12L16 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                                    </svg>
+                                                </span>
+                                                <h2 class="history-card__name">{{ $cm->title }}</h2>
+                                            </div>
+                                            <p class="history-card__location">{{ $cm->field?->name ?? 'Lapangan' }}{{ $cm->field?->location ? ' - ' . $cm->field->location : '' }}</p>
+                                        </div>
+                                        <span class="history-status {{ $mStatusInfo['class'] }}">{{ $mStatusInfo['label'] }}</span>
+                                    </div>
+                                    <div class="history-card__meta">
+                                        <span class="history-card__meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                                            {{ $mDate }}
+                                        </span>
+                                        <span class="history-card__meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12.5L15 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            {{ $mTime }}
+                                        </span>
+                                    </div>
+                                    <div class="history-card__footer">
+                                        <span class="history-card__price"><span style="color: #166534; font-weight: 700;">Pertandingan Umum</span></span>
+                                        <div class="history-card__actions">
+                                            <a href="{{ route('matches.show', $cm->id) }}" class="hbtn hbtn--outline">Rincian</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        @endif
 
                     @empty
-                    @endforelse
-
-                    {{-- Confirmed match joins --}}
-                    @if(isset($matchJoins))
-                    @foreach($matchJoins as $mj)
-                    @php
-                        $cm = $mj->match;
-                        if (!$cm) continue;
-                        $isPastMatch = \Carbon\Carbon::parse($cm->date . ' ' . ($cm->time ?? '00:00'))->isPast();
-                        $mStatusKey = $isPastMatch ? 'selesai' : 'confirmed';
-                        $mStatusInfo = $statusMap[$mStatusKey] ?? ['label' => 'Selesai', 'class' => 'history-status--selesai', 'filter' => 'selesai'];
-                        $mDate = \Carbon\Carbon::parse($cm->date)->locale('id')->translatedFormat('j M Y');
-                        $mTime = $cm->time ? substr($cm->time, 0, 5) . ' WIB' : '-';
-                    @endphp
-                    <article class="history-card"
-                        data-booking-status="{{ $mStatusInfo['filter'] ?? 'selesai' }}"
-                        data-booking-id="match-{{ $mj->id }}">
-                        <div class="history-card__image">
-                            <div class="history-card__image-placeholder" aria-hidden="true" style="background: #f0fdf4;">
-                                <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
-                                    <path d="M17 10H7M17 14H7M12 2L15 8H9L12 2Z" stroke="#166534" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <rect x="4" y="8" width="16" height="13" rx="2" stroke="#166534" stroke-width="1.8"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="history-card__body">
-                            <div class="history-card__header">
-                                <div>
-                                    <div class="history-card__title">
-                                        <span class="history-card__pin" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
-                                                <circle cx="12" cy="12" r="10" fill="#166534" stroke="#166534" stroke-width="1.2"/>
-                                                <path d="M12 6V12L16 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-                                            </svg>
-                                        </span>
-                                        <h2 class="history-card__name">{{ $cm->title }}</h2>
-                                    </div>
-                                    <p class="history-card__location">{{ $cm->field?->name ?? 'Lapangan' }}{{ $cm->field?->location ? ' - ' . $cm->field->location : '' }}</p>
-                                </div>
-                                <span class="history-status {{ $mStatusInfo['class'] }}">
-                                    {{ $mStatusInfo['label'] }}
-                                </span>
-                            </div>
-                            <div class="history-card__meta">
-                                <span class="history-card__meta-item">
-                                    <svg viewBox="0 0 24 24" fill="none">
-                                        <rect x="3.5" y="5.5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
-                                        <path d="M7 3.5V7M17 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                                    </svg>
-                                    {{ $mDate }}
-                                </span>
-                                <span class="history-card__meta-item">
-                                    <svg viewBox="0 0 24 24" fill="none">
-                                        <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/>
-                                        <path d="M12 7.5V12.5L15 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                    {{ $mTime }}
-                                </span>
-                            </div>
-                            <div class="history-card__footer">
-                                <span class="history-card__price">
-                                    <span style="color: #166534; font-weight: 700;">Public Match</span>
-                                </span>
-                                <div class="history-card__actions">
-                                    <a href="{{ route('matches.show', $cm->id) }}" class="hbtn hbtn--outline">Rincian</a>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
-                    @endforeach
-                    @endif
-
-                    @if($bookings->isEmpty() && (!isset($matchJoins) || $matchJoins->isEmpty()))
-                        {{-- Both empty → show main empty state --}}
+                        {{-- No data at all → main empty state --}}
                         <div class="history-empty">
                             <span class="history-empty__icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none">
@@ -463,10 +403,10 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                             <p class="history-empty__sub">Mulai pesan lapangan atau gabung pertandingan sekarang!</p>
                             <a href="{{ url('/fields') }}" class="hbtn hbtn--primary">Pesan Sekarang</a>
                         </div>
-                    @endif
+                    @endforelse
 
-                    {{-- Empty state khusus JS: muncul hanya saat filter tab menghasilkan 0 kartu --}}
-                    @if($bookings->count() > 0 || (isset($matchJoins) && $matchJoins->count() > 0))
+                    {{-- Empty state untuk JS filter: muncul saat filter tab menghasilkan 0 kartu --}}
+                    @if($allItems->count() > 0)
                     <div class="history-empty" data-history-empty hidden>
                         <span class="history-empty__icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">

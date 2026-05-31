@@ -21,7 +21,7 @@
 body.register-page {
     margin: 0;
     min-height: 100vh;
-    font-family: "Figtree", "Segoe UI", sans-serif;
+    font-family: 'Poppins', sans-serif;
     color: var(--register-blue);
     background-color: var(--register-bg);
     background-image: var(--register-page-bg);

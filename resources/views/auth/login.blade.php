@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Masuk</title>
     @vite('resources/css/app.css', 'resources/js/app.js')
 </head>
 
@@ -32,7 +32,7 @@
             </div>
 
             <!-- TITLE -->
-            <h1 class="text-5xl font-bold text-indigo-950 mt-6 mb-8">Sign in</h1>
+            <h1 class="text-5xl font-bold text-indigo-950 mt-6 mb-8">Masuk</h1>
 
             <!-- FORM LOGIN -->
             <form method="POST" action="{{ route('login') }}">
@@ -61,7 +61,7 @@
                             id="password"
                             type="password"
                             name="password"
-                            placeholder="Password"
+                            placeholder="Kata Sandi"
                             class="password-input w-full px-4 py-2 input-neu outline-none text-sm pr-10"
                             required
                         >

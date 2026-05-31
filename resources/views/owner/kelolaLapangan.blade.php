@@ -28,7 +28,7 @@
         <div class="topbar">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search bookings, customers...">
+                <input type="text" placeholder="Cari pemesanan, pelanggan...">
             </div>
 
             <div class="topbar-right">
@@ -49,7 +49,7 @@
                         <p>Profil Pemilik</p>
                     </div>
 
-                    <img src="https://i.pravatar.cc/100" alt="Profile">
+                    <img src="https://i.pravatar.cc/100" alt="Profil">
                 </div>
             </div>
         </div>
@@ -96,7 +96,7 @@
 
             <div class="stats-card">
                 <div>
-                    <p>Rating & Review</p>
+                    <p>Rating & Ulasan</p>
                     <h2 class="blue-text" style="display:flex;align-items:center;gap:6px;">
                         <span style="color:#f59e0b;">★</span> {{ round($totalRating ?? 0, 1) }}
                     </h2>
@@ -185,7 +185,7 @@
                     </div>
 
                     <div class="field-actions">
-                        <button class="edit-btn">Edit</button>
+                        <button class="edit-btn">Ubah</button>
                         <button class="schedule-btn">Jadwal</button>
                         <button class="featured-btn" onclick="event.preventDefault();toggleFeatured({{ $field->id }}, this)" style="background:none;border:1px solid #ddd;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;color:{{ $field->featured ? '#fbbf24' : '#999' }};">
                             <i class="fa-solid {{ $field->featured ? 'fa-star' : 'fa-regular fa-star' }}"></i>
@@ -220,8 +220,8 @@
                             <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
                                 <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Pengguna</th>
                                 <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Lapangan</th>
-                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Rating</th>
-                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Review</th>
+                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Penilaian</th>
+                                <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Ulasan</th>
                                 <th style="text-align:left;padding:14px 16px;font-size:12px;font-weight:700;color:#64748b;">Tanggal</th>
                             </tr>
                         </thead>

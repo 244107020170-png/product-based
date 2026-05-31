@@ -344,11 +344,11 @@
                                                         <div style="display: flex; gap: 8px; flex-shrink: 0;">
                                                             <form action="{{ route('matches.participant.confirm', [$match->id, $entry->id]) }}" method="POST">
                                                                 @csrf
-                                                                <button type="submit" style="background: #43a680; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer;">Confirm</button>
+                                                                <button type="submit" style="background: #43a680; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer;">Konfirmasi</button>
                                                             </form>
                                                             <form action="{{ route('matches.participant.reject', [$match->id, $entry->id]) }}" method="POST">
                                                                 @csrf
-                                                                <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 10px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer;">Reject</button>
+                                                                <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 10px; padding: 8px 16px; font-weight: 700; font-size: 13px; cursor: pointer;">Tolak</button>
                                                             </form>
                                                         </div>
                                                     @else
@@ -361,12 +361,12 @@
                                 @endif
 
                                 <div style="background: white; border-radius: 20px; padding: 22px; border: 1px solid rgba(0,0,77,.08);">
-                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: #02025b;">Daftar Participant</h3>
+                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: #02025b;">Daftar Peserta</h3>
                                     <div style="overflow-x: auto;">
                                         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                                             <thead>
                                                 <tr style="border-bottom: 2px solid rgba(0,0,77,.06);">
-                                                    <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Player</th>
+                                                    <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Pemain</th>
                                                     <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Kontribusi</th>
                                                     <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Status</th>
                                                     <th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #4b5563; font-size: 13px;">Aksi</th>
@@ -387,11 +387,11 @@
                                                         <td style="padding: 12px; vertical-align: middle; font-weight: 600; color: #02025b;">Rp{{ number_format($entry->contribution_amount, 0, ',', '.') }}</td>
                                                         <td style="padding: 12px; vertical-align: middle;">
                                                             @if($entry->isPaid())
-                                                                <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #eafaf1; color: #155724; font-weight: 700; font-size: 12px;">paid</span>
+                                                                <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #eafaf1; color: #155724; font-weight: 700; font-size: 12px;">dibayar</span>
                                                             @elseif($needConfirm)
                                                                 <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; font-size: 12px;">menunggu konfirmasi</span>
                                                             @else
-                                                                <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #fff4e5; color: #8a6d3b; font-weight: 700; font-size: 12px;">waiting</span>
+                                                                <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; background: #fff4e5; color: #8a6d3b; font-weight: 700; font-size: 12px;">menunggu</span>
                                                             @endif
                                                         </td>
                                                         <td style="padding: 12px; vertical-align: middle; white-space: nowrap;">
@@ -406,11 +406,11 @@
                                                             @if($entry->isWaiting())
                                                                 <form action="{{ route('matches.participant.confirm', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block; margin-left: 6px;">
                                                                     @csrf
-                                                                    <button type="submit" style="background: #43a680; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 12px; cursor: pointer;">Confirm</button>
+                                                                    <button type="submit" style="background: #43a680; color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 12px; cursor: pointer;">Konfirmasi</button>
                                                                 </form>
                                                                 <form action="{{ route('matches.participant.reject', [$match->id, $entry->id]) }}" method="POST" style="display:inline-block; margin-left: 4px;">
                                                                     @csrf
-                                                                    <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 12px; cursor: pointer;">Reject</button>
+                                                                    <button type="submit" style="background: #f8d7da; color: #842029; border: none; border-radius: 8px; padding: 6px 12px; font-weight: 700; font-size: 12px; cursor: pointer;">Tolak</button>
                                                                 </form>
                                                             @endif
                                                         </td>

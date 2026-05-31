@@ -471,7 +471,7 @@
       </div>
 
       {{-- Button --}}
-      <a href="{{ url('/matches') }}" class="sk-team-btn">Temukan Team</a>
+      <a href="{{ url('/matches') }}" class="sk-team-btn">Temukan Tim</a>
     </div>
 
     {{-- ── STATS ── --}}

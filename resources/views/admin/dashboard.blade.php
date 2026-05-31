@@ -5,7 +5,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-4xl font-bold text-[#00004D] mb-2">Admin Dashboard</h1>
+            <h1 class="text-4xl font-bold text-[#00004D] mb-2">Dasbor Admin</h1>
             <p class="text-gray-600">Selamat datang di panel admin Spies Sport</p>
         </div>
 
@@ -15,7 +15,7 @@
             <div class="bg-white rounded-lg border-l-4 border-[#FED56F] shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Users</p>
+                        <p class="text-gray-500 text-sm font-medium">Total Pengguna</p>
                         <p class="text-3xl font-bold text-[#EB5436] mt-2">{{ $totalUsers }}</p>
                     </div>
                     <div class="bg-[#FED56F] rounded-full p-3">
@@ -30,7 +30,7 @@
             <div class="bg-white rounded-lg border-l-4 border-[#FED56F] shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Owners</p>
+                        <p class="text-gray-500 text-sm font-medium">Total Pemilik</p>
                         <p class="text-3xl font-bold text-[#EB5436] mt-2">{{ $totalOwners }}</p>
                     </div>
                     <div class="bg-[#FED56F] rounded-full p-3">
@@ -45,7 +45,7 @@
             <div class="bg-white rounded-lg border-l-4 border-[#FED56F] shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Players</p>
+                        <p class="text-gray-500 text-sm font-medium">Total Pemain</p>
                         <p class="text-3xl font-bold text-[#EB5436] mt-2">{{ $totalPlayers }}</p>
                     </div>
                     <div class="bg-[#FED56F] rounded-full p-3">
@@ -60,7 +60,7 @@
             <div class="bg-white rounded-lg border-l-4 border-[#FED56F] shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Fields</p>
+                        <p class="text-gray-500 text-sm font-medium">Total Lapangan</p>
                         <p class="text-3xl font-bold text-[#EB5436] mt-2">{{ $totalFields }}</p>
                     </div>
                     <div class="bg-[#FED56F] rounded-full p-3">
@@ -75,7 +75,7 @@
             <div class="bg-white rounded-lg border-l-4 border-[#FED56F] shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Bookings</p>
+                        <p class="text-gray-500 text-sm font-medium">Total Pemesanan</p>
                         <p class="text-3xl font-bold text-[#EB5436] mt-2">{{ $totalBookings }}</p>
                     </div>
                     <div class="bg-[#FED56F] rounded-full p-3">
@@ -90,7 +90,7 @@
             <div class="bg-white rounded-lg border-l-4 border-[#FED56F] shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Matches</p>
+                        <p class="text-gray-500 text-sm font-medium">Total Pertandingan</p>
                         <p class="text-3xl font-bold text-[#EB5436] mt-2">{{ $totalMatches }}</p>
                     </div>
                     <div class="bg-[#FED56F] rounded-full p-3">

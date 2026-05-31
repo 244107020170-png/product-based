@@ -32,11 +32,11 @@ class ReviewController extends Controller
         }
 
         $existingReview = Review::where('user_id', $user->id)
-            ->where('booking_id', $validated['booking_id'])
+            ->where('field_id', $validated['field_id'])
             ->first();
 
         if ($existingReview) {
-            return back()->with('error', 'Anda sudah memberikan review untuk booking ini.');
+            return back()->with('error', 'Anda sudah memberikan review untuk lapangan ini.');
         }
 
         $photos = [];
@@ -62,6 +62,18 @@ class ReviewController extends Controller
     public function checkEligibility(Field $field)
     {
         $user = auth()->user();
+
+        $existingReview = Review::where('user_id', $user->id)
+            ->where('field_id', $field->id)
+            ->first();
+
+        if ($existingReview) {
+            return response()->json([
+                'eligible' => false,
+                'message' => 'Anda sudah memberikan review untuk lapangan ini.',
+            ]);
+        }
+
         $completedBooking = Booking::where('user_id', $user->id)
             ->where('field_id', $field->id)
             ->whereIn('status', ['confirmed', 'selesai', 'completed'])
@@ -72,17 +84,6 @@ class ReviewController extends Controller
             return response()->json([
                 'eligible' => false,
                 'message' => 'Anda belum memiliki booking selesai di lapangan ini.',
-            ]);
-        }
-
-        $existingReview = Review::where('user_id', $user->id)
-            ->where('booking_id', $completedBooking->id)
-            ->first();
-
-        if ($existingReview) {
-            return response()->json([
-                'eligible' => false,
-                'message' => 'Anda sudah memberikan review untuk booking ini.',
             ]);
         }
 
@@ -98,26 +99,19 @@ class ReviewController extends Controller
     public function checkAnyEligibility()
     {
         $user = auth()->user();
+
+        $reviewedFieldIds = Review::where('user_id', $user->id)->pluck('field_id')->toArray();
+
         $completedBooking = Booking::where('user_id', $user->id)
             ->whereIn('status', ['confirmed', 'selesai', 'completed'])
+            ->whereNotIn('field_id', $reviewedFieldIds)
             ->latest()
             ->first();
 
         if (!$completedBooking) {
             return response()->json([
                 'eligible' => false,
-                'message' => 'Belum ada booking selesai untuk direview.',
-            ]);
-        }
-
-        $existingReview = Review::where('user_id', $user->id)
-            ->where('booking_id', $completedBooking->id)
-            ->first();
-
-        if ($existingReview) {
-            return response()->json([
-                'eligible' => false,
-                'message' => 'Review untuk booking terakhir sudah diberikan.',
+                'message' => 'Belum ada booking selesai yang perlu direview.',
             ]);
         }
 

@@ -3,11 +3,11 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Pusat Bantuan - Spies Sport</title>
 @vite(['resources/css/pages.css', 'resources/js/app.js'])
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <style>
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             background-color: #f9f9ff;
             background-image: radial-gradient(at 0% 0%, rgba(224, 242, 241, 0.4) 0px, transparent 50%),
                               radial-gradient(at 100% 100%, rgba(224, 242, 241, 0.4) 0px, transparent 50%);

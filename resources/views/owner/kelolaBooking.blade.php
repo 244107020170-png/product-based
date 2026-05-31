@@ -44,7 +44,7 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
 
                 <input type="text"
-                       placeholder="Search bookings, customers...">
+                       placeholder="Cari pemesanan, pelanggan...">
 
             </div>
 
@@ -69,7 +69,7 @@
                     </div>
 
                     <img src="https://i.pravatar.cc/100"
-                         alt="Profile">
+                         alt="Profil">
 
                 </div>
 
@@ -452,7 +452,7 @@
 
                                     <i class="fa-solid fa-pen"></i>
 
-                                    Edit
+                                    Ubah
 
                                 </button>
 

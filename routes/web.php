@@ -287,11 +287,61 @@ Route::get('/dashboard', function () {
             return 0;
         })->values();
         
+        // ---- Dynamic Review / Recommendation Card ----
+        $reviewedFieldIds = \App\Models\Review::where('user_id', $user->id)->pluck('field_id')->toArray();
+
+        $pendingReviewBooking = \App\Models\Booking::where('user_id', $user->id)
+            ->whereIn('status', [\App\Enums\BookingStatus::CONFIRMED, \App\Enums\BookingStatus::COMPLETED])
+            ->where(function($q) {
+                $q->where('date', '<', now()->toDateString())
+                  ->orWhere(function($q2) {
+                      $q2->where('date', '=', now()->toDateString())
+                         ->where('end_time', '<=', now()->toTimeString());
+                  });
+            })
+            ->whereNotIn('field_id', $reviewedFieldIds)
+            ->with('field')
+            ->orderBy('date', 'desc')
+            ->orderBy('end_time', 'desc')
+            ->first();
+
+        $recommendationField = null;
+        if (!$pendingReviewBooking) {
+            $recommendationField = \App\Models\Field::withCount('bookings')
+                ->where('is_available', true)
+                ->orderBy('bookings_count', 'desc')
+                ->orderBy('rating', 'desc')
+                ->orderBy('featured', 'desc')
+                ->first();
+        }
+
+        // ---- Community Recommendations (based on user's sport activity) ----
+        $communitySports = \App\Models\Booking::where('user_id', $user->id)
+            ->whereIn('status', [\App\Enums\BookingStatus::CONFIRMED, \App\Enums\BookingStatus::COMPLETED])
+            ->with('field')
+            ->get()
+            ->pluck('field.type')
+            ->filter()
+            ->unique()
+            ->toArray();
+        $userSportPref = $user->sport_preference ? array_map('trim', explode(',', $user->sport_preference)) : [];
+        $userActiveSports = array_unique(array_merge($userSportPref, $communitySports));
+        $recommendedCommunities = collect();
+        if (!empty($userActiveSports)) {
+            $recommendedCommunities = \App\Models\Community::withCount('members')
+                ->whereIn('sport_category', $userActiveSports)
+                ->orderBy('members_count', 'desc')
+                ->take(3)
+                ->get();
+        }
+        $myCommunityIds = $user->communities()->pluck('community_id')->toArray();
+        
         return view('fields.index', compact(
             'fields', 'upcomingBooking', 'upcomingJoin', 'confirmedMatchNotifs',
             'recommendedMatches', 'pesanLagiFields', 'favoriteFields', 'previousFieldIds',
             'recommendedBadge', 'favoriteIds', 'isNearby', 'nearbyMessage', 'recommendedFields',
-            'recommendedFieldBadge'
+            'recommendedFieldBadge', 'pendingReviewBooking', 'recommendationField',
+            'recommendedCommunities', 'myCommunityIds',
         ));
     }
 })->middleware(['auth'])->name('dashboard');
@@ -313,6 +363,21 @@ Route::get('/rekomendasi', function () {
         ->take(6)
         ->get();
 
+    // Attach recent bookers for each popular field
+    $fieldIds = $popularFields->pluck('id');
+    $recentBookings = \App\Models\Booking::whereIn('field_id', $fieldIds)
+        ->whereIn('status', ['confirmed', 'completed'])
+        ->with('user')
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->groupBy('field_id');
+    $popularFields->each(function ($field) use ($recentBookings) {
+        $field->recentBookers = $recentBookings->get($field->id, collect())
+            ->pluck('user')
+            ->unique('id')
+            ->take(4);
+    });
+
     $sportCategories = \App\Models\Field::where('is_available', true)
         ->whereNotNull('type')
         ->distinct()
@@ -320,7 +385,34 @@ Route::get('/rekomendasi', function () {
         ->map(fn($t) => ['key' => $t, 'label' => ucfirst($t)])
         ->values();
 
-    return view('pages.rekomendasi', compact('promoFields', 'popularFields', 'sportCategories'));
+    // ---- Communities ----
+    $user = Auth::user();
+    $communitySports = \App\Models\Community::whereNotNull('sport_category')
+        ->distinct('sport_category')->pluck('sport_category')->toArray();
+    $matchSports = \App\Models\Matchs::whereNotNull('sport')
+        ->distinct('sport')->pluck('sport')->toArray();
+    $fieldTypes = \App\Models\Field::whereNotNull('type')
+        ->where('is_available', true)
+        ->distinct('type')->pluck('type')->toArray();
+    $allSportCategories = collect()
+        ->merge($communitySports)
+        ->merge($matchSports)
+        ->merge($fieldTypes)
+        ->unique()
+        ->sort()
+        ->values()
+        ->toArray();
+    $communities = \App\Models\Community::withCount('members')
+        ->orderByRaw('created_by = ? desc', [$user ? $user->id : 0])
+        ->orderBy('members_count', 'desc')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    $myCommunityIds = $user ? $user->communities()->pluck('community_id')->toArray() : [];
+
+    return view('pages.rekomendasi', compact(
+        'promoFields', 'popularFields', 'sportCategories',
+        'communities', 'myCommunityIds', 'allSportCategories',
+    ));
 })->name('recommendation.index');
 
 Route::get('/explore', function () {
@@ -709,6 +801,12 @@ Route::middleware('auth')->group(function () {
         $teams = \App\Models\Matchs::with('field')->where('created_by', auth()->id())->latest()->get();
         return view('matches.my-teams', compact('teams'));
     })->name('matches.myTeams');
+
+    /* KOMUNITAS */
+    Route::post('/komunitas', [\App\Http\Controllers\CommunityController::class, 'store'])->name('community.store');
+    Route::post('/komunitas/{community}/join', [\App\Http\Controllers\CommunityController::class, 'join'])->name('community.join');
+    Route::post('/komunitas/{community}/leave', [\App\Http\Controllers\CommunityController::class, 'leave'])->name('community.leave');
+    Route::get('/komunitas/sport-categories', [\App\Http\Controllers\CommunityController::class, 'sportCategories'])->name('community.sportCategories');
 
     /* FAVORIT */
     Route::get('/favorit', [FavoriteController::class, 'index'])->name('favorite.index');

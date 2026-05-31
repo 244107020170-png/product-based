@@ -44,7 +44,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Booking Saya – {{ config('app.name', 'Spies Sport') }}</title>
+    <title>Pemesanan Saya – {{ config('app.name', 'Spies Sport') }}</title>
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
@@ -147,7 +147,7 @@
                     <rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
                     <path d="M8 7H16M8 11H16M8 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                Belum Ada Booking
+                Belum Ada Pemesanan
             </h2>
             <p style="color: #666; margin-bottom: 30px;">Mulai booking lapangan favorit kamu sekarang juga!</p>
             <a href="{{ route('dashboard') }}" style="display: inline-block; padding: 12px 30px; background: #43a680; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
@@ -208,7 +208,7 @@
                         @else
                         <a href="{{ route('booking.detail', $booking->id) }}" class="booking-detail-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 0; background: #f5f7fa; color: #02025b; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: .95rem; border: 1px solid rgba(0,0,77,.1); transition: all .2s ease;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            Lihat Detail Booking
+                            Lihat Detail Pemesanan
                         </a>
                         @endif
                     </div>

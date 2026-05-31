@@ -40,7 +40,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Booking – {{ config('app.name', 'Spies Sport') }}</title>
+    <title>Pemesanan – {{ config('app.name', 'Spies Sport') }}</title>
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
@@ -50,7 +50,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         /* Custom styles for booking page */
-        .bk-container { max-width: 900px; margin: 0 auto; padding: 20px; font-family: 'Inter', sans-serif; }
+        .bk-container { max-width: 900px; margin: 0 auto; padding: 20px; font-family: 'Poppins', sans-serif; }
         .bk-card { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; margin-bottom: 24px; }
         
         /* Top Card */

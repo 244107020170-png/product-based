@@ -171,7 +171,7 @@
 <div style="background: linear-gradient(135deg, #02025b 0%, #11114b 100%); color: white; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
                     <div>
                         <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800;">Detail Pemesanan</h1>
-                        <p style="margin: 0; font-size: 14px; opacity: 0.9;">Booking ID: #{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</p>
+                        <p style="margin: 0; font-size: 14px; opacity: 0.9;">ID Pemesanan: #{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</p>
                     </div>
                     <div style="margin-top: 8px;">
                         <span style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 50px; font-size: 14px; font-weight: 700; background: {{ $bookingStatusStyle['bg'] }}; color: {{ $bookingStatusStyle['color'] }};">
@@ -292,7 +292,7 @@
                                 @elseif($booking->status === 'waiting_confirmation')
                                     <!-- payment success shown in QR card -->
                                 @elseif($booking->status === 'confirmed')
-                                    <div style="padding: 14px 16px; border-radius: 14px; background: #e7f5ff; color: #0d3c61; font-weight: 700;">Booking sudah dikonfirmasi.</div>
+                                    <div style="padding: 14px 16px; border-radius: 14px; background: #e7f5ff; color: #0d3c61; font-weight: 700;">Pemesanan sudah dikonfirmasi.</div>
                                 @elseif($booking->status === 'expired')
                                     <div style="padding: 16px; border-radius: 14px; background: #fff4f4; color: #842029; font-weight: 700; text-align: center;">
                                         <div style="margin-bottom: 12px;">Pembayaran sudah kadaluarsa.</div>

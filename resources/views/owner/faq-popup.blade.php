@@ -14,7 +14,7 @@
         </div>
         <div onclick="faqAnswer('join_match')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
             <span style="color:#EB5436; font-size:20px;">👥</span>
-            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Join Public Match</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Join Pertandingan Umum</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
         </div>
         <div onclick="faqAnswer('payment')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
             <span style="color:#EB5436; font-size:20px;">💳</span>
@@ -46,7 +46,7 @@ function faqAnswer(type) {
     var boxEl = document.getElementById('faqAnswerBox');
     var answers = {
         booking: { title: 'Cara Booking', text: '1. Pilih lapangan yang kamu inginkan.\n2. Pilih tanggal dan jam yang tersedia.\n3. Klik "Pesan" dan ikuti instruksi pembayaran.\n4. Laporkan pembayaran ke owner untuk konfirmasi.\n5. Setelah dikonfirmasi, booking kamu aktif!' },
-        join_match: { title: 'Cara Join Public Match', text: '1. Buka halaman "Cari Tim".\n2. Geser kartu pertandingan yang tersedia.\n3. Klik "Bergabung" pada pertandingan yang diinginkan.\n4. Lanjutkan pembayaran kontribusi jika ada.\n5. Tunggu konfirmasi dari host pertandingan.' },
+        join_match: { title: 'Cara Join Pertandingan Umum', text: '1. Buka halaman "Cari Tim".\n2. Geser kartu pertandingan yang tersedia.\n3. Klik "Bergabung" pada pertandingan yang diinginkan.\n4. Lanjutkan pembayaran kontribusi jika ada.\n5. Tunggu konfirmasi dari host pertandingan.' },
         payment: { title: 'Cara Pembayaran', text: 'Pembayaran dilakukan dengan transfer ke rekening owner lapangan. Setelah transfer, laporkan pembayaran melalui halaman detail booking. Owner akan mengkonfirmasi pembayaran kamu.' },
         cs: { title: 'Hubungi Customer Service', text: '' }
     };

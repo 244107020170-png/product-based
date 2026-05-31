@@ -360,42 +360,67 @@
         <!-- HERO SECTION -->
         <div class="hero-section">
             <!-- Hero Banner -->
-            <div style="position: relative;">
-                <img src="{{ asset('assets/images/characters/hero.png') }}" class="hero-char-img" style="position: absolute; right: 10px; bottom: 20px; height: 320px; z-index: 3; object-fit: contain;">
+            <div style="position: relative; overflow: hidden;">
                 <style>
+                    .hero-bg-card {
+                        background: white;
+                        background-image: url('{{ asset('assets/images/characters/hero.png') }}');
+                        background-repeat: no-repeat;
+                        background-position: right 10px bottom;
+                        background-size: auto 340px;
+                        border-radius: 20px;
+                        padding: 32px;
+                        box-shadow: 0 4px 20px rgba(0,0,77,.05);
+                        border: 1px solid rgba(0,0,77,.05);
+                        height: 340px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
                     @media (max-width: 768px) {
-                        .hero-char-img {
-                            opacity: 0.2;
-                            height: 260px !important;
-                            bottom: 10px !important;
-                            right: -20px !important;
+                        .hero-bg-card {
+                            height: 300px;
+                            background-size: auto 240px;
+                            background-position: right -15px bottom;
                         }
                     }
-                    .field-card:hover {
-                        transform: translateY(-8px);
-                        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-                    }
                 </style>
-                <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.05); position: relative; z-index: 1; min-height: 280px; display: flex; flex-direction: column; justify-content: center;">
+                <div class="hero-bg-card">
                     <div class="hero-content-inner" style="max-width: 60%;">
                         <h2 style="font-size: 24px; font-weight: 600; color: #02025b; margin: 0 0 20px 0;">Hai {{ Auth::user()->name ?? 'Pecinta Olahraga' }}! Siap bikin keringat jadi teman?</h2>
                         
-                        <div onclick="openDashboardReview()" style="cursor:pointer; background: #FDF9ED; padding: 20px 24px; border-radius: 14px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); width: 100%; max-width: 410px; transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(0,0,0,.05)'">
-                            <div style="width:80px; height:80px; overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
-                                <img src="{{ asset('assets/images/characters/review.png') }}" alt="Review" style="width:68px; height:68px; object-fit:contain;">
+                        @if($pendingReviewBooking)
+                        <div onclick="openDashReviewWithData({{ $pendingReviewBooking->field_id }}, {{ $pendingReviewBooking->id }}, '{{ $pendingReviewBooking->field->name }}', '{{ \Carbon\Carbon::parse($pendingReviewBooking->date)->locale('id')->translatedFormat('j M') }} - {{ \Carbon\Carbon::parse($pendingReviewBooking->start_time)->format('H:i') }} WIB')" style="cursor:pointer; background: #FDF9ED; padding: 16px 20px; border-radius: 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); width: 100%; max-width: 360px; transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(0,0,0,.05)'">
+                            <div style="width:64px; height:64px; overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                                <img src="{{ asset('assets/images/characters/review.png') }}" alt="Review" style="width:72px; height:72px; object-fit:contain;">
                             </div>
                             <div>
                                 <p style="margin: 0; font-weight: 800; color: #02025b; font-size: 14px;">Gimana permainan nya?</p>
-                                <p style="margin: 2px 0; font-size: 12px; color: #666;">Silakan review permainan terakhir kamu.</p>
-                                <div style="display: flex; gap: 3px; margin-top: 4px;">
-                                    <span style="font-size:14px; color:#f59e0b;">★</span>
-                                    <span style="font-size:14px; color:#f59e0b;">★</span>
-                                    <span style="font-size:14px; color:#f59e0b;">★</span>
-                                    <span style="font-size:14px; color:#f59e0b;">★</span>
-                                    <span style="font-size:14px; color:#f59e0b;">★</span>
+                                <p style="margin: 2px 0 0; font-size: 12px; font-weight: 600; color: #02025b;">{{ $pendingReviewBooking->field->name }}</p>
+                                <p style="margin: 1px 0 0; font-size: 11px; color: #666;">{{ $pendingReviewBooking->field->location ?? 'Kota Malang' }}</p>
+                                <p style="margin: 1px 0 0; font-size: 10px; color: #999;">{{ \Carbon\Carbon::parse($pendingReviewBooking->date)->locale('id')->translatedFormat('j M') }} - {{ \Carbon\Carbon::parse($pendingReviewBooking->start_time)->format('H:i') }} WIB</p>
+                                <div style="display: flex; gap: 2px; margin-top: 3px;">
+                                    <span style="font-size:12px; color:#f59e0b;">★</span>
+                                    <span style="font-size:12px; color:#f59e0b;">★</span>
+                                    <span style="font-size:12px; color:#f59e0b;">★</span>
+                                    <span style="font-size:12px; color:#f59e0b;">★</span>
+                                    <span style="font-size:12px; color:#f59e0b;">★</span>
                                 </div>
                             </div>
                         </div>
+                        @elseif($recommendationField)
+                        <div onclick="window.location.href='{{ route('booking.show', $recommendationField->id) }}'" style="cursor:pointer; background: #FDF9ED; padding: 16px 20px; border-radius: 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,.05); width: 100%; max-width: 360px; transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(0,0,0,.05)'">
+                            <div style="width:64px; height:64px; overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                                <img src="{{ asset('assets/images/characters/review.png') }}" alt="Rekomendasi" style="width:54px; height:54px; object-fit:contain;">
+                            </div>
+                            <div>
+                                <p style="margin: 0; font-weight: 800; color: #02025b; font-size: 14px;">Ayo main disini!</p>
+                                <p style="margin: 2px 0 0; font-size: 12px; font-weight: 600; color: #02025b;">{{ $recommendationField->name }}</p>
+                                <p style="margin: 1px 0 0; font-size: 11px; color: #666;">{{ $recommendationField->location ?? 'Kota Malang' }}</p>
+                                <p style="margin: 2px 0 0; font-size: 12px; color: #f59e0b; font-weight: 600;">⭐ {{ number_format($recommendationField->rating, 1) }}</p>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -433,6 +458,8 @@
                             <div style="width: 32px; height: 32px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">💰</div>
                         @elseif($notifType === 'booking_confirmed')
                             <div style="width: 32px; height: 32px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">📍</div>
+                        @elseif($notifType === 'community_joined')
+                            <div style="width: 32px; height: 32px; background: #d1fae5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">👥</div>
                         @else
                             <div style="width: 32px; height: 32px; background: #bbf7d0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">✅</div>
                         @endif
@@ -449,6 +476,8 @@
                                     @if(!empty($mapsLink))
                                         &nbsp;<a href="{{ $mapsLink }}" target="_blank" rel="noopener noreferrer" style="color:#3b82f6;font-weight:600;text-decoration:none;white-space:nowrap;" title="Buka Google Maps"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:middle;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#3b82f6"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg></a>
                                     @endif
+                                @elseif($notifType === 'community_joined')
+                                    <strong>{{ $userName }}</strong> bergabung ke komunitas <strong>{{ $d['community_name'] ?? '' }}</strong>
                                 @else
                                     {{ $d['message'] ?? '' }}
                                 @endif
@@ -765,6 +794,54 @@
                 </div>
             </div>
         </div>
+
+        @if(isset($recommendedCommunities) && $recommendedCommunities->isNotEmpty())
+        <!-- Komunitas Rekomendasi -->
+        <div style="margin-bottom: 36px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 24px; font-weight: 800; color: #02025b; margin: 0;">Komunitas</h2>
+                <a href="{{ route('matches.index') }}" style="font-size: 13px; color: #666; font-weight: 600; text-decoration: none;">Cari Komunitas</a>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                @foreach($recommendedCommunities as $rc)
+                <div style="background: white; border-radius: 16px; padding: 18px; box-shadow: 0 4px 20px rgba(0,0,77,.05); border: 1px solid rgba(0,0,77,.06); display: flex; gap: 14px; transition: all .3s ease;">
+                    <div style="flex-shrink: 0; width: 56px; height: 56px; border-radius: 12px; overflow: hidden; background: #f1f5f9;">
+                        @if($rc->photo)
+                            <img src="{{ $rc->photo }}" alt="{{ $rc->name }}" style="width:100%;height:100%;object-fit:cover;">
+                        @else
+                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#059669,#10b981);color:white;font-weight:800;font-size:18px;">{{ mb_substr($rc->name, 0, 1) }}</div>
+                        @endif
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <h4 style="margin:0 0 2px;font-size:15px;font-weight:800;color:#02025b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $rc->name }}</h4>
+                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+                            <span style="font-size:11px;color:#059669;font-weight:700;background:#ecfdf5;padding:1px 6px;border-radius:4px;">{{ $rc->sport_category }}</span>
+                            <span style="font-size:11px;color:#94a3b8;">{{ $rc->city ?: '' }}</span>
+                        </div>
+                        <p style="margin:0 0 6px;font-size:12px;color:#64748b;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $rc->description ?: '' }}</p>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:11px;color:#94a3b8;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:2px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                {{ $rc->members_count ?? $rc->members->count() ?? 0 }} Anggota
+                            </span>
+                            @php
+                                $rcIsCreator = $rc->created_by === (Auth::id() ?? 0);
+                                $rcIsMember = in_array($rc->id, $myCommunityIds ?? []);
+                            @endphp
+                            @if($rcIsCreator)
+                                <a href="{{ route('matches.index') }}" style="margin-left:auto;font-size:11px;font-weight:700;color:#059669;">Kelola</a>
+                            @elseif($rcIsMember)
+                                <a href="{{ $rc->whatsapp_link }}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;font-size:11px;font-weight:700;color:#059669;">WhatsApp</a>
+                            @else
+                                <button onclick="joinDashCommunity({{ $rc->id }}, this)" style="margin-left:auto;background:none;border:none;padding:0;font-size:11px;font-weight:700;color:#059669;cursor:pointer;">Gabung</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
         <!-- Tim Saya -->
         <div style="margin-bottom: 40px;">
@@ -1115,7 +1192,7 @@
         </div>
         <div onclick="faqAnswer('join_match')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
             <span style="color:#EB5436; font-size:20px;">👥</span>
-            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Join Public Match</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Join Pertandingan Umum</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
         </div>
         <div onclick="faqAnswer('payment')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
             <span style="color:#EB5436; font-size:20px;">💳</span>
@@ -1147,7 +1224,7 @@ function faqAnswer(type) {
     var boxEl = document.getElementById('faqAnswerBox');
     var answers = {
         booking: { title: 'Cara Booking', text: '1. Pilih lapangan yang kamu inginkan.\n2. Pilih tanggal dan jam yang tersedia.\n3. Klik "Pesan" dan ikuti instruksi pembayaran.\n4. Laporkan pembayaran ke owner untuk konfirmasi.\n5. Setelah dikonfirmasi, booking kamu aktif!' },
-        join_match: { title: 'Cara Join Public Match', text: '1. Buka halaman "Cari Tim".\n2. Geser kartu pertandingan yang tersedia.\n3. Klik "Bergabung" pada pertandingan yang diinginkan.\n4. Lanjutkan pembayaran kontribusi jika ada.\n5. Tunggu konfirmasi dari host pertandingan.' },
+        join_match: { title: 'Cara Join Pertandingan Umum', text: '1. Buka halaman "Cari Tim".\n2. Geser kartu pertandingan yang tersedia.\n3. Klik "Bergabung" pada pertandingan yang diinginkan.\n4. Lanjutkan pembayaran kontribusi jika ada.\n5. Tunggu konfirmasi dari host pertandingan.' },
         payment: { title: 'Cara Pembayaran', text: 'Pembayaran dilakukan dengan transfer ke rekening owner lapangan. Setelah transfer, laporkan pembayaran melalui halaman detail booking. Owner akan mengkonfirmasi pembayaran kamu.' },
         cs: { title: 'Hubungi Customer Service', text: '' }
     };
@@ -1192,7 +1269,7 @@ function openDashboardReview() {
             document.getElementById('dashReviewBookingId').value = data.booking.id;
             document.getElementById('dashReviewModal').style.display = 'flex';
             document.getElementById('dashReviewHint').innerHTML = '<strong>' + data.booking.field_name + '</strong> &middot; ' + data.booking.date;
-            dashResetRating();
+            dashResetHalfRating();
         } else {
             var msg = document.createElement('div');
             msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#02025b;color:white;padding:12px 24px;border-radius:12px;font-weight:600;z-index:9999;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);text-align:center;';
@@ -1208,42 +1285,49 @@ function openDashboardReview() {
         setTimeout(function() { msg.remove(); }, 3000);
     });
 }
-function dashSetRating(val) {
-    document.getElementById('dashRatingValue').value = val;
-    var stars = document.querySelectorAll('#dashStarRating span');
-    var hints = ['', '😞 Buruk', '😐 Biasa', '🙂 Bagus', '😊 Sangat Bagus', '🤩 Luar Biasa!'];
-    stars.forEach(function(s, i) {
-        s.style.color = i < val ? '#f59e0b' : '#d1d5db';
-    });
-    document.getElementById('dashRatingHint').textContent = hints[val] || '';
-}
-function dashResetRating() {
-    document.getElementById('dashRatingValue').value = 0;
-    document.querySelectorAll('#dashStarRating span').forEach(function(s) { s.style.color = '#d1d5db'; });
-    document.getElementById('dashRatingHint').textContent = 'Klik bintang untuk memberi rating';
+function openDashReviewWithData(fieldId, bookingId, fieldName, hint) {
+    document.getElementById('dashReviewFieldId').value = fieldId;
+    document.getElementById('dashReviewBookingId').value = bookingId;
+    document.getElementById('dashReviewHint').innerHTML = '<strong>' + fieldName + '</strong> &middot; ' + hint;
+    document.getElementById('dashReviewModal').style.display = 'flex';
+    dashResetHalfRating();
     document.getElementById('dashReviewText').value = '';
     document.getElementById('dashReviewError').style.display = 'none';
+    document.getElementById('dashReviewPhotoLabel').textContent = 'Tambahkan foto';
+    document.getElementById('dashReviewPhotos').value = '';
+}
+function dashSetHalfRating(val) {
+    document.getElementById('dashRatingValue').value = val;
+    document.getElementById('dashRatingDisplay').textContent = val + ' dari 5 bintang';
+    for (var i = 1; i <= 5; i++) {
+        var fill = document.getElementById('dash-hsf-' + i);
+        if (val >= i) fill.style.width = '100%';
+        else if (val >= i - 0.5) fill.style.width = '50%';
+        else fill.style.width = '0%';
+    }
+}
+function dashResetHalfRating() {
+    dashSetHalfRating(0);
+    document.getElementById('dashRatingDisplay').textContent = 'Klik bintang untuk memberi rating';
 }
 function dashCloseReview() {
     document.getElementById('dashReviewModal').style.display = 'none';
 }
+function dashUpdatePhotoLabel(input) {
+    var label = document.getElementById('dashReviewPhotoLabel');
+    if (input.files.length > 0) {
+        label.textContent = input.files.length + ' foto dipilih';
+    } else {
+        label.textContent = 'Tambahkan foto';
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('dashReviewForm').addEventListener('submit', function(e) {
-        var rating = parseInt(document.getElementById('dashRatingValue').value);
+        var ratingEl = document.getElementById('dashRatingValue');
         var review = document.getElementById('dashReviewText').value.trim();
         var errorEl = document.getElementById('dashReviewError');
-        if (rating < 1) {
-            e.preventDefault();
-            errorEl.textContent = 'Silakan pilih rating terlebih dahulu.';
-            errorEl.style.display = 'block';
-            return;
-        }
-        if (review.length < 10) {
-            e.preventDefault();
-            errorEl.textContent = 'Ulasan minimal 10 karakter.';
-            errorEl.style.display = 'block';
-            return;
-        }
+        if (parseFloat(ratingEl.value) === 0) { e.preventDefault(); errorEl.textContent = 'Pilih rating terlebih dahulu.'; errorEl.style.display = 'block'; return; }
+        if (review.length < 10) { e.preventDefault(); errorEl.textContent = 'Review minimal 10 karakter.'; errorEl.style.display = 'block'; return; }
         errorEl.style.display = 'none';
     });
 });
@@ -1293,35 +1377,86 @@ function applyFieldSportFilter(){var cards=document.querySelectorAll('#fieldList
 </script>
 
 <!-- Review Modal -->
-<div id="dashReviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)dashCloseReview()">
-    <div style="background:white;border-radius:20px;padding:28px;width:90%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;max-height:90vh;overflow-y:auto;">
-        <button onclick="dashCloseReview()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#999;">&times;</button>
-        <div style="text-align:center;margin-bottom:16px;">
-            <div style="width:80px;height:80px;border-radius:18px;background:#eef2ff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px;">
-                <img src="{{ asset('assets/images/characters/review.png') }}" alt="Review" style="width:60px;height:60px;object-fit:contain;">
-            </div>
-            <h3 style="margin:8px 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Review</h3>
-            <p id="dashReviewHint" style="margin:0;font-size:14px;color:#666;"></p>
-        </div>
-        <form id="dashReviewForm" method="POST" action="{{ route('review.store') }}">
+<div id="dashReviewModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);justify-content:center;align-items:center;padding:20px;" onclick="if(event.target===this)dashCloseReview()">
+    <div style="background:white;border-radius:20px;padding:28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto;">
+        <button type="button" onclick="dashCloseReview()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;line-height:1;">&times;</button>
+        <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Review</h3>
+        <p id="dashReviewHint" style="margin:0 0 16px;font-size:13px;color:#64748b;"></p>
+
+        <form id="dashReviewForm" method="POST" action="{{ route('review.store') }}" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="field_id" id="dashReviewFieldId" value="">
-            <input type="hidden" name="booking_id" id="dashReviewBookingId" value="">
-            <input type="hidden" name="rating" id="dashRatingValue" value="0">
-            <div id="dashStarRating" style="display:flex;gap:8px;justify-content:center;font-size:36px;margin-bottom:8px;">
-                <span onclick="dashSetRating(1)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
-                <span onclick="dashSetRating(2)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
-                <span onclick="dashSetRating(3)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
-                <span onclick="dashSetRating(4)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
-                <span onclick="dashSetRating(5)" style="cursor:pointer;color:#d1d5db;transition:color .2s;">★</span>
+            <input type="hidden" name="field_id" id="dashReviewFieldId">
+            <input type="hidden" name="booking_id" id="dashReviewBookingId">
+
+            {{-- Rating --}}
+            <div style="margin-bottom:16px;">
+                <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Rating <span style="color:#dc2626;">*</span></p>
+                <div id="dashHalfStarContainer" style="display:flex;gap:2px;flex-direction:row-reverse;justify-content:flex-end;">
+                    @for($i = 5; $i >= 1; $i--)
+                    <div class="dash-hstar" data-star="{{ $i }}" style="position:relative;width:32px;height:32px;cursor:pointer;">
+                        <span class="dash-hstar-bg" style="position:absolute;inset:0;font-size:32px;line-height:1;color:#e2e8f0;pointer-events:none;">★</span>
+                        <span class="dash-hstar-fill" id="dash-hsf-{{ $i }}" style="position:absolute;inset:0;font-size:32px;line-height:1;color:#f59e0b;overflow:hidden;width:0%;pointer-events:none;">★</span>
+                        <span class="dash-hstar-left" onclick="dashSetHalfRating({{ $i - 0.5 }})" style="position:absolute;top:0;left:0;bottom:0;width:50%;z-index:2;cursor:pointer;"></span>
+                        <span class="dash-hstar-right" onclick="dashSetHalfRating({{ $i }})" style="position:absolute;top:0;right:0;bottom:0;width:50%;z-index:2;cursor:pointer;"></span>
+                    </div>
+                    @endfor
+                </div>
+                <p id="dashRatingDisplay" style="margin:6px 0 0;font-size:12px;color:#94a3b8;">Klik bintang untuk memberi rating</p>
+                <input type="hidden" name="rating" id="dashRatingValue" value="0">
             </div>
-            <p id="dashRatingHint" style="text-align:center;font-size:12px;color:#999;margin:0 0 12px;">Klik bintang untuk memberi rating</p>
-            <textarea id="dashReviewText" name="review" rows="3" placeholder="Tulis ulasan kamu di sini..." style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:12px;font-size:14px;resize:none;box-sizing:border-box;"></textarea>
-            <p id="dashReviewError" style="color:#dc2626;font-size:12px;margin:4px 0 0;display:none;"></p>
-            <button type="submit" style="width:100%;margin-top:14px;padding:12px;background:#02025b;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Review</button>
+
+            {{-- Review text --}}
+            <div style="margin-bottom:16px;">
+                <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Ulasan <span style="color:#dc2626;">*</span></p>
+                <textarea name="review" id="dashReviewText" rows="4" placeholder="Tulis ulasan kamu di sini (minimal 10 karakter)..." style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,0,77,.15);font-size:14px;outline:none;resize:none;box-sizing:border-box;font-family:inherit;"></textarea>
+            </div>
+
+            {{-- Photo upload --}}
+            <div style="margin-bottom:16px;">
+                <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#02025b;">Foto <span style="color:#94a3b8;font-weight:400;">(opsional)</span></p>
+                <label style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;border:1px dashed rgba(0,0,77,.2);background:#f8fafc;cursor:pointer;transition:all .2s;font-size:13px;color:#64748b;" onmouseover="this.style.borderColor='#EB5436'" onmouseout="this.style.borderColor='rgba(0,0,77,.2)'">
+                    <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="7.5" cy="9.5" r="1.5" fill="currentColor"/><path d="M3 16L8 11L12 15L16 10L21 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span id="dashReviewPhotoLabel">Tambahkan foto</span>
+                    <input type="file" name="photos[]" id="dashReviewPhotos" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" onchange="dashUpdatePhotoLabel(this)">
+                </label>
+                <p style="margin:6px 0 0;font-size:11px;color:#94a3b8;">Maksimal 5 foto (JPEG, PNG, WebP). Maks 5MB per foto.</p>
+            </div>
+
+            <p id="dashReviewError" style="display:none;color:#dc2626;font-size:12px;margin:6px 0 0;"></p>
+            <button type="submit" id="dashReviewSubmitBtn" style="width:100%;margin-top:8px;padding:14px;background:#EB5436;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Review</button>
         </form>
     </div>
 </div>
 
+<script>
+function joinDashCommunity(communityId, btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.textContent = 'Memproses...';
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    if (!csrf) return;
+    var fd = new FormData();
+    fd.append('_token', csrf.getAttribute('content'));
+    fetch('/komunitas/' + communityId + '/join', {
+        method: 'POST',
+        body: fd,
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.joined) {
+            var card = btn.closest('[style*="border-radius: 16px"]');
+            if (card) {
+                var countEl = card.querySelector('[style*="color:#94a3b8"]');
+                if (countEl) countEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:2px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ' + data.count + ' Anggota';
+            }
+            btn.outerHTML = '<a href="' + data.whatsapp + '" target="_blank" rel="noopener noreferrer" style="margin-left:auto;font-size:11px;font-weight:700;color:#059669;text-decoration:none;">WhatsApp</a>';
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Gabung';
+        }
+    }).catch(function() {
+        btn.disabled = false;
+        btn.textContent = 'Gabung';
+    });
+}
+</script>
 </body>
 </html>

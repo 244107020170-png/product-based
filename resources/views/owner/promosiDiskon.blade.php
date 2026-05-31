@@ -21,7 +21,7 @@
         <div class="topbar">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search promos, customers...">
+                <input type="text" placeholder="Cari promo, pelanggan...">
             </div>
             <div class="topbar-right">
                 <button class="notif-btn"><i class="fa-solid fa-bell"></i></button>
@@ -32,7 +32,7 @@
                         <h5>{{ auth()->user()->name }}</h5>
                         <p>Profil Pemilik</p>
                     </div>
-                    <img src="https://i.pravatar.cc/100" alt="Profile">
+                    <img src="https://i.pravatar.cc/100" alt="Profil">
                 </div>
             </div>
         </div>
@@ -123,7 +123,7 @@
                             <div class="flex gap-2 mt-3">
                                 <button class="flex-1 py-2 bg-gray-50 rounded-lg text-gray-600 font-semibold text-sm hover:bg-gray-100 transition-colors"
                                     onclick="editPromo({{ $p->id }})">
-                                    <i class="fa-solid fa-pen mr-1"></i> Edit
+                                    <i class="fa-solid fa-pen mr-1"></i> Ubah
                                 </button>
                                 <form action="{{ route('owner.discounts.toggle', $p) }}" method="POST" class="inline">
                                     @csrf
@@ -331,7 +331,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Min. Booking (Rp)</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Min. Pemesanan (Rp)</label>
                         <input type="number" name="min_booking_amount" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none" placeholder="0">
                     </div>
                     <div>
@@ -361,7 +361,7 @@
 <div id="editPromoModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);justify-content:center;align-items:center;" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:white;border-radius:20px;padding:28px 24px;max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-gray-800" id="editModalTitle">Edit Promo</h3>
+            <h3 class="text-lg font-bold text-gray-800" id="editModalTitle">Ubah Promo</h3>
             <span onclick="document.getElementById('editPromoModal').style.display='none'" style="cursor:pointer;font-size:24px;color:#999;line-height:1;">&times;</span>
         </div>
         <form id="editPromoForm" method="POST">
@@ -422,7 +422,7 @@ function editPromo(id) {
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Min. Booking (Rp)</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Min. Pemesanan (Rp)</label>
                         <input type="number" name="min_booking_amount" value="${d.min_booking_amount || ''}" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none">
                     </div>
                     <div>
@@ -441,7 +441,7 @@ function editPromo(id) {
                 </div>
             `;
             document.getElementById('editFormFields').innerHTML = fieldsHtml;
-            document.getElementById('editModalTitle').textContent = 'Edit: ' + d.name;
+            document.getElementById('editModalTitle').textContent = 'Ubah: ' + d.name;
             document.getElementById('editPromoModal').style.display = 'flex';
         });
 }

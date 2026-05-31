@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ isset($field) ? 'Edit Lapangan' : 'Tambah Lapangan' }}</title>
+    <title>{{ isset($field) ? 'Ubah Lapangan' : 'Tambah Lapangan' }}</title>
 
     @php
         $referer = request()->headers->get('referer');
@@ -40,7 +40,7 @@
         <div class="topbar">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search bookings, customers...">
+                <input type="text" placeholder="Cari pemesanan, pelanggan...">
             </div>
 
             <div class="topbar-right">
@@ -52,7 +52,7 @@
                         <h5>{{ auth()->user()->name }}</h5>
                         <p>Profil Pemilik</p>
                     </div>
-                    <img src="https://i.pravatar.cc/100" alt="Profile">
+                    <img src="https://i.pravatar.cc/100" alt="Profil">
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
         {{-- HEADER FORM --}}
         <div class="welcome-section">
             <div>
-                <h1>{{ isset($field) ? 'Edit Data Lapangan' : 'Tambah Lapangan Baru' }}</h1>
+                <h1>{{ isset($field) ? 'Ubah Data Lapangan' : 'Tambah Lapangan Baru' }}</h1>
                 <p>Isi informasi detail mengenai lapangan olahraga di bawah ini.</p>
             </div>
             

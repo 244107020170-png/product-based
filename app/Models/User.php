@@ -115,6 +115,13 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(MatchPlayer::class);
     }
 
+    /** Communities joined */
+    public function communities()
+    {
+        return $this->belongsToMany(Community::class, 'community_members')
+            ->withTimestamps();
+    }
+
     /** Helper: URL avatar */
     public function avatarUrl(): string
     {

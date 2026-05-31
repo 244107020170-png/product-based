@@ -13,15 +13,14 @@ class HistoryController extends Controller
     {
         $user = Auth::user();
 
-        $query = Booking::with('field', 'review')
-            ->where('user_id', $user->id)
-            ->orderBy('date', 'desc')
-            ->orderBy('start_time', 'desc');
+        $nonSelesaiStatuses = ['cancelled', 'expired', 'rejected'];
 
-        // Filter by status
+        // ---- Bookings ----
+        $query = Booking::with('field', 'review')
+            ->where('user_id', $user->id);
+
         $statusFilter = $request->get('status', 'semua');
         if ($statusFilter && $statusFilter !== 'semua') {
-            // Map label → DB value(s)
             $map = [
                 'selesai'     => ['selesai', 'completed'],
                 'akan_datang' => ['confirmed', 'pending', 'waiting_payment', 'waiting_confirmation', 'paid'],
@@ -32,45 +31,79 @@ class HistoryController extends Controller
             }
         }
 
-        // Filter by sort (waktu)
-        $sortWaktu = $request->get('sort_waktu', 'terbaru');
-        if ($sortWaktu === 'terlama') {
-            $query->reorder('date', 'asc')->orderBy('start_time', 'asc');
-        }
+        $bookings = $query->orderBy('date', 'desc')->orderBy('start_time', 'desc')->get();
 
-        // Filter by sort (harga)
-        $sortHarga = $request->get('sort_harga', 'teratas');
-
-        $bookings = $query->get();
-
-        // Sort by price in memory if needed
-        if ($sortHarga === 'teratas') {
-            $bookings = $bookings->sortByDesc(fn($b) => optional($b->field)->price_per_hour ?? 0)->values();
-        } elseif ($sortHarga === 'terbawah') {
-            $bookings = $bookings->sortBy(fn($b) => optional($b->field)->price_per_hour ?? 0)->values();
-        }
-
-        // Fetch confirmed match joins (paid, confirmed by host)
+        // ---- Match joins (ALL, regardless of payment status) ----
         $matchJoins = MatchPlayer::where('user_id', $user->id)
-            ->where('payment_status', \App\Enums\PaymentStatus::PAID)
             ->whereHas('match')
             ->with('match.field')
             ->orderByDesc('confirmed_at')
             ->get();
 
-        // Stats — include match joins in counts
-        // Apply same auto-selesai logic as the view:
-        // non-cancelled bookings whose end time has passed → selesai
-        $now = now();
-        $allBookings = Booking::where('user_id', $user->id)->get();
-        $totalSemua  = $allBookings->count() + $matchJoins->count();
+        $sortWaktu = $request->get('sort_waktu', 'terbaru');
+        $sortHarga = $request->get('sort_harga', 'teratas');
 
-        $nonSelesaiStatuses = ['cancelled', 'expired', 'rejected'];
+        // ---- Build unified sorted collection ----
+        $allItems = collect();
+
+        foreach ($bookings as $b) {
+            $statusKey = $b->status;
+            if (!in_array($statusKey, $nonSelesaiStatuses)) {
+                $bookingEnd = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
+                if ($bookingEnd->isPast()) {
+                    $statusKey = 'selesai';
+                }
+            }
+            $allItems->push([
+                'type' => 'booking',
+                'original' => $b,
+                'sort_date' => $b->date->format('Y-m-d'),
+                'sort_time' => $b->start_time,
+                'sort_price' => (int) ($b->total_price ?? 0),
+                'status_key' => $statusKey,
+            ]);
+        }
+
+        foreach ($matchJoins as $mj) {
+            $cm = $mj->match;
+            if (!$cm) continue;
+            $isPast = \Carbon\Carbon::parse($cm->date.' '.($cm->time ?? '00:00'))->isPast();
+            $statusKey = $isPast ? 'selesai' : 'confirmed';
+            $allItems->push([
+                'type' => 'match',
+                'original' => $mj,
+                'sort_date' => $cm->date instanceof \Carbon\Carbon ? $cm->date->format('Y-m-d') : $cm->date,
+                'sort_time' => $cm->time ?? '00:00:00',
+                'sort_price' => (int) ($mj->contribution_amount ?? 0),
+                'status_key' => $statusKey,
+            ]);
+        }
+
+        // ---- Apply sorting ----
+        if ($sortHarga === 'terbawah') {
+            $allItems = $allItems->sortBy('sort_price')->values();
+        } elseif ($sortHarga === 'teratas') {
+            $allItems = $allItems->sortByDesc('sort_price')->values();
+        } elseif ($sortWaktu === 'terlama') {
+            $allItems = $allItems->sortBy('sort_date')->values();
+        } else {
+            $allItems = $allItems->sortByDesc('sort_date')->values();
+        }
+
+        // ---- Stats (global, unfiltered) ----
+        $allBookings = Booking::where('user_id', $user->id)->get();
+        $allMatchJoins = MatchPlayer::where('user_id', $user->id)
+            ->whereHas('match')
+            ->get();
+        $now = now();
+
+        $totalSemua = $allBookings->count() + $allMatchJoins->count();
+
         $totalSelesai = $allBookings->filter(function ($b) use ($nonSelesaiStatuses, $now) {
             if (in_array($b->status, $nonSelesaiStatuses)) return false;
             $end = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
             return $end->isPast();
-        })->count() + $matchJoins->filter(function ($mp) {
+        })->count() + $allMatchJoins->filter(function ($mp) {
             return $mp->match && $mp->match->date < now()->toDateString();
         })->count();
 
@@ -78,7 +111,7 @@ class HistoryController extends Controller
             if (in_array($b->status, $nonSelesaiStatuses)) return false;
             $end = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
             return !$end->isPast();
-        })->count() + $matchJoins->filter(function ($mp) {
+        })->count() + $allMatchJoins->filter(function ($mp) {
             return $mp->match && $mp->match->date >= now()->toDateString();
         })->count();
 
@@ -86,7 +119,7 @@ class HistoryController extends Controller
 
         // Total pengeluaran — responsive to active filter
         $totalPengeluaran = $bookings
-            ->reject(fn($b) => in_array($b->status, ['cancelled', 'expired', 'rejected']))
+            ->reject(fn($b) => in_array($b->status, $nonSelesaiStatuses))
             ->sum(fn($booking) => $booking->total_price);
 
         // User's reviews
@@ -95,9 +128,10 @@ class HistoryController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $reviewedFieldIds = $userReviews->pluck('field_id')->toArray();
+
         return view('history.index', compact(
-            'bookings',
-            'matchJoins',
+            'allItems',
             'userReviews',
             'totalSemua',
             'totalSelesai',
@@ -107,6 +141,7 @@ class HistoryController extends Controller
             'statusFilter',
             'sortWaktu',
             'sortHarga',
+            'reviewedFieldIds',
         ));
     }
 }

@@ -1201,6 +1201,106 @@
             filterPartners();
             </script>
 
+            {{-- KOMUNITAS - Full Width Section --}}
+            <div class="mt-8 bg-white rounded-3xl border border-slate-100 p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] space-y-5 w-full">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-sm font-extrabold font-archivo text-[#02025b] uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                            <span>Komunitas</span>
+                        </h3>
+                        @if($communities->isNotEmpty())
+                        <span class="text-[11px] font-bold text-slate-400" id="communityCount">{{ $communities->count() }} komunitas</span>
+                        @endif
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="relative">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                            <input type="text" id="communitySearch" placeholder="Cari nama komunitas..." oninput="filterCommunities()" class="text-[12px] font-bold font-archivo tracking-wide bg-slate-50 border border-slate-200 text-slate-600 rounded-xl pl-9 pr-3 py-2.5 w-[160px] sm:w-[180px] focus:ring-2 focus:ring-emerald-300/40 focus:border-emerald-300 outline-none transition-shadow placeholder:text-slate-400">
+                        </div>
+                        <select id="communitySportFilter" onchange="filterCommunities()" class="text-[12px] font-bold font-archivo tracking-wide bg-slate-50 border border-slate-200 text-slate-600 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-300/40 focus:border-emerald-300 outline-none transition-shadow cursor-pointer">
+                            <option value="">Semua Kategori</option>
+                            @foreach($allSportCategories as $cat)
+                            <option value="{{ $cat }}">{{ $cat }}</option>
+                            @endforeach
+                        </select>
+                        <button onclick="openCreateCommunityModal()" style="background: linear-gradient(135deg, #059669, #10b981);" class="text-white text-[12px] font-extrabold font-archivo tracking-wider px-5 py-2.5 rounded-2xl shadow-[0_4px_12px_rgba(5,150,105,0.35)] hover:shadow-[0_6px_20px_rgba(5,150,105,0.45)] hover:scale-[1.02] active:scale-[0.97] transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                            Buat Komunitas
+                        </button>
+                    </div>
+                </div>
+
+                @if($communities->isNotEmpty())
+                <div id="communityGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($communities as $community)
+                    @php
+                        $isMember = in_array($community->id, $myCommunityIds);
+                        $isCreator = $community->created_by === auth()->id();
+                        $photoUrl = $community->photo ? asset('storage/'.$community->photo) : null;
+                        $sportEmoji = $fullSportEmoji[$community->sport_category] ?? '🏅';
+                    @endphp
+                    <div class="community-card rounded-2xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col @if($isCreator) ring-2 ring-emerald-200/60 @endif" data-community-sport="{{ $community->sport_category }}" data-community-name="{{ mb_strtolower($community->name) }}" data-community-creator="{{ $isCreator ? '1' : '0' }}">
+                        <div class="flex items-start gap-3">
+                            <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-emerald-50 flex items-center justify-center text-2xl {{ $photoUrl ? '' : '' }}">
+                                @if($photoUrl)
+                                <img src="{{ $photoUrl }}" alt="{{ $community->name }}" class="w-full h-full object-cover">
+                                @else
+                                {{ $sportEmoji }}
+                                @endif
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-[14px] font-extrabold font-archivo text-[#02025b] truncate">{{ $community->name }}</h4>
+                                    @if($isCreator)
+                                    <span class="shrink-0 text-[9px] font-extrabold font-archivo tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">Komunitas Saya</span>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">{{ $community->sport_category }}</span>
+                                    <span class="text-[11px] text-slate-400 font-semibold">{{ $community->city }}</span>
+                                </div>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                                    <span class="text-[11px] font-bold text-slate-500">{{ $community->members_count }} Anggota</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-[12px] text-slate-500 mt-3 leading-relaxed line-clamp-2">{{ $community->description }}</p>
+                        <div class="mt-auto pt-3">
+                            @if($isCreator)
+                            <div class="flex gap-2">
+                                <a href="{{ $community->whatsapp_link }}" target="_blank" rel="noopener noreferrer" class="flex-1 text-center text-[11px] font-extrabold font-archivo tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 hover:bg-emerald-100 transition-colors">Kelola</a>
+                            </div>
+                            @elseif($isMember)
+                            <div class="flex gap-2">
+                                <a href="{{ $community->whatsapp_link }}" target="_blank" rel="noopener noreferrer" class="flex-1 text-center text-[11px] font-extrabold font-archivo tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                    Gabung WhatsApp
+                                </a>
+                            </div>
+                            @else
+                            <button onclick="joinCommunity({{ $community->id }}, this)" class="w-full text-center text-[11px] font-extrabold font-archivo tracking-wider text-white bg-emerald-600 rounded-xl py-2.5 hover:bg-emerald-700 active:scale-[0.97] transition-all duration-200 shadow-[0_2px_8px_rgba(5,150,105,0.25)]">
+                                Gabung Komunitas
+                            </button>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="flex flex-col items-center justify-center text-center py-10 px-4 bg-slate-50/30 border border-slate-100 rounded-2xl" id="communityEmpty">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl mb-3">👥</div>
+                    <h4 class="text-sm font-extrabold font-archivo text-[#02025b] mb-1">Belum ada komunitas</h4>
+                    <p class="text-[12px] font-semibold text-slate-400 max-w-sm">Jadilah yang pertama membuat komunitas olahraga dan kumpulkan anggota!</p>
+                    <button onclick="openCreateCommunityModal()" style="background: linear-gradient(135deg, #059669, #10b981);" class="mt-4 text-white text-[12px] font-extrabold font-archivo tracking-wider px-6 py-3 rounded-2xl shadow-[0_4px_12px_rgba(5,150,105,0.35)] hover:shadow-[0_6px_20px_rgba(5,150,105,0.45)] hover:scale-[1.02] active:scale-[0.97] transition-all duration-200 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        Buat Komunitas Pertama
+                    </button>
+                </div>
+                @endif
+            </div>
+
             {{-- PERTANDINGAN MENDATANG - Full Width Landscape Section --}}
             <div class="mt-8 bg-white rounded-3xl border border-slate-100 p-6 shadow-[0_10px_30px_-5px_rgba(0,0,77,0.03)] space-y-5 w-full">
                 <div class="flex items-center justify-between">
@@ -1496,6 +1596,61 @@
                 </div>
             </div>
         </div>
+
+        {{-- BUAT KOMUNITAS MODAL --}}
+        <div id="createCommunityModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);justify-content:center;align-items:center;padding:20px;" onclick="if(event.target===this)closeCreateCommunityModal()">
+            <div style="background:white;border-radius:24px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 80px rgba(0,0,0,.3);position:relative;padding:0;">
+                <button type="button" onclick="closeCreateCommunityModal()" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.04);border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#94a3b8;display:flex;align-items:center;justify-content:center;z-index:2;line-height:1;">&times;</button>
+                <div style="padding:28px 28px 0;">
+                    <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;">👥</div>
+                    <h3 style="margin:0;font-size:20px;font-weight:800;color:#02025b;font-family:'Poppins',sans-serif;">Buat Komunitas</h3>
+                    <p style="margin:4px 0 0;font-size:13px;color:#64748b;font-weight:500;">Kumpulkan pemain dengan hobi olahraga yang sama!</p>
+                </div>
+                <form method="POST" action="{{ route('community.store') }}" enctype="multipart/form-data" style="padding:24px 28px 28px;">
+                    @csrf
+                    <div style="margin-bottom:16px;">
+                        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Nama Komunitas <span style="color:#dc2626;">*</span></p>
+                        <input type="text" name="name" required maxlength="255" placeholder="Contoh: Badminton Malang Raya" style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;transition:border-color .2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Kategori Olahraga <span style="color:#dc2626;">*</span></p>
+                        <select name="sport_category" id="communitySportSelect" required style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;background:white;cursor:pointer;transition:border-color .2s;appearance:auto;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'">
+                            <option value="">Pilih olahraga...</option>
+                            @foreach($allSportCategories as $cat)
+                            <option value="{{ $cat }}">{{ $cat }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Kota <span style="color:#dc2626;">*</span></p>
+                        <input type="text" name="city" required maxlength="100" placeholder="Contoh: Malang" style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;transition:border-color .2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Deskripsi <span style="color:#dc2626;">*</span></p>
+                        <textarea name="description" required maxlength="1000" rows="3" placeholder="Ceritakan tentang komunitas ini..." style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;resize:none;transition:border-color .2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'"></textarea>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Link WhatsApp <span style="color:#dc2626;">*</span></p>
+                        <input type="url" name="whatsapp_link" required maxlength="500" placeholder="https://chat.whatsapp.com/..." style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;transition:border-color .2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'">
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Link Instagram <span style="color:#94a3b8;font-weight:400;">(opsional)</span></p>
+                        <input type="url" name="instagram_link" maxlength="500" placeholder="https://instagram.com/..." style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;transition:border-color .2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'">
+                    </div>
+                    <div style="margin-bottom:20px;">
+                        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Foto Komunitas <span style="color:#94a3b8;font-weight:400;">(opsional)</span></p>
+                        <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;border:1.5px dashed rgba(0,0,77,.15);background:#f8fafc;cursor:pointer;transition:all .2s;font-size:13px;color:#64748b;font-weight:500;" onmouseover="this.style.borderColor='#059669'" onmouseout="this.style.borderColor='rgba(0,0,77,.15)'">
+                            <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="7.5" cy="9.5" r="1.5" fill="currentColor"/><path d="M3 16L8 11L12 15L16 10L21 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span id="communityPhotoLabel">Tambahkan foto</span>
+                            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="var l=document.getElementById('communityPhotoLabel');l.textContent=this.files.length>0?this.files[0].name:'Tambahkan foto'">
+                        </label>
+                    </div>
+                    <button type="submit" style="width:100%;padding:13px;background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 4px 16px rgba(5,150,105,.3);transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 24px rgba(5,150,105,.4)'" onmouseout="this.style.boxShadow='0 4px 16px rgba(5,150,105,.3)'">
+                        Buat Komunitas
+                    </button>
+                </form>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -1735,6 +1890,81 @@
     // Initial render
     buildDeck();
 })();
+</script>
+
+{{-- Community JS --}}
+<script>
+function openCreateCommunityModal() {
+    document.getElementById('createCommunityModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeCreateCommunityModal() {
+    document.getElementById('createCommunityModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+function joinCommunity(communityId, btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.textContent = 'Memproses...';
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    if (!csrf) return;
+    var formData = new FormData();
+    formData.append('_token', csrf.getAttribute('content'));
+    fetch('{{ url('/komunitas') }}/' + communityId + '/join', {
+        method: 'POST',
+        body: formData,
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.joined) {
+            var card = btn.closest('.community-card');
+            var countEl = card.querySelector('.text-slate-500:first-of-type');
+            if (countEl) {
+                countEl.textContent = data.count + ' Anggota';
+            }
+            btn.outerHTML = '<div class="flex gap-2"><a href="' + data.whatsapp + '" target="_blank" rel="noopener noreferrer" class="flex-1 text-center text-[11px] font-extrabold font-archivo tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1.5"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Gabung WhatsApp</a></div>';
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Gabung Komunitas';
+            var msg = document.createElement('div');
+            msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#02025b;color:white;padding:12px 24px;border-radius:12px;font-weight:700;z-index:99999;font-size:13px;';
+            msg.textContent = data.message || 'Gagal bergabung.';
+            document.body.appendChild(msg);
+            setTimeout(function() { msg.remove(); }, 4000);
+        }
+    }).catch(function() {
+        btn.disabled = false;
+        btn.textContent = 'Gabung Komunitas';
+    });
+}
+function filterCommunities() {
+    var filter = document.getElementById('communitySportFilter');
+    var sport = filter ? filter.value : '';
+    var search = document.getElementById('communitySearch');
+    var query = search ? search.value.trim().toLowerCase() : '';
+    var cards = document.querySelectorAll('.community-card');
+    var visibleCount = 0;
+    cards.forEach(function(c) {
+        var sportMatch = !sport || c.getAttribute('data-community-sport') === sport;
+        var nameMatch = !query || (c.getAttribute('data-community-name') || '').indexOf(query) !== -1;
+        var match = sportMatch && nameMatch;
+        c.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+    });
+    var existingEmpty = document.querySelector('#communityGrid + .community-filter-empty');
+    if (existingEmpty) existingEmpty.remove();
+    if (cards.length > 0 && visibleCount === 0) {
+        var div = document.createElement('div');
+        div.className = 'community-filter-empty';
+        div.style.cssText = 'text-center py-10 text-slate-400 text-sm font-semibold';
+        div.textContent = 'Tidak ada komunitas yang cocok.';
+        document.getElementById('communityGrid').after(div);
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    // Close community modal on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeCreateCommunityModal();
+    });
+});
 </script>
 </body>
 </html>

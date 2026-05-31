@@ -29,7 +29,7 @@
         <div class="topbar">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search bookings, customers...">
+                <input type="text" placeholder="Cari pemesanan, pelanggan...">
             </div>
 
             <div class="topbar-right">
@@ -50,7 +50,7 @@
                         <p>Profil Pemilik</p>
                     </div>
 
-                    <img src="https://i.pravatar.cc/100" alt="Profile">
+                    <img src="https://i.pravatar.cc/100" alt="Profil">
                 </div>
             </div>
         </div>
@@ -337,7 +337,7 @@
           <div class="edit-actions">
             <button class="edit-btn">
               <i class="fa-solid fa-pen"></i>
-              Edit
+              Ubah
             </button>
 
             <button class="save-btn" style="display:none;">

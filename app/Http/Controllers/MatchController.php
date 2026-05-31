@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PaymentStatus;
+use App\Models\Community;
 use App\Models\MatchPlayer;
 use App\Models\Matchs;
+use App\Models\Booking;
 use App\Notifications\PaymentClaimed;
 use App\Notifications\PaymentConfirmed;
 use Carbon\Carbon;
@@ -115,7 +117,61 @@ class MatchController extends Controller
             'progressPct'    => $_progressPct,
         ];
 
-        return view('matches.index', compact('cards', 'upcomingBookings', 'myTeams', 'userSkill'));
+        // ---- Communities (pinned: user's own first) ----
+        $communities = Community::withCount('members')
+            ->orderByRaw('created_by = ? desc', [$user->id])
+            ->orderBy('members_count', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $myCommunityIds = $user->communities()->pluck('community_id')->toArray();
+
+        $communitySports = Community::distinct('sport_category')->pluck('sport_category')->toArray();
+        $matchSports = Matchs::whereNotNull('sport')->distinct('sport')->pluck('sport')->toArray();
+        $fieldSports = Booking::where('user_id', $user->id)
+            ->whereHas('field', function($q) {
+                $q->whereNotNull('type');
+            })
+            ->with('field')
+            ->get()
+            ->pluck('field.type')
+            ->filter()
+            ->unique()
+            ->toArray();
+        $allSportCategories = collect()
+            ->merge($communitySports)
+            ->merge($matchSports)
+            ->merge($fieldSports)
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        // Community recommendations based on user's sport activity
+        $userSportPref = $user->sport_preference ? array_map('trim', explode(',', $user->sport_preference)) : [];
+        $userBookingSports = Booking::where('user_id', $user->id)
+            ->whereIn('status', [\App\Enums\BookingStatus::CONFIRMED, \App\Enums\BookingStatus::COMPLETED])
+            ->with('field')
+            ->get()
+            ->pluck('field.type')
+            ->filter()
+            ->unique()
+            ->toArray();
+        $userActiveSports = array_unique(array_merge($userSportPref, $userBookingSports));
+
+        $recommendedCommunities = collect();
+        if (!empty($userActiveSports)) {
+            $recommendedCommunities = Community::withCount('members')
+                ->whereIn('sport_category', $userActiveSports)
+                ->orderBy('members_count', 'desc')
+                ->take(3)
+                ->get();
+        }
+
+        return view('matches.index', compact(
+            'cards', 'upcomingBookings', 'myTeams', 'userSkill',
+            'communities', 'myCommunityIds', 'allSportCategories', 'recommendedCommunities',
+        ));
     }
 
     private function getUserLevel($points): string

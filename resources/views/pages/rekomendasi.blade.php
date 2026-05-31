@@ -271,12 +271,24 @@ $empty = 5 - $full - $half;
 </div>
 </div>
 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-3 md:mt-4 gap-3 sm:gap-0">
-<div class="flex -space-x-2">
-<img class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZkeJKJgO2eELZDmyvNBM8d86qvSCfYwhxURy_rjSGTCxo0Wkj39tZ9a1cQR_lzfbyf_ll315hsjPnc-4KCuY2wKMk69HPZi2MtjnhmFL2vM6Z7dTDxNN3WCUlk-W-iz1s_cnOeSXeFLAmlvejhsWwGctD5vi_L823v9qHRGWALsD6uND_P04eC6masqwps0WBiSby3FCvpbGglyhRZbUEL9vpVFyYuf6qzaZS36-dPcM9XOJWL76BHZRG0kGRMP85Vh8067Kvp6Y" loading="lazy"/>
-<img class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3KawdWFJ5HLidU3_hZwm3anTrleHDvQz5OBymj2XmTel8mr6zuVO8_Vv8VlLWRWuy2-F6Tae67pzQemEyZHNJn93D7gkmS2CK9Qwq9Iup-AcL7fqgYnZdT3MsFcgz7KHiSdi-Y5PV4xUH7fYLGPLGuDqhL26jUtMVWuihmEv0OV_Y0Uo5ZTzYC7WiAqHRWLucYe-TUDjNfngqttYaQprqu8vSfl-Ejx2JwXLI7pQjyWfCTOh2qMIyRi255Dc-JBgGoJrXwM8r--Q" loading="lazy"/>
-<img class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG7ccToYoyj-MyUJEQxd0yJrTUpEhQ0d95mU8449D2Fq3sMzmOdFiJDvpZk6Z9pHSm38VcpHwfQP9_-fWi4eWLb3Di-3ank3zW2bF7TXehXRRXUYAf4xZmfkn9848by46v746SKiqmQsYNj6yItWWRQZBSbN4HNx-tzBxHGFnaqbEGfRQZ2NifyOSwZpR4PbO3fBxGS_o_SY0kAkOMKZiYY_Z8_F7dNqqmaDCXyEKVT--gjA8ObNbyD5ZytnATMPYwa6946h995hA" loading="lazy"/>
-<div class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white bg-[#e4e2e1] flex items-center justify-center text-[10px] font-bold">+{{ number_format(min(999, ($field->bookings_count ?? 0))) }}</div>
-</div>
+                        <div class="flex -space-x-2">
+                                @php
+                                    $bookers = $field->recentBookers ?? collect();
+                                    $totalBookers = $bookers->count();
+                                    $displayCount = min($totalBookers, 3);
+                                @endphp
+                                @for($bi = 0; $bi < $displayCount; $bi++)
+                                    @php $buser = $bookers[$bi]; $bavatar = $buser->avatarUrl(); @endphp
+                                    @if($bavatar && !str_contains($bavatar, 'characters/'))
+                                        <img class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white object-cover" src="{{ $bavatar }}" alt="{{ $buser->name }}" loading="lazy"/>
+                                    @else
+                                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white bg-[#02025b] text-white flex items-center justify-center text-[10px] font-bold shrink-0">{{ mb_substr($buser->name, 0, 1) }}</div>
+                                    @endif
+                                @endfor
+                                @if($totalBookers > 3)
+                                    <div class="w-7 h-7 md:w-8 md:h-8 rounded-full border-2 border-white bg-[#e4e2e1] flex items-center justify-center text-[10px] font-bold">+{{ $totalBookers - 3 }}</div>
+                                @endif
+                            </div>
 <a href="{{ route('booking.show', $field->id) }}" class="text-[#EB5436] font-bold hover:underline flex items-center text-[14px]">
                                         Cek Ketersediaan <span class="material-symbols-outlined ml-1">chevron_right</span>
 </a>
@@ -293,73 +305,84 @@ $empty = 5 - $full - $half;
 
 <div class="col-span-12 lg:col-span-4 mt-4">
 <div class="bg-white rounded-[15px] custom-shadow p-4 md:p-stack-lg border border-[#e6bdb8]/30">
-<h3 class="font-headline-md text-headline-md text-[20px] md:text-[24px] mb-4 md:mb-stack-lg flex items-center">
+<div class="flex items-center justify-between mb-4 md:mb-stack-lg">
+<h3 class="font-headline-md text-headline-md text-[20px] md:text-[24px] flex items-center">
 <span class="material-symbols-outlined text-[#EB5436] mr-2">groups</span>
-                            Komunitas</h3>
-<div class="space-y-4 md:space-y-stack-lg relative before:content-[''] before:absolute before:left-[11px] before:top-4 before:bottom-4 before:w-[2px] before:bg-[#e4e2e1]">
-<div class="relative pl-8">
-<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-[#006c49]/20 border-2 border-white flex items-center justify-center z-10">
-<div class="w-2 h-2 rounded-full bg-[#006c49]"></div>
+                        Komunitas
+</h3>
+@if(!empty($allSportCategories))
+<select onchange="filterRekomendasiKomunitas(this.value)" class="text-[11px] font-bold bg-slate-50 border border-slate-200 text-slate-600 rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-300/40 outline-none transition-shadow cursor-pointer">
+<option value="">Semua</option>
+@foreach($allSportCategories as $cat)
+<option value="{{ $cat }}">{{ $cat }}</option>
+@endforeach
+</select>
+@endif
 </div>
-<div class="flex justify-between items-start">
-<div>
-<p class="font-bold text-body-md text-[14px]">Pertandingan Baru Dibuat</p>
-<p class="text-[10px] md:text-[12px] text-[#5c403c]">Spartan Futsal Club mencari lawan</p>
+@if($communities->isNotEmpty())
+<div class="space-y-3" id="rekomendasi-komunitas-list">
+@foreach($communities as $cm)
+@php
+$cmIsCreator = $cm->created_by === (Auth::id() ?? 0);
+$cmIsMember = in_array($cm->id, $myCommunityIds);
+$cmSportEmoji = ['Futsal'=>'⚽','Badminton'=>'🏸','Basket'=>'🏀','Voli'=>'🏐','Tennis'=>'🎾','Golf'=>'🏌️','Renang'=>'🏊','Panahan'=>'🏹','Lari'=>'🏃','Sepeda'=>'🚴','Tinju'=>'🥊','Bela Diri'=>'🥋','Yoga'=>'🧘','Fitness'=>'🏋️','Hiking'=>'🥾','Padel'=>'🎾','Baseball'=>'⚾','Rugby'=>'🏉','Senam'=>'🤸'][$cm->sport_category] ?? '🏅';
+$cmPhotoUrl = $cm->photo ? asset('storage/'.$cm->photo) : null;
+@endphp
+<div class="community-rekom-card rounded-[20px] border border-slate-100 bg-white p-3.5 shadow-sm hover:shadow-md transition-all" data-cm-sport="{{ $cm->sport_category }}">
+<div class="flex items-start gap-3">
+<div class="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-emerald-50 flex items-center justify-center text-xl">
+@if($cmPhotoUrl)
+<img src="{{ $cmPhotoUrl }}" alt="{{ $cm->name }}" class="w-full h-full object-cover">
+@else
+{{ $cmSportEmoji }}
+@endif
 </div>
-<span class="text-[10px] text-[#5c403c] font-medium shrink-0">Baru saja</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<h4 class="text-[13px] font-extrabold text-[#02025b] truncate">{{ $cm->name }}</h4>
+@if($cmIsCreator)
+<span class="text-[8px] font-extrabold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase">Milik Saya</span>
+@endif
 </div>
-<div class="mt-2 bg-[#f6f3f2] p-2 rounded-lg text-[10px] md:text-[12px] flex items-center">
-<span class="material-symbols-outlined text-[14px] md:text-[16px] mr-1">stadium</span>
-                                    Elite Futsal, 20:00 WIB
-                                </div>
+<div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{{ $cm->sport_category }}</span>
+<span class="text-[10px] text-slate-400 font-semibold">{{ $cm->city }}</span>
 </div>
-<div class="relative pl-8">
-<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-[#EB5436]/20 border-2 border-white flex items-center justify-center z-10">
-<div class="w-2 h-2 rounded-full bg-[#EB5436]"></div>
-</div>
-<div class="flex justify-between items-start">
-<div>
-<p class="font-bold text-body-md text-[14px]">Pendaftaran Tim Penuh</p>
-<p class="text-[10px] md:text-[12px] text-[#5c403c]">Turnamen Badminton Minggu Ceria</p>
-</div>
-<span class="text-[10px] text-[#5c403c] font-medium shrink-0">10 menit lalu</span>
-</div>
-</div>
-<div class="relative pl-8">
-<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-[#e4e2e1] border-2 border-white flex items-center justify-center z-10">
-<div class="w-2 h-2 rounded-full bg-[#5c403c]"></div>
-</div>
-<div class="flex justify-between items-start">
-<div>
-<p class="font-bold text-body-md text-[14px]">Ulasan Baru</p>
-<p class="text-[10px] md:text-[12px] text-[#5c403c]">Budi Santoso mengulas Stadium Grande</p>
-</div>
-<span class="text-[10px] text-[#5c403c] font-medium shrink-0">45 menit lalu</span>
-</div>
-<div class="mt-1 flex text-yellow-500">
-<span class="material-symbols-outlined text-[12px] md:text-[14px]">star</span>
-<span class="material-symbols-outlined text-[12px] md:text-[14px]">star</span>
-<span class="material-symbols-outlined text-[12px] md:text-[14px]">star</span>
-<span class="material-symbols-outlined text-[12px] md:text-[14px]">star</span>
-<span class="material-symbols-outlined text-[12px] md:text-[14px]">star</span>
+<p class="text-[11px] text-slate-500 mt-1 leading-relaxed line-clamp-2">{{ $cm->description }}</p>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] font-bold text-slate-400">
+<svg class="w-3 h-3 inline-block align-text-bottom mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+{{ $cm->members_count }} Anggota
+</span>
+@if($cmIsCreator)
+<a href="{{ $cm->whatsapp_link }}" target="_blank" class="text-[10px] font-extrabold tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1 hover:bg-emerald-100 transition-colors">Kelola</a>
+@elseif($cmIsMember)
+<a href="{{ $cm->whatsapp_link }}" target="_blank" rel="noopener noreferrer" class="text-[10px] font-extrabold tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1 hover:bg-emerald-100 transition-colors flex items-center gap-1">
+<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+WhatsApp</a>
+@else
+<button onclick="joinRekomendasiKomunitas({{ $cm->id }}, this)" class="text-[10px] font-extrabold tracking-wider text-white bg-emerald-600 rounded-lg px-3 py-1 hover:bg-emerald-700 active:scale-[0.97] transition-all">Gabung</button>
+@endif
 </div>
 </div>
 </div>
-<div class="mt-4 md:mt-stack-lg bg-[#ffdad6]/30 rounded-[15px] p-4 border border-[#ffdad6]">
-<h4 class="font-bold text-[#EB5436] mb-1 text-[14px]">Mulai Bermain?</h4>
-<p class="text-[10px] md:text-[12px] text-[#93000b] mb-3">Buat jadwal rutin dan dapatkan harga khusus langganan hingga 30%!</p>
-<button class="bg-[#EB5436] text-white px-4 py-2 rounded-[15px] text-[12px] font-bold">Daftar Membership</button>
 </div>
+@endforeach
+</div>
+@else
+<div class="flex flex-col items-center justify-center text-center py-8 bg-slate-50/30 border border-slate-100 rounded-xl">
+<div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl mb-2">👥</div>
+<h4 class="text-sm font-extrabold text-[#02025b] mb-1">Belum ada komunitas</h4>
+<p class="text-[11px] font-semibold text-slate-400">Jadilah yang pertama membuat komunitas!</p>
+<a href="{{ route('matches.index') }}" class="mt-3 inline-block text-[11px] font-extrabold tracking-wider text-white px-4 py-2 rounded-xl" style="background:linear-gradient(135deg,#059669,#10b981);">Buat Komunitas</a>
+</div>
+@endif
 </div>
 </div>
 </div>
 </div>
 </div>
 
-<button class="fixed bottom-6 right-4 md:bottom-8 md:right-8 w-12 h-12 md:w-14 md:h-14 bg-[#EB5436] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group" id="fab-chat">
-<span class="material-symbols-outlined text-[24px] md:text-[28px]">chat</span>
-<span class="absolute right-full mr-4 bg-[#1b1c1b] text-white px-3 py-1 rounded-[15px] text-body-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none text-[12px] md:text-[14px]">Tanya Kami</span>
-</button>
 </main>
 </div>
 
@@ -412,6 +435,42 @@ $empty = 5 - $full - $half;
         btn.addEventListener('mouseup', function() { this.classList.remove('scale-[0.98]'); });
         btn.addEventListener('mouseleave', function() { this.classList.remove('scale-[0.98]'); });
     });
+
+    // Komunitas filter by sport
+    function filterRekomendasiKomunitas(sport) {
+        var cards = document.querySelectorAll('.community-rekom-card');
+        cards.forEach(function(c) {
+            c.style.display = !sport || c.getAttribute('data-cm-sport') === sport ? '' : 'none';
+        });
+    }
+
+    // Komunitas join
+    function joinRekomendasiKomunitas(id, btn) {
+        if (btn.disabled) return;
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+        var csrf = document.querySelector('meta[name="csrf-token"]');
+        if (!csrf) return;
+        var fd = new FormData();
+        fd.append('_token', csrf.getAttribute('content'));
+        fetch('{{ url('/komunitas') }}/' + id + '/join', {
+            method: 'POST',
+            body: fd,
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.joined) {
+                var card = btn.closest('.community-rekom-card');
+                var countEl = card.querySelector('.text-slate-400');
+                if (countEl) countEl.innerHTML = '<svg class="w-3 h-3 inline-block align-text-bottom mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ' + data.count + ' Anggota';
+                btn.outerHTML = '<a href="' + data.whatsapp + '" target="_blank" rel="noopener noreferrer" class="text-[10px] font-extrabold tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1 hover:bg-emerald-100 transition-colors flex items-center gap-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp</a>';
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Gabung';
+            }
+        }).catch(function() {
+            btn.disabled = false;
+            btn.textContent = 'Gabung';
+        });
+    }
 
     // Carousel with infinite scroll + drag/swipe
     (function() {

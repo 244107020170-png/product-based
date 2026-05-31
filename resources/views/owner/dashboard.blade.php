@@ -21,7 +21,7 @@
         <div class="topbar">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search bookings, customers...">
+                <input type="text" placeholder="Cari pemesanan, pelanggan...">
             </div>
             <div class="topbar-right">
                 <button class="notif-btn"><i class="fa-solid fa-bell"></i></button>
@@ -32,7 +32,7 @@
                         <h5>{{ auth()->user()->name }}</h5>
                         <p>Profil Pemilik</p>
                     </div>
-                    <img src="https://i.pravatar.cc/100" alt="Profile">
+                    <img src="https://i.pravatar.cc/100" alt="Profil">
                 </div>
             </div>
         </div>
@@ -64,7 +64,7 @@
             </div>
             <div class="stats-card">
                 <div>
-                    <p>Rating & Review</p>
+                    <p>Rating & Ulasan</p>
                     <h2 style="display:flex;align-items:center;gap:6px;color:#c2410c;font-size:1.9rem;font-weight:400;">
                         <span style="color:#f59e0b;">★</span> {{ $avgRating ?? 0 }}
                         <span style="font-size:13px;color:#94a3b8;font-weight:400;">({{ $totalReviews ?? 0 }})</span>
