@@ -147,7 +147,7 @@
                         </p>
                         <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0,0,77,.06); display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 13px; color: #02025b; font-weight: 700;">
-                                <span style="color: #e11d48;">{{ $tm->participantEntries->count() }}</span> / {{ $tm->max_player }} pemain
+                                <span style="color: #e11d48;">{{ \App\Models\MatchPlayer::where('match_id', $tm->id)->paid()->count() }}</span> / {{ $tm->max_player }} pemain
                             </span>
                             <span style="background: #02025b; color: #fff; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;">Detail</span>
                         </div>

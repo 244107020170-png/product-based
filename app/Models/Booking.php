@@ -98,12 +98,6 @@ class Booking extends Model
         $pricePerHour = $this->field->price_per_hour;
 
         $promo = $this->field->discounts()->active()->first();
-        if (!$promo) {
-            $promo = \App\Models\Discount::where('owner_id', $this->field->owner_id)
-                ->whereNull('field_id')
-                ->active()
-                ->first();
-        }
 
         if ($promo) {
             if ($promo->type === 'percentage') {

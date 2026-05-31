@@ -8,6 +8,7 @@ use App\Models\Matchs;
 use App\Notifications\PaymentClaimed;
 use App\Notifications\PaymentConfirmed;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class MatchController extends Controller
 {
@@ -16,20 +17,20 @@ class MatchController extends Controller
         $user = auth()->user();
         
         // Only show upcoming public matches in "Cari tim" page, sorted by date
-        $matches = Matchs::with(['field', 'players', 'creator'])
+        $matches = Matchs::with(['field', 'paidPlayers', 'creator'])
             ->where('type', 'public')
             ->where('date', '>=', now()->toDateString())
             ->orderBy('date')
             ->orderBy('time')
             ->get()
             ->filter(function ($match) {
-                return $match->players->count() < (int) $match->max_player;
+                return $match->paidPlayers->count() < (int) $match->max_player;
             });
 
         $cards = $matches->map(function (Matchs $match) {
             $fieldName = $match->field?->name ?? 'Lapangan';
             $sport = $match->sport ?: $this->detectSport($match->title . ' ' . $fieldName);
-            $playersJoined = $match->players->count();
+            $playersJoined = $match->paidPlayers->count();
             $neededPlayers = max(0, (int) $match->max_player - $playersJoined);
 
             $dateFormatted = \Carbon\Carbon::parse($match->date)
@@ -141,7 +142,10 @@ class MatchController extends Controller
         }
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => [
+                'required', 'string', 'max:255',
+                Rule::unique('matches', 'title')->where('type', 'public'),
+            ],
             'sport' => 'required|string|max:100',
             'field_id' => 'required|exists:fields,id',
             'date' => 'required|date|after_or_equal:today',
@@ -167,7 +171,7 @@ class MatchController extends Controller
 
     public function show(Matchs $match)
     {
-        $match->load(['field', 'creator', 'players', 'participantEntries.user']);
+        $match->load(['field', 'creator', 'players', 'paidPlayers', 'participantEntries.user']);
         $sport = $match->sport ?: $this->detectSport($match->title . ' ' . ($match->field?->name ?? ''));
         $image = $this->sportImage($sport);
         
@@ -203,7 +207,8 @@ class MatchController extends Controller
             'payment_status' => PaymentStatus::WAITING,
         ]);
 
-        return back()->with('success', 'Berhasil bergabung dengan tim! Silakan lanjutkan pembayaran.');
+        return redirect()->route('matches.show', $match->id)
+            ->with('success', 'Berhasil bergabung! Silakan lakukan pembayaran melalui QR di bawah.');
     }
 
     public function markParticipantPaid(Matchs $match)
@@ -218,7 +223,10 @@ class MatchController extends Controller
             return back()->with('error', 'Pembayaran tidak dapat diproses.');
         }
 
-        $participant->update(['paid_at' => now()]);
+        $participant->update([
+            'paid_at' => now(),
+            'contribution_amount' => $match->contribution_per_player,
+        ]);
 
         $match->creator->notify(new PaymentClaimed($participant));
 

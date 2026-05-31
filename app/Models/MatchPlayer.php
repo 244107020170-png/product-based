@@ -37,6 +37,16 @@ class MatchPlayer extends Model
         return $this->payment_status === PaymentStatus::PAID;
     }
 
+    public function scopePaid($query)
+    {
+        return $query->where('payment_status', PaymentStatus::PAID);
+    }
+
+    public function scopeWaiting($query)
+    {
+        return $query->where('payment_status', PaymentStatus::WAITING);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

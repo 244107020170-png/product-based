@@ -261,30 +261,18 @@
 </button>
 </div>
 @php
-    $promoDiscounts = \App\Models\Discount::with('field')
+    $promoDiscounts = \App\Models\Discount::with('fields')
         ->active()
         ->orderBy('value', 'desc')
         ->get();
 
     $promoFieldItems = collect();
     foreach ($promoDiscounts as $promo) {
-        if ($promo->field_id) {
-            if ($promo->field && $promo->field->is_available) {
-                $promoFieldItems->push((object)[
-                    'promo' => $promo,
-                    'field' => $promo->field,
-                ]);
-            }
-        } else {
-            $ownerFields = \App\Models\Field::where('owner_id', $promo->owner_id)
-                ->where('is_available', true)
-                ->get();
-            foreach ($ownerFields as $f) {
-                $promoFieldItems->push((object)[
-                    'promo' => $promo,
-                    'field' => $f,
-                ]);
-            }
+        foreach ($promo->fields->where('is_available', true) as $f) {
+            $promoFieldItems->push((object)[
+                'promo' => $promo,
+                'field' => $f,
+            ]);
         }
     }
     $promoFieldItems = $promoFieldItems->shuffle()->take(3);

@@ -8,7 +8,6 @@ class Discount extends Model
 {
     protected $fillable = [
         'owner_id',
-        'field_id',
         'name',
         'code',
         'description',
@@ -35,9 +34,9 @@ class Discount extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function field()
+    public function fields()
     {
-        return $this->belongsTo(Field::class);
+        return $this->belongsToMany(Field::class);
     }
 
     public function scopeActive($query)

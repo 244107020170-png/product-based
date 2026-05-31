@@ -260,7 +260,7 @@
                     <span class="player-search__icon">
                         <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.75" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                     </span>
-                    <input id="team-search" type="search" placeholder="Cari lapangan">
+                    <input id="team-search" type="search" placeholder="Cari pertandingan..." oninput="window._searchTitle = this.value; if(window.buildDeck) window.buildDeck()">
                 </label>
             </div>
             <div class="player-dashboard-topbar__right">
@@ -648,6 +648,45 @@
                 </div>
             </div>
 
+            {{-- PARTNER MODAL --}}
+            <div id="partnerModal" class="partner-modal-overlay" onclick="closePartnerModal(event)">
+                <div class="partner-modal" onclick="event.stopPropagation()">
+                    <div class="partner-modal__header">
+                        <h3 class="partner-modal__title">Cari Teman Main</h3>
+                        <button type="button" onclick="closePartnerModal()" class="partner-modal__close">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="partner-modal__filters">
+                        <div class="partner-modal__search-wrap">
+                            <svg class="partner-modal__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            <input type="text" id="partnerModalSearch" placeholder="Cari nama pemain..." class="partner-modal__search" oninput="filterPartnersModal()">
+                        </div>
+                        <select id="partnerModalSport" onchange="filterPartnersModal()" class="partner-filter-select">
+                            <option value="">Semua Olahraga</option>
+                            @foreach($partnerSportOptions as $ps)
+                                <option value="{{ $ps }}">{{ $fullSportEmoji[$ps] ?? '🏆' }} {{ $ps }}</option>
+                            @endforeach
+                        </select>
+                        <div class="partner-level-wrap" id="partnerModalLevelWrap">
+                            <button type="button" class="partner-level-btn" id="partnerModalLevelBtn" onclick="document.getElementById('partnerModalLevelDropdown').classList.toggle('is-open')">
+                                <span id="partnerModalLevelLabel">🌱 Semua Level</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                            <div class="partner-level-dropdown" id="partnerModalLevelDropdown">
+                                <button type="button" class="partner-level-option" data-value="" onclick="selectModalLevel('')">🌱 Semua Level</button>
+                                <button type="button" class="partner-level-option" data-value="pemula" onclick="selectModalLevel('pemula')">🌱 Pemula</button>
+                                <button type="button" class="partner-level-option" data-value="aktif" onclick="selectModalLevel('aktif')">⭐ Aktif</button>
+                                <button type="button" class="partner-level-option" data-value="pro" onclick="selectModalLevel('pro')">🏆 Pro</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="partnerModalList" class="partner-modal__list">
+                        <div class="partner-empty">Memuat data partner...</div>
+                    </div>
+                </div>
+            </div>
+
             <style>
             .partner-filter-select {
                 padding: 7px 12px;
@@ -791,20 +830,25 @@
             }
             .partner-card__invite {
                 flex-shrink: 0;
-                padding: 8px 12px;
-                background: #25D366;
-                color: white;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 8px 14px;
+                background: linear-gradient(135deg, #6366f1, #ec4899);
+                color: #fff;
                 border: none;
                 border-radius: 10px;
                 font-size: 11px;
-                font-weight: 700;
+                font-weight: 600;
                 cursor: pointer;
                 text-decoration: none;
                 white-space: nowrap;
-                transition: opacity .2s;
+                transition: all .25s;
+                box-shadow: 0 3px 10px rgba(99,102,241,.25);
             }
             .partner-card__invite:hover {
-                opacity: .85;
+                transform: translateY(-1px);
+                box-shadow: 0 5px 16px rgba(99,102,241,.35);
             }
             .partner-empty {
                 text-align: center;
@@ -813,6 +857,185 @@
                 font-size: 13px;
                 grid-column: 1 / -1;
             }
+
+            /* ── Tambah Card ── */
+            .partner-tambah-card {
+                background: linear-gradient(135deg, #02025b, #1e1b7a);
+                border-radius: 16px;
+                padding: 14px;
+                border: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                cursor: pointer;
+                transition: all .25s;
+                box-shadow: 0 4px 14px rgba(2,2,91,.15);
+                min-height: 72px;
+                color: #fff;
+                font-family: inherit;
+            }
+            .partner-tambah-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(2,2,91,.25);
+            }
+            .partner-tambah-card svg {
+                transition: transform .3s;
+            }
+            .partner-tambah-card:hover svg {
+                transform: rotate(90deg);
+            }
+            .partner-tambah-card__label {
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: .3px;
+            }
+
+            .partner-empty {
+                text-align: center;
+                padding: 24px;
+                color: #94a3b8;
+                font-size: 13px;
+                grid-column: 1 / -1;
+            }
+
+            /* ── Modal ── */
+            .partner-modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.45);
+                backdrop-filter: blur(4px);
+                z-index: 9999;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .partner-modal-overlay.is-open {
+                display: flex;
+            }
+            .partner-modal {
+                background: #fff;
+                border-radius: 24px;
+                width: 100%;
+                max-width: 640px;
+                max-height: 85vh;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 24px 60px rgba(0,0,0,.2);
+                animation: modalIn .25s ease-out;
+            }
+            @keyframes modalIn {
+                from { opacity: 0; transform: scale(.95) translateY(10px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            .partner-modal__header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px 24px 0;
+            }
+            .partner-modal__title {
+                font-size: 16px;
+                font-weight: 700;
+                color: #02025b;
+                margin: 0;
+            }
+            .partner-modal__close {
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: none;
+                background: #f1f5f9;
+                border-radius: 10px;
+                cursor: pointer;
+                color: #64748b;
+                transition: all .2s;
+            }
+            .partner-modal__close:hover {
+                background: #e2e8f0;
+                color: #02025b;
+            }
+            .partner-modal__filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 16px 24px;
+                border-bottom: 1px solid rgba(0,0,77,.06);
+            }
+            .partner-modal__search-wrap {
+                flex: 1;
+                min-width: 180px;
+                position: relative;
+            }
+            .partner-modal__search-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #94a3b8;
+                pointer-events: none;
+            }
+            .partner-modal__search {
+                width: 100%;
+                padding: 9px 12px 9px 36px;
+                border-radius: 10px;
+                border: 1px solid rgba(0,0,77,.1);
+                font-size: 13px;
+                font-family: inherit;
+                color: #02025b;
+                outline: none;
+                background: #f8fafc;
+                transition: all .2s;
+                box-sizing: border-box;
+            }
+            .partner-modal__search:focus {
+                border-color: #EB5436;
+                background: #fff;
+                box-shadow: 0 0 0 3px rgba(235,84,54,.08);
+            }
+            .partner-modal__search::placeholder {
+                color: #94a3b8;
+            }
+            .partner-modal__list {
+                flex: 1;
+                overflow-y: auto;
+                padding: 16px 24px 24px;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 10px;
+            }
+            .partner-modal__list .partner-empty {
+                grid-column: 1 / -1;
+            }
+
+            /* ── Attractive invite button in modal ── */
+            .partner-card__invite--modal {
+                flex-shrink: 0;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 8px 18px;
+                background: linear-gradient(135deg, #f43f5e, #e11d48);
+                color: #fff;
+                border: none;
+                border-radius: 10px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                text-decoration: none;
+                white-space: nowrap;
+                transition: all .25s;
+                box-shadow: 0 3px 10px rgba(244,63,94,.25);
+            }
+            .partner-card__invite--modal:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 5px 16px rgba(244,63,94,.35);
+            }
+
             @media (max-width: 500px) {
                 .partner-grid {
                     grid-template-columns: 1fr;
@@ -821,11 +1044,21 @@
                     min-width: 0;
                     flex: 1;
                 }
+                .partner-modal {
+                    max-height: 90vh;
+                    border-radius: 16px;
+                }
+                .partner-modal__filters {
+                    flex-direction: column;
+                }
+                .partner-modal__list {
+                    grid-template-columns: 1fr;
+                }
             }
             </style>
 
             <script>
-            /* ── Level dropdown ── */
+            /* ── Level dropdown (inline) ── */
             var _selectedLevel = '';
             function toggleLevelDropdown() {
                 document.getElementById('partnerLevelDropdown').classList.toggle('is-open');
@@ -847,6 +1080,28 @@
                 }
             });
 
+            /* ── Modal level dropdown ── */
+            var _modalLevel = '';
+            function selectModalLevel(val) {
+                _modalLevel = val;
+                var labels = {'':'🌱 Semua Level','pemula':'🌱 Pemula','aktif':'⭐ Aktif','pro':'🏆 Pro'};
+                document.getElementById('partnerModalLevelLabel').textContent = labels[val] || '🌱 Semua Level';
+                document.getElementById('partnerModalLevelDropdown').classList.remove('is-open');
+                document.querySelectorAll('#partnerModalLevelDropdown .partner-level-option').forEach(function(b) {
+                    b.classList.toggle('is-active', b.dataset.value === val);
+                });
+                filterPartnersModal();
+            }
+            document.addEventListener('click', function(e) {
+                var wrap = document.getElementById('partnerModalLevelWrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    document.getElementById('partnerModalLevelDropdown').classList.remove('is-open');
+                }
+            });
+
+            /* ── All partner data cache ── */
+            var _allPartners = [];
+
             function filterPartners() {
                 var sport = document.getElementById('partnerSportFilter').value;
                 var skill = _selectedLevel;
@@ -855,30 +1110,94 @@
 
                 var url = '{{ route("partner.data") }}?sport=' + encodeURIComponent(sport) + '&skill=' + encodeURIComponent(skill);
                 fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+                    _allPartners = data;
                     if (data.length === 0) {
                         container.innerHTML = '<div class="partner-empty">Belum ada partner yang tersedia dengan filter ini.</div>';
                         return;
                     }
+                    var show = data.length > 7 ? data.slice(0, 6) : data.slice(0, 7);
                     var html = '';
-                    data.forEach(function(p) {
-                        var phone = (p.phone || '').replace(/^0/, '62').replace(/[^0-9]/g, '');
-                        var waUrl = 'https://wa.me/' + phone + '?text=Halo%2C%20saya%20menemukan%20profil%20Anda%20di%20Spies%20Sport%20dan%20tertarik%20bermain%20bersama.';
-                        html += '<div class="partner-card">';
-                        html += '<img src="' + p.avatar + '" alt="' + p.name + '" class="partner-card__avatar">';
-                        html += '<div class="partner-card__info">';
-                        html += '<div class="partner-card__name">' + p.name + '</div>';
-                        html += '<div class="partner-card__meta">';
-                        if (p.sport_preference) html += '<span class="partner-card__sport">' + p.sport_preference + '</span>';
-                        if (p.level) html += '<span class="partner-card__skill">' + p.level + '</span>';
-                        html += '</div></div>';
-                        html += '<a href="' + waUrl + '" target="_blank" class="partner-card__invite">💬 Ajak</a>';
-                        html += '</div>';
+                    show.forEach(function(p) {
+                        html += partnerCardHtml(p);
                     });
+                    if (data.length > 7) {
+                        html += '<button type="button" onclick="openPartnerModal()" class="partner-tambah-card">' +
+                            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>' +
+                            '<span class="partner-tambah-card__label">Tampilkan Semua</span>' +
+                            '</button>';
+                    }
                     container.innerHTML = html;
                 }).catch(function() {
                     container.innerHTML = '<div class="partner-empty" style="color:#dc2626;">Gagal memuat data partner.</div>';
                 });
             }
+
+            function partnerCardHtml(p, isModal) {
+                var phone = (p.phone || '').replace(/^0/, '62').replace(/[^0-9]/g, '');
+                var waUrl = 'https://wa.me/' + phone + '?text=Halo%2C%20saya%20menemukan%20profil%20Anda%20di%20Spies%20Sport%20dan%20tertarik%20bermain%20bersama.';
+                var inviteClass = isModal ? 'partner-card__invite--modal' : 'partner-card__invite';
+                var inviteText = isModal ? 'Ajak' : '💬 Ajak';
+                return '<div class="partner-card">' +
+                    '<img src="' + p.avatar + '" alt="' + p.name + '" class="partner-card__avatar">' +
+                    '<div class="partner-card__info">' +
+                    '<div class="partner-card__name">' + p.name + '</div>' +
+                    '<div class="partner-card__meta">' +
+                    (p.sport_preference ? '<span class="partner-card__sport">' + p.sport_preference + '</span>' : '') +
+                    (p.level ? '<span class="partner-card__skill">' + p.level + '</span>' : '') +
+                    '</div></div>' +
+                    '<a href="' + waUrl + '" target="_blank" class="' + inviteClass + '">' + inviteText + '</a>' +
+                    '</div>';
+            }
+
+            /* ── Modal ── */
+            function openPartnerModal() {
+                document.getElementById('partnerModal').classList.add('is-open');
+                document.body.style.overflow = 'hidden';
+                renderModalList();
+            }
+            function closePartnerModal(e) {
+                if (e && e.target !== e.currentTarget) return;
+                document.getElementById('partnerModal').classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    var modal = document.getElementById('partnerModal');
+                    if (modal.classList.contains('is-open')) {
+                        modal.classList.remove('is-open');
+                        document.body.style.overflow = '';
+                    }
+                }
+            });
+
+            function filterPartnersModal() {
+                renderModalList();
+            }
+
+            function renderModalList() {
+                var search = (document.getElementById('partnerModalSearch').value || '').toLowerCase().trim();
+                var sport = document.getElementById('partnerModalSport').value;
+                var skill = _modalLevel;
+                var container = document.getElementById('partnerModalList');
+
+                var filtered = _allPartners.filter(function(p) {
+                    if (search && p.name.toLowerCase().indexOf(search) === -1) return false;
+                    if (sport && (!p.sport_preference || p.sport_preference.toLowerCase() !== sport.toLowerCase())) return false;
+                    if (skill && (!p.level || p.level.toLowerCase() !== skill.toLowerCase())) return false;
+                    return true;
+                });
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="partner-empty">Tidak ada pemain yang cocok.</div>';
+                    return;
+                }
+                var html = '';
+                filtered.forEach(function(p) {
+                    html += partnerCardHtml(p, true);
+                });
+                container.innerHTML = html;
+            }
+
             filterPartners();
             </script>
 
@@ -1252,12 +1571,14 @@
             .map(cb => cb.value);
 
         const selectedGender = window.__genderFilter || '';
+        const searchTitle = (window._searchTitle || '').toLowerCase().trim();
 
         let available = allCards.filter(item => {
             const matchesSport = selectedSports.length === 0 || selectedSports.includes(item.sport);
             const matchesGender = !selectedGender || item.creator_gender === selectedGender;
+            const matchesTitle = !searchTitle || (item.title && item.title.toLowerCase().indexOf(searchTitle) !== -1);
             const notSwiped = !swipedKeys.has(item._swipeKey);
-            return matchesSport && matchesGender && notSwiped;
+            return matchesSport && matchesGender && matchesTitle && notSwiped;
         });
 
         // Auto-recycle if all swiped
@@ -1265,7 +1586,8 @@
             const validCards = allCards.filter(item => {
                 const matchesSport = selectedSports.length === 0 || selectedSports.includes(item.sport);
                 const matchesGender = !selectedGender || item.creator_gender === selectedGender;
-                return matchesSport && matchesGender;
+                const matchesTitle = !searchTitle || (item.title && item.title.toLowerCase().indexOf(searchTitle) !== -1);
+                return matchesSport && matchesGender && matchesTitle;
             });
             swipedKeys.forEach(key => {
                 if (validCards.some(c => c._swipeKey === key)) {

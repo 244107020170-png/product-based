@@ -116,8 +116,9 @@
                                     <p class="text-gray-700 font-semibold text-sm">{{ $p->end_date->diffForHumans() }}</p>
                                 </div>
                             </div>
-                            @if($p->field)
-                            <p class="mt-2 text-xs text-gray-400"><i class="fa-regular fa-futbol mr-1"></i>{{ $p->field->name }}</p>
+                            @php $pf = $p->fields->first(); @endphp
+                            @if($pf)
+                            <p class="mt-2 text-xs text-gray-400"><i class="fa-regular fa-futbol mr-1"></i>{{ $pf->name }}</p>
                             @endif
                             <div class="flex gap-2 mt-3">
                                 <button class="flex-1 py-2 bg-gray-50 rounded-lg text-gray-600 font-semibold text-sm hover:bg-gray-100 transition-colors"
@@ -173,7 +174,7 @@
                                         <p class="font-semibold text-gray-800">{{ $d->name }}</p>
                                         <p class="text-xs text-gray-400">{{ $d->start_date->format('d M Y') }} • {{ $d->type === 'percentage' ? 'Persentase' : 'Nominal' }}</p>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ $d->field?->name ?? 'Semua Lapangan' }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">@php $fc = $d->fields->count(); @endphp @if($fc > 1) {{ $fc }} Lapangan @elseif($fc === 1) {{ $d->fields->first()->name }} @else Semua Lapangan @endif</td>
                                     <td class="px-6 py-4">
                                         <span class="font-semibold text-red-600">
                                             @if($d->type === 'percentage') {{ $d->value }}%

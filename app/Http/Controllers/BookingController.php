@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
 {
@@ -86,7 +87,13 @@ class BookingController extends Controller
                 })->delete();
 
             $pendingMatch = session('pending_match');
-            if ($pendingMatch) {
+            if ($pendingMatch && $pendingMatch['type'] === 'public') {
+                session()->forget('pending_match');
+                $exists = Matchs::where('title', $pendingMatch['title'])->where('type', 'public')->exists();
+                if (!$exists) {
+                    $match = Matchs::create($pendingMatch);
+                }
+            } elseif ($pendingMatch) {
                 session()->forget('pending_match');
                 $match = Matchs::create($pendingMatch);
             }

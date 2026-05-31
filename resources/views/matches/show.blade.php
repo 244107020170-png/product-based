@@ -9,7 +9,7 @@
     $previousUrl = url()->previous();
     $currentUrl = url()->current();
     $isInternalReferer = $referer && parse_url($referer, PHP_URL_HOST) === request()->getHost();
-    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('matches.myTeams');
+    $backUrl = $isInternalReferer && $previousUrl !== $currentUrl ? $previousUrl : route('matches.index');
     
     $sidebarItems = [
         ['label'=>'Beranda', 'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'), 'active'=>false],
@@ -26,9 +26,12 @@
         ['label'=>'Pengaturan', 'icon'=>asset('assets/images/icons/pengaturan.png'), 'href'=>route('profile.edit')],
     ];
 
-    $playersJoined = $match->players->count();
+    $playersJoined = $match->paidPlayers->count();
     $maxPlayers = $match->max_player;
     $percentage = $maxPlayers > 0 ? min(100, ($playersJoined / $maxPlayers) * 100) : 0;
+    $hasPromo = $match->field && $match->field->has_active_promo;
+    $promoBadge = $match->field?->promo_badge;
+    $originalPrice = $match->field?->price_per_hour ? $match->field->price_per_hour * 2 : 0;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -40,7 +43,7 @@
     @vite(['resources/css/app.css', 'resources/css/player-dashboard.css', 'resources/js/player-dashboard.js'])
     <style>
         .match-detail-main { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
-        .btn-back { display: inline-flex; align-items: center; padding: 0 16px; height: 36px; background: rgba(255,255,255,.8); color: #11114b; font-size: .9rem; font-weight: 700; text-decoration: none; border-radius: 8px; transition: all .2s; border: 1.5px solid #14144a; margin-bottom: 20px; }
+        .btn-back { display: inline-flex; align-items: center; padding: 0 14px; height: 32px; background: rgba(255,255,255,.85); color: #11114b; font-size: .82rem; font-weight: 600; text-decoration: none; border-radius: 10px; transition: all .2s; border: 1.5px solid #14144a; margin-bottom: 20px; }
         .btn-back:hover { background: #fff; transform: translateY(-1px); }
         
         .detail-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,77,.06); border: 1px solid rgba(0,0,77,.08); }
@@ -75,14 +78,14 @@
 
         .action-container { border-top: 1px solid rgba(0,0,77,.08); padding-top: 24px; display: flex; justify-content: flex-end; }
         
-        .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 32px; background: #43a680; color: #fff; border-radius: 12px; font-weight: 800; font-size: 1.05rem; border: none; cursor: pointer; transition: all .2s; }
-        .btn-primary:hover { background: #368d6a; transform: translateY(-1px); }
-        .btn-primary:disabled { background: #b0c4b9; cursor: not-allowed; transform: none; }
+        .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; background: linear-gradient(135deg, #43a680, #2d8a5e); color: #fff; border-radius: 10px; font-weight: 500; font-size: .88rem; border: none; cursor: pointer; transition: all .2s; box-shadow: 0 2px 8px rgba(67,166,128,.25); }
+        .btn-primary:hover { background: linear-gradient(135deg, #368d6a, #21734e); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(67,166,128,.35); }
+        .btn-primary:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; transform: none; }
         
-        .btn-disabled { background: #e0e5ec; color: #666; cursor: not-allowed; }
+        .btn-disabled { background: #e5e7eb !important; color: #9ca3af !important; cursor: not-allowed !important; box-shadow: none !important; }
         
-        .btn-whatsapp { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 24px; background: #25D366; color: #fff; border-radius: 12px; font-weight: 800; font-size: 1.05rem; border: none; cursor: pointer; transition: all .2s; text-decoration: none; }
-        .btn-whatsapp:hover { background: #128C7E; transform: translateY(-1px); }
+        .btn-whatsapp { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; background: #25D366; color: #fff; border-radius: 10px; font-weight: 500; font-size: .88rem; border: none; cursor: pointer; transition: all .2s; text-decoration: none; box-shadow: 0 2px 8px rgba(37,211,102,.25); }
+        .btn-whatsapp:hover { background: #128C7E; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,211,102,.35); }
 
         @media (max-width: 768px) {
             .info-grid { grid-template-columns: 1fr; gap: 16px; }
@@ -221,7 +224,7 @@
                         
                         @if($playersJoined > 0)
                             <div class="players-list">
-                                @foreach($match->players as $p)
+                                @foreach($match->paidPlayers as $p)
                                     <img src="{{ $p->avatarUrl() }}" alt="{{ $p->name }}" class="player-avatar" title="{{ $p->name }}">
                                 @endforeach
                             </div>
@@ -235,11 +238,23 @@
                             <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px;">
                                 <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
                                     <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Total Biaya Lapangan</div>
-                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">Rp{{ number_format($match->total_cost, 0, ',', '.') }}</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">
+                                        Rp{{ number_format($match->total_cost, 0, ',', '.') }}
+                                        @if($hasPromo)
+                                            <span style="font-size: 14px; font-weight: 400; color: #999; text-decoration: line-through; margin-left: 8px;">Rp{{ number_format($originalPrice, 0, ',', '.') }}</span>
+                                            <span style="display: inline-block; margin-left: 6px; padding: 2px 8px; background: #ff4444; color: #fff; font-size: 11px; font-weight: 700; border-radius: 999px;">{{ $promoBadge }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
                                     <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Biaya Kontribusi / Player</div>
-                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">Rp{{ number_format($match->contribution_per_player, 0, ',', '.') }}</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #02025b;">
+                                        Rp{{ number_format($match->contribution_per_player, 0, ',', '.') }}
+                                        @if($hasPromo)
+                                            @php $origContrib = (int) round($originalPrice / $match->max_player); @endphp
+                                            <span style="font-size: 14px; font-weight: 400; color: #999; text-decoration: line-through; margin-left: 8px;">Rp{{ number_format($origContrib, 0, ',', '.') }}</span>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
                                     <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Max Player</div>
@@ -252,37 +267,46 @@
                             </div>
 
                             @if($hasJoined && ! $isCreator)
-                                <div style="display: grid; gap: 20px;">
-                                    @if($participant?->payment_status === 'waiting')
-                                        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
-                                            <div style="flex: 1 1 220px; min-width: 220px; background: white; border-radius: 18px; padding: 22px; border: 1px solid rgba(0,0,77,.08);">
-                                                <div style="margin-bottom: 12px; font-size: 14px; color: #666;">Nominal Kontribusi</div>
-                                                <div style="font-size: 26px; font-weight: 800; color: #02025b;">Rp{{ number_format($participant->contribution_amount, 0, ',', '.') }}</div>
-                                                <div style="margin-top: 10px; font-size: 13px; color: #444;">Pembayaran menunggu konfirmasi host setelah Anda klik bayar.</div>
+                                @php
+                                    $participantPaidAt = $participant?->paid_at;
+                                    $participantIsPaid = $participant?->payment_status === 'paid';
+                                @endphp
+                                <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+                                    <div style="flex: 1 1 220px; min-width: 220px; background: white; border-radius: 18px; padding: 22px; border: 1px solid rgba(0,0,77,.08);">
+                                        <div style="margin-bottom: 12px; font-size: 14px; color: #666;">Nominal Kontribusi</div>
+                                        <div style="font-size: 26px; font-weight: 800; color: #02025b;">Rp{{ number_format($match->contribution_per_player, 0, ',', '.') }}</div>
+                                        @if($participantPaidAt && ! $participantIsPaid)
+                                            <div style="margin-top: 10px; font-size: 13px; color: #444;">Pembayaran menunggu konfirmasi host.</div>
+                                        @endif
+                                    </div>
+                                    @if($participantPaidAt)
+                                        <div style="width: 220px; background: white; border-radius: 18px; padding: 18px; border: 1px solid rgba(0,0,77,.08); text-align: center;">
+                                            <div style="margin-bottom: 12px; font-size: 14px; color: #666;">
+                                                {{ $participantIsPaid ? 'Pembayaran dikonfirmasi' : 'Menunggu konfirmasi host' }}
                                             </div>
-                                            <div style="width: 220px; background: white; border-radius: 18px; padding: 18px; border: 1px solid rgba(0,0,77,.08); text-align: center;">
-                                                <div style="margin-bottom: 12px; font-size: 14px; color: #666;">Scan QR berikut</div>
-                                                <div style="width: 160px; height: 160px; margin: 0 auto 14px auto; background: #02025b; border-radius: 20px; display: grid; place-items: center;">
-                                                    <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <rect width="120" height="120" rx="20" fill="#fff"/>
-                                                        <rect x="12" y="12" width="28" height="28" rx="6" fill="#02025b"/>
-                                                        <rect x="12" y="80" width="28" height="28" rx="6" fill="#02025b"/>
-                                                        <rect x="80" y="12" width="28" height="28" rx="6" fill="#02025b"/>
-                                                        <rect x="50" y="50" width="14" height="14" fill="#02025b"/>
-                                                        <rect x="50" y="80" width="14" height="14" fill="#02025b"/>
-                                                        <rect x="80" y="50" width="14" height="14" fill="#02025b"/>
-                                                    </svg>
-                                                </div>
-                                                <form action="{{ route('matches.participant.pay', $match->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="btn-primary" style="width: 100%;">Saya Sudah Bayar</button>
-                                                </form>
+                                            <div style="width: 120px; height: 120px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                                <svg viewBox="0 0 24 24" fill="none" style="width: 100%; height: 100%;">
+                                                    <circle cx="12" cy="12" r="11" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+                                                    <path d="M7 12.5l3 3 7-7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
                                             </div>
+                                            @if($participantIsPaid)
+                                                <div style="margin-top: 10px; font-size: 12px; color: #16a34a; font-weight: 600;">Pembayaran telah dikonfirmasi oleh host.</div>
+                                            @endif
                                         </div>
-                                    @elseif($participant?->payment_status === 'paid')
-                                        <div style="padding: 20px; background: #eafaf1; border: 1px solid #43a680; border-radius: 18px; color: #155724; font-weight: 700;">Pembayaran Anda telah dikonfirmasi oleh host.</div>
                                     @else
-                                        <div style="padding: 20px; background: #fff7e9; border: 1px solid #f1c40f; border-radius: 18px; color: #8a6d3b; font-weight: 700;">Silakan klik tombol bayar jika sudah transfer.</div>
+                                        @php
+                                            $payUrl = route('matches.show', $match->id);
+                                        @endphp
+                                        <div style="width: 220px; background: white; border-radius: 18px; padding: 18px; border: 1px solid rgba(0,0,77,.08); text-align: center;">
+                                            <div style="margin-bottom: 12px; font-size: 14px; color: #666;">Scan QR untuk bayar</div>
+                                            <form action="{{ route('matches.participant.pay', $match->id) }}" method="POST" style="cursor: pointer;" onclick="event.currentTarget.submit()">
+                                                @csrf
+                                                <div style="width: 160px; height: 160px; margin: 0 auto 14px auto; border-radius: 20px; overflow: hidden;">
+                                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($payUrl) }}" alt="QR Code" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                                                </div>
+                                            </form>
+                                        </div>
                                     @endif
                                 </div>
                             @endif
@@ -410,7 +434,7 @@
                                     $waNumber = $match->creator->phone ? preg_replace('/[^0-9]/', '', $match->creator->phone) : '6281234567890';
                                 @endphp
                                 <a href="https://wa.me/{{ $waNumber }}" target="_blank" class="btn-whatsapp">
-                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.052 0C5.495 0 .16 5.333.158 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.332 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.052 0C5.495 0 .16 5.333.158 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.332 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                                     Hubungi via WhatsApp
                                 </a>
                             </div>
@@ -420,7 +444,7 @@
                             <form action="{{ route('matches.join', $match->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn-primary">
-                                    <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12.6 20.2C12.26 20.36 11.86 20.36 11.52 20.2C8.52 18.76 5 15.8 5 11.94C5 8.95 7.42 6.53 10.4 6.53C11.57 6.53 12.67 6.9 13.58 7.59C14.49 6.9 15.59 6.53 16.76 6.53C19.74 6.53 22.16 8.95 22.16 11.94C22.16 15.8 18.64 18.76 15.64 20.2" fill="currentColor"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" width="16" height="16"><path d="M12.6 20.2C12.26 20.36 11.86 20.36 11.52 20.2C8.52 18.76 5 15.8 5 11.94C5 8.95 7.42 6.53 10.4 6.53C11.57 6.53 12.67 6.9 13.58 7.59C14.49 6.9 15.59 6.53 16.76 6.53C19.74 6.53 22.16 8.95 22.16 11.94C22.16 15.8 18.64 18.76 15.64 20.2" fill="currentColor"/></svg>
                                     Gabung Tim Sekarang
                                 </button>
                             </form>

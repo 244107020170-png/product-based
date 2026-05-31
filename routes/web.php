@@ -274,14 +274,16 @@ Route::get('/dashboard', function () {
         }
 
         // Sort fields: featured+promo -> featured only -> promo only -> normal
-        $discountIds = \App\Models\Discount::active()->whereNotNull('field_id')->pluck('field_id')->unique()->toArray();
-        $globalOwnerIds = \App\Models\Discount::active()->whereNull('field_id')->pluck('owner_id')->unique()->toArray();
-        $fields = $fields->sortByDesc(function ($f) use ($discountIds, $globalOwnerIds) {
-            $hasPromo = in_array($f->id, $discountIds) || in_array($f->owner_id, $globalOwnerIds);
-            $isFeatured = $f->featured ?? false;
-            if ($isFeatured && $hasPromo) return 3;
-            if ($isFeatured) return 2;
-            if ($hasPromo)   return 1;
+        $promoFieldIds = \App\Models\Discount::active()
+            ->with('fields')->get()
+            ->flatMap(fn($d) => $d->fields->pluck('id'))
+            ->unique()->toArray();
+        $fields = $fields->sortByDesc(function ($f) use ($promoFieldIds) {
+            $hp = in_array($f->id, $promoFieldIds);
+            $ft = $f->featured ?? false;
+            if ($ft && $hp) return 3;
+            if ($ft)        return 2;
+            if ($hp)        return 1;
             return 0;
         })->values();
         
@@ -295,7 +297,30 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 Route::get('/rekomendasi', function () {
-    return view('pages.rekomendasi');
+    $promoFields = \App\Models\Field::where('is_available', true)
+        ->whereHas('discounts', fn($q) => $q->active())
+        ->with(['discounts' => fn($q) => $q->active()->orderBy('value', 'desc')])
+        ->orderBy('featured', 'desc')
+        ->orderBy('rating', 'desc')
+        ->take(10)
+        ->get();
+
+    $popularFields = \App\Models\Field::withCount('bookings')
+        ->where('is_available', true)
+        ->orderBy('bookings_count', 'desc')
+        ->orderBy('featured', 'desc')
+        ->orderBy('rating', 'desc')
+        ->take(6)
+        ->get();
+
+    $sportCategories = \App\Models\Field::where('is_available', true)
+        ->whereNotNull('type')
+        ->distinct()
+        ->pluck('type')
+        ->map(fn($t) => ['key' => $t, 'label' => ucfirst($t)])
+        ->values();
+
+    return view('pages.rekomendasi', compact('promoFields', 'popularFields', 'sportCategories'));
 })->name('recommendation.index');
 
 Route::get('/explore', function () {
@@ -414,9 +439,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/promosiDiskon', function () {
             $user = auth()->user();
             $discounts = \App\Models\Discount::where('owner_id', $user->id)
-                ->with('field')->orderBy('created_at', 'desc')->get();
+                ->with('fields')->orderBy('created_at', 'desc')->get();
             $activePromos = \App\Models\Discount::where('owner_id', $user->id)
-                ->active()->with('field')->get();
+                ->active()->with('fields')->get();
             $totalClaims = \App\Models\Discount::where('owner_id', $user->id)->sum('usage_count');
             $fields = \App\Models\Field::where('owner_id', $user->id)->get();
             return view('owner.promosiDiskon', compact('discounts', 'activePromos', 'totalClaims', 'fields'));
@@ -435,8 +460,16 @@ Route::middleware('auth')->group(function () {
                 'start_date'        => 'required|date',
                 'end_date'          => 'required|date|after_or_equal:start_date',
             ]);
+            $fieldId = $data['field_id'] ?? null;
+            unset($data['field_id']);
             $data['owner_id'] = auth()->id();
             $discount = \App\Models\Discount::create($data);
+            if ($fieldId) {
+                $discount->fields()->sync([$fieldId]);
+            } else {
+                $allFields = \App\Models\Field::where('owner_id', auth()->id())->pluck('id')->toArray();
+                $discount->fields()->sync($allFields);
+            }
             return redirect()->route('owner.promosiDiskon')->with('success', 'Promo berhasil dibuat!');
         })->name('owner.discounts.store');
 
@@ -459,7 +492,15 @@ Route::middleware('auth')->group(function () {
                 'start_date'        => 'required|date',
                 'end_date'          => 'required|date|after_or_equal:start_date',
             ]);
+            $fieldId = $data['field_id'] ?? null;
+            unset($data['field_id']);
             $discount->update($data);
+            if ($fieldId) {
+                $discount->fields()->sync([$fieldId]);
+            } else {
+                $allFields = \App\Models\Field::where('owner_id', auth()->id())->pluck('id')->toArray();
+                $discount->fields()->sync($allFields);
+            }
             return redirect()->route('owner.promosiDiskon')->with('success', 'Promo berhasil diperbarui!');
         })->name('owner.discounts.update');
 

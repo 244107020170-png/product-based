@@ -31,10 +31,17 @@ class Matchs extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /** Semua player yang join */
+    /** Semua player yang join (termasuk unpaid) */
     public function players()
     {
         return $this->belongsToMany(User::class, 'match_players', 'match_id', 'user_id');
+    }
+
+    /** Player yang sudah bayar */
+    public function paidPlayers()
+    {
+        return $this->belongsToMany(User::class, 'match_players', 'match_id', 'user_id')
+            ->wherePivot('payment_status', \App\Enums\PaymentStatus::PAID);
     }
 
     public function participantEntries()
@@ -42,22 +49,23 @@ class Matchs extends Model
         return $this->hasMany(MatchPlayer::class, 'match_id');
     }
 
+    /** Harga per jam setelah diskon (jika ada promo aktif) */
+    public function getEffectivePricePerHourAttribute(): int
+    {
+        if (!$this->field) return 0;
+        return $this->field->promo_price_raw ?? $this->field->price_per_hour;
+    }
+
     public function getTotalCostAttribute(): int
     {
-        if (! $this->field) {
-            return 0;
-        }
-
-        return $this->field->price_per_hour * 2;
+        if (! $this->field) return 0;
+        return $this->effective_price_per_hour * 2;
     }
 
     public function getContributionPerPlayerAttribute(): int
     {
-        if (! $this->field || $this->max_player < 1) {
-            return 0;
-        }
-
-        return (int) round(($this->field->price_per_hour * 2) / $this->max_player);
+        if (! $this->field || $this->max_player < 1) return 0;
+        return (int) round(($this->effective_price_per_hour * 2) / $this->max_player);
     }
 
     public function isPublic(): bool

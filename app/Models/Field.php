@@ -78,7 +78,7 @@ class Field extends Model
 
     public function discounts()
     {
-        return $this->hasMany(Discount::class);
+        return $this->belongsToMany(Discount::class);
     }
 
     public function reviews()
@@ -147,13 +147,7 @@ class Field extends Model
 
     public function hasActivePromo(): bool
     {
-        if ($this->discounts()->active()->exists()) {
-            return true;
-        }
-        return \App\Models\Discount::where('owner_id', $this->owner_id)
-            ->whereNull('field_id')
-            ->active()
-            ->exists();
+        return $this->discounts()->active()->exists();
     }
 
     public function getHasActivePromoAttribute(): bool
@@ -163,13 +157,7 @@ class Field extends Model
 
     public function getActivePromoAttribute()
     {
-        $direct = $this->discounts()->active()->orderBy('value', 'desc')->first();
-        if ($direct) return $direct;
-        return \App\Models\Discount::where('owner_id', $this->owner_id)
-            ->whereNull('field_id')
-            ->active()
-            ->orderBy('value', 'desc')
-            ->first();
+        return $this->discounts()->active()->orderBy('value', 'desc')->first();
     }
 
     public function getPromoPriceAttribute(): ?string
