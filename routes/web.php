@@ -8,6 +8,16 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\OwnerFieldController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\OwnerController as AdminOwnerController;
+use App\Http\Controllers\Admin\FieldController as AdminFieldController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\CommunityController as AdminCommunityController;
+use App\Http\Controllers\Admin\SystemController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Models\Maintenance;
 use App\Models\Slot;
 use App\Models\Holiday;
@@ -455,27 +465,33 @@ Route::get('/kebijakan-privasi', function () {
 Route::middleware('auth')->group(function () {
 
     /* ADMIN */
-    Route::prefix('admin')->middleware('role.admin')->group(function () {
-        Route::get('/dashboard', function () {
-            $totalUsers = \App\Models\User::count();
-            $totalOwners = \App\Models\User::where('role', 'owner')->count();
-            $totalPlayers = \App\Models\User::where('role', 'player')->count();
-            $totalFields = \App\Models\Field::count();
-            $totalBookings = \App\Models\Booking::count();
-            $totalMatches = \App\Models\Matchs::count();
+    Route::prefix('admin')->middleware('role.admin')->name('admin.')->group(function () {
+        Route::get('/', fn() => redirect()->route('admin.dashboard'))->name('home');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-            return view('admin.dashboard', compact(
-                'totalUsers',
-                'totalOwners', 
-                'totalPlayers',
-                'totalFields',
-                'totalBookings',
-                'totalMatches'
-            ));
-        })->name('admin.dashboard');
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+        Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
 
-        // Admin routes dapat ditambahkan di sini
-        // Contoh: Route::resource('users', UserController::class);
+        Route::get('/owners', [AdminOwnerController::class, 'index'])->name('owners');
+        Route::get('/owners/{owner}', [AdminOwnerController::class, 'show'])->name('owners.show');
+
+        Route::get('/fields', [AdminFieldController::class, 'index'])->name('fields');
+        Route::get('/fields/{field}', [AdminFieldController::class, 'show'])->name('fields.show');
+
+        Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings');
+        Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
+
+        Route::get('/payments', [PaymentController::class, 'index'])->name('payments');
+
+        Route::get('/communities', [AdminCommunityController::class, 'index'])->name('communities');
+        Route::get('/communities/{community}', [AdminCommunityController::class, 'show'])->name('communities.show');
+
+        Route::get('/system', [SystemController::class, 'index'])->name('system');
+
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+        Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
     });
 
     /* OWNER */

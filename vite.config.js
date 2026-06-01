@@ -22,6 +22,8 @@ export default defineConfig({
                 'resources/js/player-dashboard.js',
                 'resources/js/player-history.js',
                 'resources/js/owner-kelola-booking.js',
+            'resources/css/admin.css',
+            'resources/js/admin.js',
             ],
             refresh: true,
         }),
