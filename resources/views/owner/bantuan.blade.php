@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Pusat Bantuan - Spiessport Owner Portal</title>
+    <title>Pusat Bantuan - Spiessport Portal Pemilik</title>
     @vite(['resources/css/app.css', 'resources/css/owner-dashboard.css'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,7 +53,7 @@
                     <i class="fa-solid fa-credit-card"></i>
                 </div>
                 <h3 style="font-size:16px;font-weight:700;color:#1e293b;margin:0 0 6px 0;">Pembayaran</h3>
-                <p style="font-size:13px;color:#64748b;margin:0;line-height:1.5;">Informasi tentang invoice, metode pembayaran, dan cara pencairan dana.</p>
+                <p style="font-size:13px;color:#64748b;margin:0;line-height:1.5;">Informasi tentang faktur, metode pembayaran, dan cara pencairan dana.</p>
             </div>
             <div class="help-card" style="background:#fff;border-radius:16px;padding:24px;border:1px solid #e2e8f0;cursor:pointer;">
                 <div style="width:48px;height:48px;border-radius:12px;background:#fffbeb;display:flex;align-items:center;justify-content:center;color:#7f4f00;font-size:20px;margin-bottom:16px;">
@@ -67,7 +67,7 @@
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
                 <h3 style="font-size:16px;font-weight:700;color:#1e293b;margin:0 0 6px 0;">Masalah Teknis</h3>
-                <p style="font-size:13px;color:#64748b;margin:0;line-height:1.5;">Solusi untuk kendala akses aplikasi, sinkronisasi data, atau error sistem.</p>
+                <p style="font-size:13px;color:#64748b;margin:0;line-height:1.5;">Solusi untuk kendala akses aplikasi, sinkronisasi data, atau kesalahan sistem.</p>
             </div>
         </div>
 
@@ -104,7 +104,7 @@
                         <i class="fa-solid fa-chevron-down" style="color:#94a3b8;transition:transform 0.2s;"></i>
                     </button>
                     <div class="faq-content" style="padding:0 20px 16px 20px;font-size:13px;color:#64748b;line-height:1.6;border-top:1px solid #e2e8f0;padding-top:12px;">
-                        Pembatalan dapat dilakukan melalui menu Pengelolaan Booking. Klik pada pesanan yang dimaksud dan pilih opsi Batalkan Pesanan. Harap perhatikan kebijakan pengembalian dana yang berlaku di tempat Anda.
+                        Pembatalan dapat dilakukan melalui menu Pengelolaan Pesanan. Klik pada pesanan yang dimaksud dan pilih opsi Batalkan Pesanan. Harap perhatikan kebijakan pengembalian dana yang berlaku di tempat Anda.
                     </div>
                 </div>
             </div>

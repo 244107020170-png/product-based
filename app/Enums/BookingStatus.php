@@ -6,7 +6,7 @@ final class BookingStatus
 {
     public const PENDING = 'pending';
     public const WAITING_PAYMENT = 'waiting_payment';
-    public const WAITING_CONFIRMATION = 'waiting_confirmation';
+    public const WAITING_CONFIRMATION = 'waiting_confirmation'; // Deprecated — no longer set in new flow
     public const PAID = 'paid';
     public const CONFIRMED = 'confirmed';
     public const COMPLETED = 'completed';

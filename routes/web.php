@@ -515,6 +515,45 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/kelolaBooking', function () {
             $user = auth()->user();
+
+            // Auto-complete confirmed bookings whose time has passed
+            \App\Models\Booking::where('status', 'confirmed')
+                ->whereHas('field', fn($q) => $q->where('owner_id', $user->id))
+                ->where(function ($q) {
+                    $q->where('date', '<', now()->toDateString())
+                      ->orWhere(function ($q2) {
+                          $q2->where('date', '=', now()->toDateString())
+                             ->where('end_time', '<=', now()->toTimeString());
+                      });
+                })
+                ->update(['status' => 'completed']);
+
+            // Revert any completed bookings that are still in the future back to confirmed
+            \App\Models\Booking::where('status', 'completed')
+                ->whereHas('field', fn($q) => $q->where('owner_id', $user->id))
+                ->where(function ($q) {
+                    $q->where('date', '>', now()->toDateString())
+                      ->orWhere(function ($q2) {
+                          $q2->where('date', '=', now()->toDateString())
+                             ->where('end_time', '>', now()->toTimeString());
+                      });
+                })
+                ->update(['status' => 'confirmed']);
+
+            // Auto-confirm legacy waiting_confirmation bookings (old flow migration)
+            \App\Models\Booking::where('status', 'waiting_confirmation')
+                ->whereHas('field', fn($q) => $q->where('owner_id', $user->id))
+                ->with('field')
+                ->get()
+                ->each(function ($booking) {
+                    try {
+                        $ctrl = app(\App\Http\Controllers\BookingController::class);
+                        $ctrl->assignCourtAndConfirm($booking, false);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('Gagal auto-confirm legacy booking #' . $booking->id . ': ' . $e->getMessage());
+                    }
+                });
+
             $bookings = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
                 $q->where('owner_id', $user->id);
             })->with(['field', 'user'])->orderBy('date', 'desc')->orderBy('start_time', 'desc')->get();
@@ -634,7 +673,12 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/jadwalDanSlot', function () {
             $user = auth()->user();
-            $fields = \App\Models\Field::where('owner_id', $user->id)->get();
+            $fields = \App\Models\Field::where('owner_id', $user->id)->get()->map(fn($f) => [
+                'id' => $f->id,
+                'name' => $f->name,
+                'type' => $f->type ?? 'Olahraga',
+                'number_of_courts' => (int)($f->number_of_courts ?? 1),
+            ])->values();
             return view('owner.jadwalDanSlot', compact('fields'));
         })->name('owner.jadwalDanSlot');
 
@@ -642,11 +686,13 @@ Route::middleware('auth')->group(function () {
             $user = auth()->user();
             $fieldId = request('field_id');
             $date = request('date');
+            $courtNumber = request('court_number');
 
             $slots = Slot::whereHas('field', function ($q) use ($user) {
                 $q->where('owner_id', $user->id);
             })->when($fieldId, fn($q) => $q->where('field_id', $fieldId))
               ->when($date, fn($q) => $q->where('date', $date))
+              ->when($courtNumber, fn($q) => $q->where('court_number', $courtNumber))
               ->get();
 
             $holidays = Holiday::whereHas('field', function ($q) use ($user) {
@@ -705,12 +751,13 @@ Route::middleware('auth')->group(function () {
 
                     if (isset($s['_delete']) && $s['_delete']) {
                         Slot::where('field_id', $s['field_id'])
+                            ->where('court_number', $s['court_number'] ?? 1)
                             ->where('date', $s['date'])
                             ->where('hour', $s['hour'])
                             ->delete();
                     } else {
                         Slot::updateOrCreate(
-                            ['field_id' => $s['field_id'], 'date' => $s['date'], 'hour' => $s['hour']],
+                            ['field_id' => $s['field_id'], 'court_number' => $s['court_number'] ?? 1, 'date' => $s['date'], 'hour' => $s['hour']],
                             ['status' => $s['status']]
                         );
                     }
@@ -727,11 +774,15 @@ Route::middleware('auth')->group(function () {
                             ['field_id' => $h['field_id'], 'date' => $h['date']],
                             ['is_holiday' => true]
                         );
+                        $field = \App\Models\Field::find($h['field_id']);
+                        $numCourts = $field ? ($field->number_of_courts ?? 1) : 1;
                         foreach (range(8, 22) as $hour) {
-                            Slot::updateOrCreate(
-                                ['field_id' => $h['field_id'], 'date' => $h['date'], 'hour' => $hour],
-                                ['status' => 'tutup']
-                            );
+                            for ($court = 1; $court <= $numCourts; $court++) {
+                                Slot::updateOrCreate(
+                                    ['field_id' => $h['field_id'], 'court_number' => $court, 'date' => $h['date'], 'hour' => $hour],
+                                    ['status' => 'tutup']
+                                );
+                            }
                         }
                     } else {
                         Holiday::where('field_id', $h['field_id'])->where('date', $h['date'])->delete();
@@ -778,7 +829,7 @@ Route::middleware('auth')->group(function () {
             if ($maintenance->field->owner_id !== auth()->id()) abort(403);
 
             $data = request()->validate([
-                'task_name'     => 'required|string|max:255',
+                'task_name'     => 'sometimes|string|max:255',
                 'type'          => 'nullable|string|max:100',
                 'schedule_date' => 'nullable|date',
                 'priority'      => 'nullable|string|max:50',
@@ -804,12 +855,44 @@ Route::middleware('auth')->group(function () {
             if ($booking->field->owner_id !== auth()->id()) abort(403);
 
             $data = request()->validate([
-                'status' => 'required|string|in:confirmed,completed,cancelled,pending',
+                'status' => 'required|string|in:confirmed,completed,cancelled,rejected,pending,waiting_confirmation,paid',
             ]);
+
+            // Validate status transition
+            if (!\App\Http\Controllers\BookingController::isValidTransition($booking->status, $data['status'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat mengubah status dari "' . $booking->status . '" ke "' . $data['status'] . '".',
+                ], 422);
+            }
+
+            // If cancelling or rejecting, revert dibooking slots to tersedia
+            if (in_array($data['status'], ['cancelled', 'rejected'])) {
+                $field = $booking->field;
+                $date = $booking->date instanceof \Carbon\Carbon ? $booking->date->toDateString() : $booking->date;
+                $startHour = (int) \Carbon\Carbon::parse($booking->start_time)->format('G');
+                $endHour = (int) \Carbon\Carbon::parse($booking->end_time)->format('G');
+
+                $query = \App\Models\Slot::where('field_id', $field->id)
+                    ->where('date', $date)
+                    ->whereBetween('hour', [$startHour, $endHour - 1])
+                    ->where('status', 'dibooking');
+
+                // Only revert the specific court if the booking has one assigned
+                if ($booking->court_number) {
+                    $query->where('court_number', $booking->court_number);
+                }
+
+                $query->update(['status' => 'tersedia']);
+            }
 
             $booking->update(['status' => $data['status']]);
 
-            return response()->json(['success' => true, 'booking' => $booking->load('field', 'user')]);
+            return response()->json([
+                'success' => true,
+                'booking' => $booking->load('field', 'user'),
+                'message' => 'Status booking berhasil diperbarui.',
+            ]);
         })->name('owner.booking.status');
 
         Route::post('/bookings/{booking}/confirm-payment', [BookingController::class, 'confirmPayment'])
@@ -846,6 +929,71 @@ Route::middleware('auth')->group(function () {
 
             return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
         })->name('owner.notifications.markAllRead');
+
+        // ── PENGATURAN (SETTINGS) ──────────────────────────────────
+
+        Route::get('/pengaturan', function () {
+            $user = auth()->user();
+            $fieldIds = \App\Models\Field::where('owner_id', $user->id)->pluck('id');
+
+            $totalBookings = \App\Models\Booking::whereIn('field_id', $fieldIds)->count();
+
+            $lastWeek = now()->subDays(7);
+            $bookingsLastWeek = \App\Models\Booking::whereIn('field_id', $fieldIds)
+                ->where('created_at', '>=', $lastWeek)
+                ->count();
+
+            $prevWeek = now()->subDays(14);
+            $bookingsPrevWeek = \App\Models\Booking::whereIn('field_id', $fieldIds)
+                ->whereBetween('created_at', [$prevWeek, $lastWeek])
+                ->count();
+
+            $trend = $bookingsPrevWeek > 0
+                ? round((($bookingsLastWeek - $bookingsPrevWeek) / $bookingsPrevWeek) * 100)
+                : ($bookingsLastWeek > 0 ? 100 : 0);
+
+            $dailyBookings = collect(range(6, 0))->map(function ($i) use ($fieldIds) {
+                $day = now()->subDays($i);
+                return \App\Models\Booking::whereIn('field_id', $fieldIds)
+                    ->whereDate('created_at', $day)
+                    ->count();
+            });
+
+            $maxDaily = max($dailyBookings->max(), 1);
+
+            return view('owner.pengaturan', compact(
+                'totalBookings', 'trend', 'dailyBookings', 'maxDaily'
+            ));
+        })->name('owner.pengaturan');
+
+        Route::put('/pengaturan', function () {
+            $user = auth()->user();
+            $data = request()->validate([
+                'name'  => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+                'phone' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:500',
+            ]);
+
+            $user->name = $data['name'];
+            $user->email = $data['email'];
+            $user->phone = $data['phone'] ?? null;
+            $user->address = $data['address'] ?? null;
+            $user->save();
+
+            return redirect()->route('owner.pengaturan')->with('success', 'Profil berhasil diperbarui.');
+        })->name('owner.pengaturan.update');
+
+        Route::put('/pengaturan/password', function () {
+            $user = auth()->user();
+            $data = request()->validate([
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+
+            $user->update(['password' => bcrypt($data['password'])]);
+
+            return redirect()->route('owner.pengaturan')->with('success', 'Kata sandi berhasil diperbarui.');
+        })->name('owner.pengaturan.password');
     });
 
     /* PLAYER */
@@ -859,6 +1007,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/bookings/{booking}', [BookingController::class, 'detail'])->name('booking.detail');
     Route::post('/bookings/{booking}/pay', [BookingController::class, 'pay'])->name('booking.pay');
+    Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/payment/{booking}', [BookingController::class, 'paymentPage'])->name('booking.payment');
 
     Route::get('/matches', [ActivityController::class, 'index'])->name('activity.index');

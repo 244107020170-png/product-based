@@ -6,29 +6,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = detail?.querySelector('.detail-header button');
 
     const statusHistory = {
+        'Menunggu Pembayaran': [
+            { label: 'Booking dibuat', color: 'black' },
+            { label: 'Menunggu pembayaran', color: '#F29E10' },
+        ],
         'Menunggu Konfirmasi': [
             { label: 'Booking dibuat', color: 'black' },
+            { label: 'Pembayaran diterima', color: 'black' },
             { label: 'Menunggu konfirmasi', color: '#F29E10' },
         ],
-        'Telah Dikonfirmasi': [
+        'Dibayar': [
             { label: 'Booking dibuat', color: 'black' },
-            { label: 'Menunggu konfirmasi', color: 'black' },
-            { label: 'Telah dikonfirmasi', color: '#1b9d59' },
+            { label: 'Pembayaran diterima', color: 'black' },
+            { label: 'Dibayar', color: '#1b9d59' },
+        ],
+        'Dikonfirmasi': [
+            { label: 'Booking dibuat', color: 'black' },
+            { label: 'Pembayaran diterima', color: 'black' },
+            { label: 'Dikonfirmasi', color: '#1b9d59' },
         ],
         'Selesai': [
             { label: 'Booking dibuat', color: 'black' },
-            { label: 'Menunggu konfirmasi', color: 'black' },
-            { label: 'Telah dikonfirmasi', color: 'black' },
-            { label: 'Selesai', color: '#1b9d59' },
+            { label: 'Pembayaran diterima', color: 'black' },
+            { label: 'Dikonfirmasi', color: 'black' },
+            { label: 'Selesai', color: '#0284c7' },
         ],
         'Dibatalkan': [
             { label: 'Booking dibuat', color: 'black' },
-            { label: 'Menunggu konfirmasi', color: 'black' },
             { label: 'Dibatalkan', color: '#dc3d3d' },
         ],
         'Ditolak': [
             { label: 'Booking dibuat', color: 'black' },
-            { label: 'Menunggu konfirmasi', color: 'black' },
             { label: 'Ditolak', color: '#dc3d3d' },
         ],
         'Kadaluarsa': [
@@ -37,11 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
     };
 
-    const statusMap = {
-        'pending': 'Menunggu Konfirmasi',
-        'waiting_payment': 'Menunggu Konfirmasi',
-        'paid': 'Telah Dikonfirmasi',
-        'confirmed': 'Telah Dikonfirmasi',
+    const statusLabelMap = {
+        'pending': 'Menunggu Pembayaran',
+        'waiting_payment': 'Menunggu Pembayaran',
+        'waiting_confirmation': 'Menunggu Konfirmasi',
+        'paid': 'Dibayar',
+        'confirmed': 'Dikonfirmasi',
         'completed': 'Selesai',
         'cancelled': 'Dibatalkan',
         'rejected': 'Ditolak',
@@ -49,20 +58,56 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const statusReverseMap = {
-        'Menunggu Konfirmasi': 'pending',
-        'Telah Dikonfirmasi': 'confirmed',
+        'Menunggu Pembayaran': 'pending',
+        'Menunggu Konfirmasi': 'waiting_confirmation',
+        'Dibayar': 'paid',
+        'Dikonfirmasi': 'confirmed',
         'Selesai': 'completed',
         'Dibatalkan': 'cancelled',
         'Ditolak': 'rejected',
         'Kadaluarsa': 'expired',
     };
 
+    const editableStatuses = ['Menunggu Pembayaran', 'Menunggu Konfirmasi', 'Dibayar', 'Dikonfirmasi', 'Dibatalkan', 'Ditolak'];
+
     function getBadgeClass(status) {
-        if (['Telah Dikonfirmasi', 'Selesai', 'Dibayar'].includes(status)) return 'success';
-        if (['Menunggu Konfirmasi', 'Menunggu Pembayaran'].includes(status)) return 'warning';
-        if (['Dibatalkan', 'Ditolak', 'Kadaluarsa'].includes(status)) return 'danger';
+        if (status === 'Dibayar' || status === 'Dikonfirmasi') return 'success';
+        if (status === 'Selesai') return 'info';
+        if (status === 'Menunggu Pembayaran') return 'secondary';
+        if (status === 'Menunggu Konfirmasi') return 'warning';
+        if (status === 'Dibatalkan') return 'danger';
+        if (status === 'Ditolak') return 'danger-dark';
+        if (status === 'Kadaluarsa') return 'danger';
         return 'info';
     }
+
+    function showToast(message, type) {
+        const container = document.getElementById('toastContainer') || (() => {
+            const c = document.createElement('div');
+            c.id = 'toastContainer';
+            c.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+            document.body.appendChild(c);
+            return c;
+        })();
+
+        const toast = document.createElement('div');
+        toast.style.cssText = 'padding:12px 20px;border-radius:8px;color:#fff;font-weight:500;font-size:14px;' +
+            'box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:slideIn 0.3s ease;max-width:400px;word-wrap:break-word;' +
+            (type === 'success' ? 'background:#16a34a;' : 'background:#dc2626;');
+
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s ease';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}';
+    document.head.appendChild(style);
 
     function populateDetail(row) {
         if (!detail) return;
@@ -77,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const status = row.dataset.status || '';
         const price = row.dataset.price || '';
         const bookingId = row.dataset.bookingId || '';
+        const courtNumber = row.dataset.courtNumber || '';
 
         detail.querySelector('.status-badge').textContent = status;
         detail.querySelector('.status-badge').className = 'status-badge ' + getBadgeClass(status);
@@ -85,7 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const pp = detail.querySelectorAll('.detail-profile p');
         if (pp[0]) pp[0].textContent = customerPhone || '-';
         if (pp[1]) pp[1].textContent = customerEmail || '-';
-        detail.querySelector('.detail-info div:nth-child(1) strong').textContent = fieldName;
+
+        const fieldEl = detail.querySelector('.detail-info div:nth-child(1) strong');
+        fieldEl.textContent = courtNumber ? fieldName + ' (Lapangan ' + courtNumber + ')' : fieldName;
         detail.querySelector('.detail-info div:nth-child(2) strong').textContent = date;
         detail.querySelector('.detail-info div:nth-child(3) strong').textContent = time;
         detail.querySelector('.detail-info div:nth-child(4) strong').textContent = price;
@@ -105,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (row.querySelector('td[colspan]')) return;
 
         row.addEventListener('click', (e) => {
-            if (e.target.closest('.action-btn')) return;
+            if (e.target.closest('.action-btn, .action-terima, .action-tolak')) return;
 
             document.querySelectorAll('.booking-table tbody tr').forEach(r => {
                 r.classList.remove('active-row');
@@ -133,109 +181,91 @@ document.addEventListener('DOMContentLoaded', () => {
     /* === EDIT === */
 
     let currentEditRow = null;
+    let isSaving = false;
 
     const editBtn = detail?.querySelector('.edit-btn');
     const saveBtn = detail?.querySelector('.save-btn');
     const cancelBtn = detail?.querySelector('.cancel-btn');
 
-    function updateHistory(status) {
-        const historyList = detail.querySelector('.history-list');
-        historyList.innerHTML = '';
-        const steps = statusHistory[status] || [];
-        steps.forEach(s => {
-            const li = document.createElement('li');
-            li.textContent = s.label;
-            li.style.color = s.color;
-            historyList.appendChild(li);
-        });
-    }
-
     function enterEditMode() {
         editBtn.style.display = 'none';
         saveBtn.style.display = 'flex';
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Simpan';
         cancelBtn.style.display = 'flex';
 
-        detail.querySelectorAll('[data-field]').forEach(el => {
-            const field = el.dataset.field;
+        const statusEl = detail?.querySelector('[data-field="status"]');
+        if (!statusEl) return;
 
-            if (field === 'status') {
-                const currentStatus = el.textContent.trim();
-                const select = document.createElement('select');
-                select.className = 'edit-input edit-select';
-                ['Menunggu Konfirmasi', 'Telah Dikonfirmasi', 'Selesai', 'Dibatalkan'].forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = s;
-                    if (s === currentStatus) opt.selected = true;
-                    select.appendChild(opt);
-                });
-                el.textContent = '';
-                el.appendChild(select);
-            } else {
-                let val = el.textContent.replace(/^Rp/, '').trim();
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'edit-input';
-                input.value = val;
-                el.textContent = '';
-                el.appendChild(input);
-            }
+        const currentStatus = statusEl.textContent.trim();
+        const select = document.createElement('select');
+        select.className = 'edit-input edit-select';
+        editableStatuses.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            if (s === currentStatus) opt.selected = true;
+            select.appendChild(opt);
         });
+        statusEl.textContent = '';
+        statusEl.appendChild(select);
     }
 
-    function exitEditMode() {
-        editBtn.style.display = 'flex';
-        saveBtn.style.display = 'none';
-        cancelBtn.style.display = 'none';
+    function exitEditMode(keepDisplay) {
+        if (!keepDisplay) {
+            editBtn.style.display = 'flex';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        }
 
-        detail.querySelectorAll('[data-field]').forEach(el => {
-            if (el.dataset.field === 'status') {
-                const sel = el.querySelector('.edit-select');
-                if (sel) {
-                    const val = sel.value.trim();
-                    el.textContent = val;
-                    el.className = 'status-badge ' + getBadgeClass(val);
-                    updateHistory(val);
-                }
-            } else {
-                const input = el.querySelector('.edit-input');
-                if (input) {
-                    let val = input.value.trim();
-                    if (el.dataset.field === 'harga') val = 'Rp' + val;
-                    el.textContent = val;
-                }
-            }
-        });
+        const statusEl = detail?.querySelector('[data-field="status"]');
+        if (!statusEl) return;
+
+        const sel = statusEl.querySelector('.edit-select');
+        if (sel) {
+            const val = sel.value.trim();
+            statusEl.textContent = val;
+            statusEl.className = 'status-badge ' + getBadgeClass(val);
+            updateHistory(val);
+        }
+    }
+
+    function revertRowStatus(row, originalStatus) {
+        const badge = row.querySelector('.status-badge');
+        if (badge) {
+            badge.textContent = originalStatus;
+            badge.className = 'status-badge ' + getBadgeClass(originalStatus);
+        }
     }
 
     function saveEdit() {
-        let newStatus = null;
+        if (isSaving) return;
+        isSaving = true;
 
-        detail.querySelectorAll('[data-field]').forEach(el => {
-            const input = el.querySelector('.edit-input, .edit-select');
-            if (input) {
-                const field = el.dataset.field;
-                let val = input.value.trim();
-                if (field === 'harga') val = 'Rp' + val;
-                el.textContent = val;
-                if (field === 'status') {
-                    newStatus = val;
-                    el.className = 'status-badge ' + getBadgeClass(val);
-                }
-            }
-        });
+        const originalRowStatus = currentEditRow ? currentEditRow.querySelector('.status-badge')?.textContent?.trim() : null;
 
-        editBtn.style.display = 'flex';
-        saveBtn.style.display = 'none';
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+        }
+
+        const statusEl = detail?.querySelector('[data-field="status"]');
+        if (!statusEl) { isSaving = false; return; }
+
+        const sel = statusEl.querySelector('.edit-select');
+        if (!sel) { isSaving = false; return; }
+
+        const newStatus = sel.value.trim();
+        statusEl.textContent = newStatus;
+        statusEl.className = 'status-badge ' + getBadgeClass(newStatus);
+
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'flex';
         cancelBtn.style.display = 'none';
 
-        if (newStatus && currentEditRow) {
+        if (currentEditRow) {
             const badge = currentEditRow.querySelector('.status-badge');
-            if (badge) {
-                badge.textContent = newStatus;
-                badge.className = 'status-badge ' + getBadgeClass(newStatus);
-            }
-
+            const rowOriginalStatus = badge?.textContent?.trim();
             const rawStatus = statusReverseMap[newStatus] || 'pending';
             const bookingId = currentEditRow.dataset.bookingId;
 
@@ -247,23 +277,100 @@ document.addEventListener('DOMContentLoaded', () => {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
                     },
                     body: JSON.stringify({ status: rawStatus }),
-                }).catch(err => console.error('Gagal update status:', err));
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message || 'Gagal memperbarui status booking.'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showToast('Status booking berhasil diperbarui.', 'success');
+                    if (badge) {
+                        badge.textContent = newStatus;
+                        badge.className = 'status-badge ' + getBadgeClass(newStatus);
+                    }
+                    currentEditRow.dataset.rawStatus = rawStatus;
+                    currentEditRow.dataset.status = newStatus;
+                    populateDetail(currentEditRow);
+                    exitEditMode();
+                })
+                .catch(err => {
+                    showToast(err.message || 'Gagal memperbarui status booking. Silakan coba lagi.', 'error');
+                    if (rowOriginalStatus && currentEditRow) {
+                        revertRowStatus(currentEditRow, rowOriginalStatus);
+                        currentEditRow.dataset.status = rowOriginalStatus;
+                    }
+                    exitEditMode(true);
+                    editBtn.style.display = 'flex';
+                    saveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                })
+                .finally(() => {
+                    isSaving = false;
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Simpan';
+                    }
+                });
+            } else {
+                isSaving = false;
+                exitEditMode();
             }
+        } else {
+            isSaving = false;
+            exitEditMode();
         }
 
-        if (newStatus) updateHistory(newStatus);
+        updateHistory(newStatus);
     }
 
     editBtn?.addEventListener('click', enterEditMode);
     saveBtn?.addEventListener('click', saveEdit);
     cancelBtn?.addEventListener('click', exitEditMode);
 
+    /* === SEARCH === */
+
+    const searchInput = document.querySelector('.search-box input');
+    const allRows = document.querySelectorAll('.booking-table tbody tr');
+
+    searchInput?.addEventListener('input', () => {
+        const q = searchInput.value.toLowerCase().trim();
+
+        allRows.forEach(row => {
+            if (row.querySelector('td[colspan]')) return;
+
+            if (!q) {
+                row.style.display = '';
+                return;
+            }
+
+            const name = (row.dataset.customerName || '').toLowerCase();
+            const phone = (row.dataset.customerPhone || '').toLowerCase();
+            const field = (row.dataset.fieldName || '').toLowerCase();
+            const status = (row.dataset.status || '').toLowerCase();
+
+            row.style.display = name.includes(q) || phone.includes(q) || field.includes(q) || status.includes(q) ? '' : 'none';
+        });
+    });
+
+    /* === FORM LOADING STATE === */
+
+    document.querySelectorAll('.action-form').forEach(form => {
+        form.addEventListener('submit', () => {
+            const btns = form.querySelectorAll('.action-terima, .action-tolak');
+            btns.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            });
+        });
+    });
+
     /* === FILTER === */
 
     const filterBtn = document.querySelector('.filter-btn');
     const filterMenu = document.querySelector('.filter-menu');
     const filterOptions = document.querySelectorAll('.filter-option');
-    const rows = document.querySelectorAll('.booking-table tbody tr');
     const resetBtn = document.querySelector('.reset-btn');
 
     filterBtn?.addEventListener('click', (e) => {
@@ -284,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const status = opt.dataset.status;
 
-            rows.forEach(row => {
+            allRows.forEach(row => {
                 if (row.querySelector('td[colspan]')) return;
                 const badge = row.querySelector('.status-badge');
                 if (status === 'all' || badge?.textContent.trim() === status) {
@@ -301,7 +408,40 @@ document.addEventListener('DOMContentLoaded', () => {
     resetBtn?.addEventListener('click', () => {
         filterOptions.forEach(o => o.classList.remove('active'));
         filterOptions[0]?.classList.add('active');
-        rows.forEach(row => row.style.display = '');
+        allRows.forEach(row => row.style.display = '');
+    });
+
+    /* === SORT === */
+
+    const sortBtns = document.querySelectorAll('.sort-btn');
+    const tbody = document.querySelector('.booking-table tbody');
+
+    function sortRows(order) {
+        if (!tbody) return;
+
+        const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.querySelector('td[colspan]'));
+
+        rows.sort((a, b) => {
+            const dateA = a.dataset.dateSort || '';
+            const dateB = b.dataset.dateSort || '';
+            const timeA = a.dataset.timeSort || '';
+            const timeB = b.dataset.timeSort || '';
+
+            if (dateA !== dateB) {
+                return order === 'terbaru' ? dateB.localeCompare(dateA) : dateA.localeCompare(dateB);
+            }
+            return order === 'terbaru' ? timeB.localeCompare(timeA) : timeA.localeCompare(timeB);
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    sortBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            sortBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            sortRows(btn.dataset.sort);
+        });
     });
 
 });

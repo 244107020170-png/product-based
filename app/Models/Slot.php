@@ -8,6 +8,7 @@ class Slot extends Model
 {
     protected $fillable = [
         'field_id',
+        'court_number',
         'date',
         'hour',
         'status',
@@ -15,6 +16,7 @@ class Slot extends Model
 
     protected $casts = [
         'date' => 'date',
+        'court_number' => 'integer',
     ];
 
     public function field()

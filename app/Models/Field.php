@@ -22,6 +22,7 @@ class Field extends Model
         'facilities',
         'is_available',
         'featured',
+        'number_of_courts',
         'verification_status',
         'verification_notes',
         'verified_at',
@@ -34,6 +35,7 @@ class Field extends Model
         'verified_at' => 'datetime',
         'is_available' => 'boolean',
         'featured' => 'boolean',
+        'number_of_courts' => 'integer',
     ];
 
     public function owner()

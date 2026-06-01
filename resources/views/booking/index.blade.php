@@ -194,7 +194,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 14px; color: #666;">Total: <span style="font-weight: 800; color: #02025b;">Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</span></span>
                         <span style="display: inline-block; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 600;
-                            {{ $booking->status === 'confirmed' ? 'background: #d4edda; color: #155724;' : ($booking->status === 'expired' ? 'background: #fee2e2; color: #991b1b;' : 'background: #fff3cd; color: #856404;') }}">
+                            {{ $booking->status === 'confirmed' ? 'background: #d4edda; color: #155724;' : ($booking->status === 'cancelled' ? 'background: #fee2e2; color: #991b1b;' : ($booking->status === 'expired' ? 'background: #fce4e4; color: #842029;' : ($booking->status === 'rejected' ? 'background: #fce4e4; color: #991b1b;' : 'background: #fff3cd; color: #856404;'))) }}">
                             {{ $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status)) }}
                         </span>
                     </div>

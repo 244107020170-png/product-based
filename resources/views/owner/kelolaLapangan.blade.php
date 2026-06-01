@@ -35,7 +35,7 @@ function facilityIcon($name) {
 }
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -148,7 +148,7 @@ function facilityIcon($name) {
 
             <div class="stats-card">
                 <div>
-                    <p>Total Review</p>
+                    <p>Total Ulasan</p>
                     <h2 class="red-text">{{ $fields->sum('reviews_count') }}</h2>
                 </div>
 
@@ -207,7 +207,7 @@ function facilityIcon($name) {
 
                 <button id="filter-reset">
                     <i class="fa-solid fa-rotate-right"></i>
-                    Reset Filter
+                    Atur Ulang Filter
                 </button>
             </div>
 
@@ -237,6 +237,7 @@ function facilityIcon($name) {
                         </div>
                         <div class="field-info">
                             <span><i class="fa-regular fa-clock"></i> {{ $field->open_time ?? '08:00' }} - {{ $field->close_time ?? '22:00' }}</span>
+                            <span><i class="fa-solid fa-layer-group"></i> {{ $field->number_of_courts ?? 1 }} Lapangan</span>
                             <span>⭐ {{ $field->rating ?? '0' }} <span style="font-size:11px;color:#94a3b8;">({{ $field->reviews_count ?? 0 }})</span></span>
                         </div>
                         <div class="field-actions">
@@ -274,7 +275,7 @@ function facilityIcon($name) {
                         <i class="fa-regular fa-message" style="font-size:22px;color:#2563eb;"></i>
                     </div>
                     <div>
-                        <p style="margin:0 0 2px;font-size:12px;font-weight:600;color:#94a3b8;">Total Review</p>
+                        <p style="margin:0 0 2px;font-size:12px;font-weight:600;color:#94a3b8;">Total Ulasan</p>
                         <p style="margin:0;font-size:22px;font-weight:800;color:#1e293b;">{{ $totalReviews }}</p>
                     </div>
                 </div>
@@ -312,8 +313,8 @@ function facilityIcon($name) {
             @else
             <div style="text-align:center;padding:60px 20px;color:#94a3b8;">
                 <i class="fa-regular fa-star" style="font-size:48px;margin-bottom:16px;display:block;"></i>
-                <p style="font-weight:700;margin:0 0 6px;">Belum ada review</p>
-                <p style="font-size:13px;margin:0;">Review dari pelanggan akan muncul di sini.</p>
+                <p style="font-weight:700;margin:0 0 6px;">Belum ada ulasan</p>
+                <p style="font-size:13px;margin:0;">Ulasan dari pelanggan akan muncul di sini.</p>
             </div>
             @endif
         </div>

@@ -268,6 +268,16 @@ body{
   border-radius:12px;
   cursor:pointer;
   font-weight:600;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.15s ease;
+}
+
+.add-btn:hover{
+  background:#cc0020;
 }
 
 .action-btn{
@@ -278,8 +288,17 @@ body{
     border: 1px solid #e8e8e8;
 
     background: #fff;
+    color: #888;
 
     cursor: pointer;
+
+    transition: 0.15s ease;
+}
+
+.action-btn:hover{
+    background: #f5f5f5;
+    color: #e60023;
+    border-color: #ddd;
 }
 
 
@@ -295,24 +314,46 @@ body{
 
 .card{
   background:white;
-  padding:25px;
+  padding:20px 24px;
   border-radius:20px;
 
   display:flex;
   align-items:center;
-  gap:20px;
+  gap:18px;
+
+  min-height: 96px;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.card div:last-child{
+  min-width: 0;
+}
+
+.card h2{
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.card p{
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+  white-space: nowrap;
 }
 
 .icon{
-  width:55px;
-  height:55px;
-  border-radius:15px;
+  width:52px;
+  min-width: 52px;
+  height:52px;
+  border-radius:14px;
 
   display:flex;
   justify-content:center;
   align-items:center;
 
-  font-size:22px;
+  font-size:20px;
 }
 
 .red{
@@ -345,11 +386,12 @@ body{
 .filter-box{
   margin-top:25px;
   background:white;
-  padding:20px;
+  padding:20px 24px;
   border-radius:20px;
 
   display:flex;
-  gap:15px;
+  gap:12px;
+  align-items: center;
 }
 
 .filter-box input,
@@ -358,6 +400,17 @@ body{
   border:1px solid #ddd;
   border-radius:10px;
   outline:none;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.filter-box select{
+  padding:14px 40px 14px 16px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
+  cursor: pointer;
 }
 
 .filter-box input{
@@ -368,9 +421,18 @@ body{
   background:#fff0f0;
   color:#e60023;
   border:none;
-  padding:14px 18px;
+  padding:14px 20px;
   border-radius:10px;
   cursor:pointer;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: 0.15s ease;
+}
+
+.reset-btn:hover{
+  background:#fee2e2;
 }
 
 /* TABLE */
@@ -379,7 +441,7 @@ body{
   margin-top:25px;
   background:white;
   border-radius:20px;
-  padding:20px;
+  padding:4px 20px 20px;
 }
 
 table{
@@ -389,22 +451,26 @@ table{
 
 th{
   text-align:left;
-  padding:15px;
+  padding:16px 15px;
   color:gray;
   font-size:14px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 td{
-  padding:18px 15px;
+  padding:16px 15px;
   border-top:1px solid #f1f1f1;
   font-size:14px;
 }
 
 .badge{
-  padding:8px 14px;
+  padding:6px 16px;
   border-radius:50px;
   font-size:12px;
   font-weight:600;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .high{
@@ -599,14 +665,44 @@ td{
 }
 
 .status-badge{
-    padding: 5px 10px;
+    padding: 6px 14px;
 
-    border-radius: 8px;
+    border-radius: 10px;
 
     font-size: 11px;
     font-weight: 600;
 
     display: inline-flex;
+    align-items: center;
+}
+
+.status-badge.overdue{
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    font-size: 10px;
+    padding: 4px 10px;
+}
+
+.detail-status-row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+td[data-label="status"]{
+    white-space: nowrap;
+}
+
+.badge.overdue{
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    font-size: 10px;
+    padding: 3px 10px;
+    margin-left: 6px;
+    vertical-align: middle;
 }
 
 .status-badge.success{
@@ -630,12 +726,13 @@ td{
 .detail-info .edit-input{
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 4px 10px;
     font-size: 12px;
     font-family: inherit;
     width: 130px;
     text-align: right;
     outline: none;
+    transition: border-color 0.15s ease;
 }
 
 .detail-info .edit-input:focus{
@@ -645,14 +742,17 @@ td{
 .edit-select{
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 4px 28px 4px 8px;
     font-size: 12px;
     font-family: inherit;
     width: 130px;
     text-align: right;
     outline: none;
-    background: #fff;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center;
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 
 .edit-select:focus{
@@ -680,6 +780,7 @@ td{
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     align-items: center;
     justify-content: center;
+    transition: 0.15s ease;
 }
 
 .sidebar-overlay {
@@ -799,6 +900,10 @@ td{
         flex-direction: column;
     }
 
+    .filter-box select{
+        width: 100%;
+    }
+
     table {
         min-width: 0;
         width: 100%;
@@ -826,10 +931,25 @@ td{
         font-size: 13px;
     }
 
+    tbody td[colspan]{
+        display: block;
+        text-align: center;
+        padding: 32px 16px;
+    }
+
     tbody td::before {
         content: attr(data-label);
         font-weight: 600;
         color: #666;
         font-size: 12px;
+    }
+
+    tbody td[colspan]::before {
+        content: none;
+    }
+
+    .reset-btn {
+        width: 100%;
+        text-align: center;
     }
 }

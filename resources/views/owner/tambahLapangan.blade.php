@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -139,7 +139,7 @@
                     </div>
                 </div>
 
-                {{-- Baris 2: Harga & Foto --}}
+                {{-- Baris 2: Harga & Jumlah Lapangan --}}
                 <div class="form-row">
                     <div class="form-group">
                         <label>Harga Sewa (per Jam)</label>
@@ -147,15 +147,32 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Jumlah Lapangan</label>
+                        <select name="number_of_courts" class="form-control" required>
+                            @for($i = 1; $i <= 6; $i++)
+                            <option value="{{ $i }}" {{ (isset($field) && $field->number_of_courts == $i) ? 'selected' : '' }}>{{ $i }} Lapangan</option>
+                            @endfor
+                        </select>
+                        <small class="form-help">Maksimal 6 lapangan per tempat</small>
+                    </div>
+                </div>
+
+                {{-- Baris 3: Foto --}}
+                <div class="form-row">
+                    <div class="form-group">
                         <label>Foto Lapangan</label>
                         <input type="file" name="image" class="form-control">
                         @if(isset($field))
                             <small class="form-help">*Abaikan jika tidak ingin mengubah foto lama</small>
                         @endif
                     </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <div></div>
+                    </div>
                 </div>
 
-                {{-- Baris 3: Lokasi & Maps Link --}}
+                {{-- Baris 4: Lokasi & Maps Link --}}
                 <div class="form-row">
                     <div class="form-group">
                         <label>Lokasi / Alamat</label>
@@ -163,13 +180,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Google Maps Link <span style="color:#dc2626;font-weight:400;">*</span></label>
+                        <label>Tautan Google Maps <span style="color:#dc2626;font-weight:400;">*</span></label>
                         <input type="url" name="maps_link" class="form-control" value="{{ isset($field) ? $field->maps_link : '' }}" placeholder="https://maps.app.goo.gl/..." required>
                         <small class="form-help">Tempel link Google Maps untuk arah ke lapangan</small>
                     </div>
                 </div>
 
-                {{-- Baris 4: Jam Operasional --}}
+                {{-- Baris 5: Jam Operasional --}}
                 <div class="time-picker-section">
                     <label class="section-label">Jam Operasional</label>
                     <div class="time-picker-row">
@@ -274,7 +291,7 @@
 
                 {{-- TOMBOL AKSI --}}
                 <div class="form-actions">
-                    <button type="reset" class="add-btn">Reset</button>
+                    <button type="reset" class="add-btn">Atur Ulang</button>
                     <button type="submit" class="add-btn">
                         <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
                     </button>

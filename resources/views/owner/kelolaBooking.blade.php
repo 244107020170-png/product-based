@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Kelola Booking</title>
+    <title>Kelola Pesanan</title>
 
     @vite(['resources/css/app.css', 'resources/css/owner-kelola-booking.css', 'resources/js/owner-kelola-booking.js'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -107,7 +107,7 @@
                     $inMaintenance = \App\Models\Maintenance::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
                         ->where('status', '!=', 'Selesai')->count();
                     $bookedCount = \App\Models\Booking::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
-                        ->whereIn('status', ['confirmed', 'pending'])->count();
+                        ->whereIn('status', ['pending', 'waiting_payment', 'paid', 'confirmed', 'completed'])->count();
                 @endphp
                 <div class="stats-grid">
 
@@ -187,10 +187,18 @@
 
                                     <div class="filter-menu">
                                         <span data-status="all" class="filter-option active">Semua</span>
-                                        <span data-status="Menunggu Konfirmasi" class="filter-option">Menunggu Konfirmasi</span>
+                                        <span data-status="Menunggu Pembayaran" class="filter-option">Menunggu Pembayaran</span>
+                                        <span data-status="Dibayar" class="filter-option">Dibayar</span>
+                                        <span data-status="Dikonfirmasi" class="filter-option">Dikonfirmasi</span>
                                         <span data-status="Selesai" class="filter-option">Selesai</span>
                                         <span data-status="Dibatalkan" class="filter-option">Dibatalkan</span>
+                                        <span data-status="Ditolak" class="filter-option">Ditolak</span>
                                     </div>
+                                </div>
+
+                                <div class="sort-group">
+                                    <button class="sort-btn active" data-sort="terbaru">Terbaru</button>
+                                    <button class="sort-btn" data-sort="terlama">Terlama</button>
                                 </div>
 
                             </div>
@@ -199,7 +207,7 @@
 
                                 <i class="fa-solid fa-rotate-right"></i>
 
-                                Reset Filter
+                                Atur Ulang Filter
 
                             </button>
 
@@ -232,19 +240,25 @@
                                 @forelse ($bookings as $booking)
                                 @php
                                     $statusLabel = match($booking->status) {
-                                        'confirmed', 'completed' => 'Selesai',
+                                        'pending', 'waiting_payment' => 'Menunggu Pembayaran',
+                                        'waiting_confirmation' => 'Menunggu Konfirmasi',
+                                        'paid'      => 'Dibayar',
+                                        'confirmed' => 'Dikonfirmasi',
+                                        'completed' => 'Selesai',
                                         'cancelled' => 'Dibatalkan',
                                         'rejected'  => 'Ditolak',
-                                        'pending', 'waiting_confirmation' => 'Menunggu Konfirmasi',
-                                        'waiting_payment' => 'Menunggu Pembayaran',
-                                        'paid'      => 'Dibayar',
                                         'expired'   => 'Kadaluarsa',
                                         default     => ucfirst($booking->status),
                                     };
                                     $badgeClass = match($booking->status) {
-                                        'confirmed', 'completed', 'paid' => 'success',
-                                        'pending', 'waiting_payment' => 'warning',
-                                        'cancelled', 'rejected', 'expired' => 'danger',
+                                        'paid' => 'success',
+                                        'confirmed' => 'success',
+                                        'completed' => 'info',
+                                        'pending', 'waiting_payment' => 'secondary',
+                                        'waiting_confirmation' => 'warning',
+                                        'cancelled' => 'danger',
+                                        'rejected' => 'danger-dark',
+                                        'expired' => 'danger',
                                         default => 'info',
                                     };
                                     $start = \Carbon\Carbon::parse($booking->start_time);
@@ -260,11 +274,14 @@
                                     data-field-name="{{ $booking->field?->name ?? 'N/A' }}"
                                     data-field-type="{{ $booking->field?->type ?? '' }}"
                                     data-date="{{ $booking->date?->format('d M Y') }}"
+                                    data-date-sort="{{ $booking->date?->format('Y-m-d') }}"
                                     data-time="{{ \Carbon\Carbon::parse($booking->start_time)->format('H.i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H.i') }}"
+                                    data-time-sort="{{ $booking->start_time }}"
                                     data-duration="{{ $duration }}"
                                     data-status="{{ $statusLabel }}"
                                     data-price="Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}"
-                                    data-raw-status="{{ $booking->status }}">
+                                    data-raw-status="{{ $booking->status }}"
+                                    data-court-number="{{ $booking->court_number ?? '' }}">
 
                                     <td>
 
@@ -289,7 +306,7 @@
                                             <i class="fa-regular fa-futbol"></i>
 
                                             <div>
-                                                <h5>{{ $booking->field?->name ?? 'N/A' }}</h5>
+                                                <h5>{{ $booking->field?->name ?? 'N/A' }} @if($booking->court_number)(Lapangan {{ $booking->court_number }})@endif</h5>
                                                 <p>{{ $booking->field?->type ?? 'Olahraga' }}</p>
                                             </div>
 
@@ -322,26 +339,9 @@
                                     </td>
 
                                     <td>
-                                        @if($booking->status === 'waiting_confirmation')
-                                            <div style="display: flex; gap: 6px; flex-wrap: nowrap;">
-                                                <form action="{{ route('owner.booking.confirmPayment', $booking->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="action-btn" style="background: #16a34a; border: none; color: white; width: auto; padding: 0 14px; border-radius: 8px; font-size: 12px; font-weight: 600;">
-                                                        <i class="fa-solid fa-check"></i> Terima
-                                                    </button>
-                                                </form>
-                                                <form action="{{ route('owner.booking.rejectPayment', $booking->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="action-btn" style="background: #dc2626; border: none; color: white; width: auto; padding: 0 14px; border-radius: 8px; font-size: 12px; font-weight: 600;">
-                                                        <i class="fa-solid fa-xmark"></i> Tolak
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        @else
-                                            <button class="action-btn" onclick="showDetail(this)" style="cursor: pointer;">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </button>
-                                        @endif
+                                        <button class="action-btn" style="cursor: pointer;">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
                                     </td>
 
                                 </tr>
@@ -382,7 +382,7 @@
                             </div>
 
                             <div class="booking-id">
-                                Booking ID #B3422131
+                                ID Pesanan #B3422131
                             </div>
 
                             {{-- PROFILE --}}
@@ -406,28 +406,28 @@
                             {{-- INFO --}}
                             <div class="detail-section">
 
-                                <h4>Informasi Booking</h4>
+                                <h4>Informasi Pesanan</h4>
 
                                 <div class="detail-info">
 
                                     <div>
                                         <span>Lapangan</span>
-                                        <strong data-field="lapangan">Lapangan A</strong>
+                                        <strong>Lapangan A</strong>
                                     </div>
 
                                     <div>
                                         <span>Tanggal</span>
-                                        <strong data-field="tanggal">22 Mei 2026</strong>
+                                        <strong>22 Mei 2026</strong>
                                     </div>
 
                                     <div>
                                         <span>Waktu</span>
-                                        <strong data-field="waktu">08.00 - 09.00</strong>
+                                        <strong>08.00 - 09.00</strong>
                                     </div>
 
                                     <div>
-                                        <span>Harga / jam</span>
-                                        <strong data-field="harga">Rp120.000</strong>
+                                        <span>Total Harga</span>
+                                        <strong>Rp120.000</strong>
                                     </div>
 
                                 </div>
@@ -437,7 +437,7 @@
                             {{-- HISTORY --}}
                             <div class="detail-section">
 
-                                <h4>Riwayat Booking</h4>
+                                <h4>Riwayat Pesanan</h4>
 
                                 <ul class="history-list">
 

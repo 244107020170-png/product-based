@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Promosi dan Diskon</title>
-    @vite(['resources/css/app.css', 'resources/css/owner-dashboard.css'])
+    @vite(['resources/css/app.css', 'resources/css/owner-dashboard.css', 'resources/js/app.js'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -85,7 +85,18 @@
         </div>
 
         {{-- Content --}}
-        <div class="flex flex-col lg:flex-row gap-6 mt-8">
+        <div x-data="{
+            targetRef: null,
+            openConfirm(title, message, ref) {
+                this.targetRef = ref;
+                this.$dispatch('open-modal-promo-confirm', { title, message });
+            },
+            executeConfirm() {
+                if (this.targetRef && this.$refs[this.targetRef]) {
+                    this.$refs[this.targetRef].submit();
+                }
+            }
+        }" x-on:modal-confirmed.window="if ($event.detail.name === 'promo-confirm') executeConfirm()" class="flex flex-col lg:flex-row gap-6 mt-8">
 
             <div class="flex-1 min-w-0 space-y-6">
 
@@ -112,7 +123,7 @@
                                 <div>
                                     <p class="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">Potongan</p>
                                     <p class="text-red-600 font-extrabold text-lg">
-                                        @if($p->type === 'percentage') {{ $p->value }}% OFF
+                                        @if($p->type === 'percentage') {{ $p->value }}% DISKON
                                         @else Rp{{ number_format($p->value, 0, ',', '.') }} @endif
                                     </p>
                                 </div>
@@ -130,17 +141,17 @@
                                     onclick="editPromo({{ $p->id }})">
                                     <i class="fa-solid fa-pen mr-1"></i> Ubah
                                 </button>
-                                <form action="{{ route('owner.discounts.toggle', $p) }}" method="POST" class="inline">
+                                <form action="{{ route('owner.discounts.toggle', $p) }}" method="POST" class="inline" x-ref="toggle-{{ $p->id }}">
                                     @csrf
-                                    <button type="submit" class="py-2 px-3 bg-yellow-50 rounded-lg text-yellow-700 font-semibold text-sm hover:bg-yellow-100 transition-colors"
-                                        onclick="return confirm('Nonaktifkan promo ini?')">
+                                    <button type="button" class="py-2 px-3 bg-yellow-50 rounded-lg text-yellow-700 font-semibold text-sm hover:bg-yellow-100 transition-colors"
+                                        @click="openConfirm('Nonaktifkan Promo', 'Nonaktifkan promo ini?', 'toggle-{{ $p->id }}')">
                                         <i class="fa-solid fa-pause"></i>
                                     </button>
                                 </form>
-                                <form action="{{ route('owner.discounts.destroy', $p) }}" method="POST" class="inline">
+                                <form action="{{ route('owner.discounts.destroy', $p) }}" method="POST" class="inline" x-ref="delete-card-{{ $p->id }}">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="py-2 px-3 bg-red-50 rounded-lg text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors"
-                                        onclick="return confirm('Hapus promo ini?')">
+                                    <button type="button" class="py-2 px-3 bg-red-50 rounded-lg text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors"
+                                        @click="openConfirm('Hapus Promo', 'Hapus promo ini?', 'delete-card-{{ $p->id }}')">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
@@ -198,10 +209,10 @@
                                             <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400" onclick="editPromo({{ $d->id }})">
                                                 <i class="fa-solid fa-pen"></i>
                                             </button>
-                                            <form action="{{ route('owner.discounts.destroy', $d) }}" method="POST" class="inline">
+                                            <form action="{{ route('owner.discounts.destroy', $d) }}" method="POST" class="inline" x-ref="delete-table-{{ $d->id }}">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-500"
-                                                    onclick="return confirm('Hapus promo ini?')">
+                                                <button type="button" class="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-400 hover:text-red-500"
+                                                    @click="openConfirm('Hapus Promo', 'Hapus promo ini?', 'delete-table-{{ $d->id }}')">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             </form>
@@ -282,6 +293,11 @@
                 </div>
 
             </div>
+
+            <x-custom-modal name="promo-confirm"
+                             type="confirm"
+                             confirmText="Ya"
+                             cancelText="Kembali" />
 
         </div>
 

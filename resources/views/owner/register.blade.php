@@ -237,7 +237,8 @@
                         <button
                             type="button"
                             class="register-google"
-                            onclick="alert('Google login belum disetup')"
+                            x-data
+                            @click="$dispatch('open-modal-google-info')"
                         >
                             <img src="{{ asset('assets/images/icons/Google1.png') }}" alt="" class="register-google-icon">
                             <span>Daftar dengan Google</span>
@@ -256,5 +257,11 @@
             </section>
         </main>
     </div>
+
+    <x-custom-modal name="google-info"
+                     type="info"
+                     title="Fitur Segera Hadir"
+                     message="Daftar dengan Google belum tersedia. Silakan gunakan email dan password untuk mendaftar."
+                     cancelText="Tutup" />
 </body>
 </html>

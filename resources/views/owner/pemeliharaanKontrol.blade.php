@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pemeliharaan Kontrol</title>
 
-    @vite(['resources/css/app.css', 'resources/css/pemeliharaanDanKontrol.css'])
+    @vite(['resources/css/app.css', 'resources/css/pemeliharaanDanKontrol.css', 'resources/js/app.js'])
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,7 +63,7 @@
                 <h1>Pemeliharaan & Kontrol</h1>
                 <p>Pantau dan kelola perawatan lapangan olahraga Anda.</p>
             </div>
-            <a href="javascript:void(0)" class="add-btn">
+            <a href="javascript:void(0)" class="add-btn" onclick="document.getElementById('createReportModal').style.display='flex'">
                 <i class="fa-solid fa-plus"></i> Laporan Baru
             </a>
         </div>
@@ -73,7 +73,7 @@
             $waitingTasks = $maintenances->where('status', 'Menunggu')->count();
             $inProgressTasks = $maintenances->where('status', 'Dikerjakan')->count();
             $completedTasks = $maintenances->where('status', 'Selesai')->count();
-            $overdueTasks = $maintenances->where('status', 'Menunggu')->where('schedule_date', '<', now()->toDateString())->count();
+            $overdueTasks = $maintenances->filter(fn($m) => $m->schedule_date && $m->schedule_date->lt(now()->startOfDay()) && $m->status !== 'Selesai')->count();
         @endphp
          <div class="cards">
 
@@ -106,7 +106,7 @@
 
         <div>
           <h2>{{ $inProgressTasks }}</h2>
-          <p>Sedang Dikerjakan</p>
+          <p>Dikerjakan</p>
         </div>
       </div>
 
@@ -134,7 +134,31 @@
 
     </div>
 
-    <div class="maintenance-layout">
+    <div class="maintenance-layout" x-data="{
+        targetDeleteId: null,
+        confirmDelete(id) {
+            this.targetDeleteId = id;
+            this.$dispatch('open-modal-delete-maintenance');
+        },
+        executeDelete() {
+            if (this.targetDeleteId) {
+                const csrf = document.querySelector('meta[name=\'csrf-token\']')?.content || '';
+                fetch('/owner/maintenances/' + this.targetDeleteId, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                })
+                .then(r => r.json())
+                .then(() => {
+                    const row = document.querySelector('#taskTable tr[data-id=\'' + this.targetDeleteId + '\']');
+                    if (row) row.remove();
+                    document.querySelector('.detail-panel')?.classList.remove('show');
+                    showToast('Tugas berhasil dihapus');
+                    location.reload();
+                })
+                .catch(() => showToast('Gagal menghapus tugas', true));
+            }
+        }
+    }" x-on:modal-confirmed.window="if ($event.detail.name === 'delete-maintenance') executeDelete()">
 
       <div class="content-main">
 
@@ -165,7 +189,7 @@
             <option value="Selesai">Selesai</option>
           </select>
 
-          <button class="reset-btn">Reset Filter</button>
+          <button class="reset-btn">Atur Ulang Filter</button>
 
         </div>
 
@@ -176,9 +200,6 @@
 
             <thead>
               <tr>
-                <td>
-                    <input type="checkbox">
-                </td>
                 <th>Tugas</th>
                 <th>Lapangan</th>
                 <th>Jenis</th>
@@ -206,25 +227,30 @@
                     'Selesai' => 'done',
                     default => 'waiting',
                 };
+                $isOverdue = $m->schedule_date && $m->schedule_date->lt(now()->startOfDay()) && $m->status !== 'Selesai';
               @endphp
               <tr data-id="{{ $m->id }}"
                   data-tugas="{{ $m->task_name }}"
                   data-lapangan="{{ $m->field?->name ?? '-' }}"
+                  data-field-id="{{ $m->field_id ?? '' }}"
                   data-jenis="{{ $m->type ?? '-' }}"
                   data-jadwal="{{ $m->schedule_date?->format('d M Y') ?? '-' }}"
                   data-prioritas="{{ $m->priority }}"
                   data-pj="{{ $m->pic_name ?? '-' }}"
-                  data-status="{{ $m->status }}">
-                <td>
-                    <input type="checkbox">
-                </td>
+                  data-status="{{ $m->status }}"
+                  data-overdue="{{ $isOverdue ? 'true' : 'false' }}">
                 <td data-label="tugas">{{ $m->task_name }}</td>
                 <td data-label="lapangan">{{ $m->field?->name ?? '-' }}</td>
                 <td data-label="jenis">{{ $m->type ?? '-' }}</td>
                 <td data-label="jadwal">{{ $m->schedule_date?->format('d M Y') ?? '-' }}</td>
                 <td data-label="prioritas"><span class="badge {{ $pClass }}">{{ $m->priority }}</span></td>
                 <td data-label="pj">{{ $m->pic_name ?? '-' }}</td>
-                <td data-label="status"><span class="badge {{ $sClass }}">{{ $m->status }}</span></td>
+                <td data-label="status">
+                    <span class="badge {{ $sClass }}">{{ $m->status }}</span>
+                    @if($isOverdue)
+                    <span class="badge overdue">Terlambat</span>
+                    @endif
+                </td>
                 <td>
                     <button class="action-btn">
                         <i class="fa-solid fa-ellipsis"></i>
@@ -233,9 +259,15 @@
               </tr>
               @empty
               <tr>
-                <td colspan="9" style="text-align: center; padding: 40px; color: #888;">
-                    <i class="fa-solid fa-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; color: #ccc;"></i>
-                    Belum ada tugas pemeliharaan
+                <td colspan="8">
+                    <div style="text-align:center;padding:48px 24px;">
+                        <div style="font-size:56px;margin-bottom:16px;">🛠️</div>
+                        <div style="font-size:18px;font-weight:600;color:#374151;margin-bottom:8px;">Belum ada tugas pemeliharaan</div>
+                        <div style="font-size:13px;color:#9ca3af;line-height:1.6;">
+                            Klik tombol <strong style="color:#e60023;">"Laporan Baru"</strong><br>
+                            untuk membuat laporan pemeliharaan pertama.
+                        </div>
+                    </div>
                 </td>
               </tr>
               @endforelse
@@ -263,7 +295,10 @@
 
           </div>
 
-          <div class="status-badge waiting">Menunggu</div>
+          <div class="detail-status-row">
+            <div class="status-badge waiting">Menunggu</div>
+            <div class="status-badge overdue" id="detail-overdue-badge" style="display:none;">Terlambat</div>
+          </div>
 
           <div class="task-id">Tugas #MT-001</div>
 
@@ -352,16 +387,97 @@
               <i class="fa-solid fa-xmark"></i>
               Batal
             </button>
+
+            <button class="delete-btn" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 8px; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; margin-left: auto;"
+              onmouseover="this.style.background='#fee2e2'"
+              onmouseout="this.style.background='none'"
+              onclick="confirmDeleteFromDetail()">
+              <i class="fa-solid fa-trash"></i> Hapus
+            </button>
           </div>
 
         </div>
 
       </div>
 
+      <x-custom-modal name="delete-maintenance"
+                       type="confirm"
+                       title="Hapus Tugas"
+                       message="Yakin ingin menghapus tugas ini? Tindakan ini tidak dapat dibatalkan."
+                       confirmText="Ya, Hapus"
+                       cancelText="Kembali"
+                       confirmVariant="danger" />
+
     </div>
     </main>
 
 </div>
+
+{{-- CREATE REPORT MODAL --}}
+<div id="createReportModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);justify-content:center;align-items:center;" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:white;border-radius:20px;padding:28px 24px;max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-gray-800">Laporan Pemeliharaan Baru</h3>
+            <span onclick="document.getElementById('createReportModal').style.display='none'" style="cursor:pointer;font-size:24px;color:#999;line-height:1;">&times;</span>
+        </div>
+        <form id="createReportForm" method="POST">
+            @csrf
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Lapangan</label>
+                    <select name="field_id" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" style="padding-right:36px;appearance:none;-webkit-appearance:none;-moz-appearance:none;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\") no-repeat right 14px center;">
+                        <option value="">Pilih Lapangan</option>
+                        @foreach($fields as $f)
+                        <option value="{{ $f->id }}">{{ $f->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Tugas</label>
+                    <input type="text" name="task_name" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" placeholder="Contoh: Perbaikan Lampu Lapangan A">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis</label>
+                        <select name="type" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" style="padding-right:36px;appearance:none;-webkit-appearance:none;-moz-appearance:none;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\") no-repeat right 14px center;">
+                            <option value="Elektrikal">Elektrikal</option>
+                            <option value="Lapangan">Lapangan</option>
+                            <option value="Kebersihan">Kebersihan</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Jadwal</label>
+                        <input type="date" name="schedule_date" required value="{{ now()->format('Y-m-d') }}" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Prioritas</label>
+                        <select name="priority" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" style="padding-right:36px;appearance:none;-webkit-appearance:none;-moz-appearance:none;background:#fff url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\") no-repeat right 14px center;">
+                            <option value="Rendah">Rendah</option>
+                            <option value="Sedang" selected>Sedang</option>
+                            <option value="Tinggi">Tinggi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Penanggung Jawab</label>
+                        <input type="text" name="pic_name" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" placeholder="Nama teknisi">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan</label>
+                    <textarea name="notes" rows="2" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400" placeholder="Deskripsi tambahan..."></textarea>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" class="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors" onclick="document.getElementById('createReportModal').style.display='none'">Batal</button>
+                <button type="submit" class="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition-colors" id="createReportSubmit"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -416,10 +532,14 @@
             const pj = row.dataset.pj || '';
             const status = row.dataset.status || 'Menunggu';
             const statusData = statusMap[status] || statusMap['Menunggu'];
+            const isOverdue = row.dataset.overdue === 'true';
 
             const badge = detailPanel.querySelector('.status-badge');
             badge.textContent = status;
             badge.className = 'status-badge ' + statusData.badgeClass;
+
+            const overdueBadge = document.getElementById('detail-overdue-badge');
+            overdueBadge.style.display = isOverdue ? 'inline-flex' : 'none';
 
             const taskId = row.dataset.id || '0';
             detailPanel.querySelector('.task-id').textContent = 'Tugas #MT-' + String(taskId).padStart(3, '0');
@@ -436,6 +556,7 @@
         function enterEditMode() {
             editBtn.style.display = 'none';
             saveBtn.style.display = 'flex';
+            saveBtn.disabled = false;
             cancelBtn.style.display = 'flex';
 
             detailPanel.querySelectorAll('[data-field]').forEach(el => {
@@ -504,14 +625,30 @@
         function saveEdit() {
             let newStatus = null;
             const id = currentEditRow?.dataset.id;
+
+            if (!id) return;
+
+            const oldValues = {};
+            detailPanel.querySelectorAll('[data-field]').forEach(el => {
+                oldValues[el.dataset.field] = el.textContent.trim();
+            });
+            const oldStatus = detailPanel.querySelector('.status-badge').textContent.trim();
+            const oldOverdue = currentEditRow?.dataset.overdue === 'true';
+
             const data = {};
+            const fieldMap = {
+                tugas: 'task_name',
+                jenis: 'type',
+                jadwal: 'schedule_date',
+                prioritas: 'priority',
+            };
 
             detailPanel.querySelectorAll('[data-field]').forEach(el => {
                 const input = el.querySelector('.edit-input, .edit-select');
                 if (input) {
                     const val = input.value.trim();
-                    el.textContent = val;
-                    data[el.dataset.field] = val;
+                    const backendKey = fieldMap[el.dataset.field] || el.dataset.field;
+                    data[backendKey] = val;
                 }
             });
 
@@ -520,43 +657,117 @@
             if (sel) {
                 newStatus = sel.value.trim();
                 data.status = newStatus;
-                badge.textContent = newStatus;
-                badge.className = 'status-badge ' + (statusMap[newStatus]?.badgeClass || '');
-                updateHistory(newStatus);
             }
 
-            editBtn.style.display = 'flex';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
 
-            if (newStatus && currentEditRow) {
-                const badgeCell = currentEditRow.querySelectorAll('td')[7];
-                const b = badgeCell?.querySelector('.badge');
-                if (b) {
-                    b.textContent = newStatus;
-                    b.className = 'badge ' + (
-                        newStatus === 'Menunggu' ? 'waiting' :
-                        newStatus === 'Dikerjakan' ? 'progress' :
-                        newStatus === 'Selesai' ? 'done' : ''
-                    );
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            fetch('/owner/maintenances/' + id + '/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: JSON.stringify(data),
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Gagal');
+                return r.json();
+            })
+            .then(res => {
+                detailPanel.querySelectorAll('[data-field]').forEach(el => {
+                    const input = el.querySelector('.edit-input, .edit-select');
+                    if (input) {
+                        el.textContent = input.value.trim();
+                    }
+                });
+
+                if (newStatus) {
+                    badge.textContent = newStatus;
+                    badge.className = 'status-badge ' + (statusMap[newStatus]?.badgeClass || '');
+                    updateHistory(newStatus);
+
+                    const badgeCell = currentEditRow?.querySelectorAll('td')[6];
+                    const statusBadge = badgeCell?.querySelector('.badge');
+                    if (statusBadge) {
+                        statusBadge.textContent = newStatus;
+                        statusBadge.className = 'badge ' + (
+                            newStatus === 'Menunggu' ? 'waiting' :
+                            newStatus === 'Dikerjakan' ? 'progress' :
+                            newStatus === 'Selesai' ? 'done' : ''
+                        );
+
+                        const updated = res.maintenance;
+                        const today = new Date(); today.setHours(0, 0, 0, 0);
+                        const sched = updated.schedule_date ? new Date(updated.schedule_date) : null;
+                        if (sched) sched.setHours(0, 0, 0, 0);
+                        const isOverdue = sched && sched < today && updated.status !== 'Selesai';
+                        currentEditRow.dataset.overdue = isOverdue ? 'true' : 'false';
+
+                        const overdueSpan = badgeCell.querySelector('.badge.overdue');
+                        if (isOverdue && !overdueSpan) {
+                            const span = document.createElement('span');
+                            span.className = 'badge overdue';
+                            span.textContent = 'Terlambat';
+                            badgeCell.appendChild(span);
+                        } else if (!isOverdue && overdueSpan) {
+                            overdueSpan.remove();
+                        }
+
+                        const detailOverdue = document.getElementById('detail-overdue-badge');
+                        detailOverdue.style.display = isOverdue ? 'inline-flex' : 'none';
+                    }
+                }
+
+                exitEditMode();
+                showToast('Tugas berhasil diperbarui');
+            })
+            .catch(e => {
+                console.error('Save error:', e);
+                detailPanel.querySelectorAll('[data-field]').forEach(el => {
+                    el.textContent = oldValues[el.dataset.field] || '';
+                });
+                badge.textContent = oldStatus;
+                badge.className = 'status-badge ' + (statusMap[oldStatus]?.badgeClass || '');
+                updateHistory(oldStatus);
+
+                const detailOverdue = document.getElementById('detail-overdue-badge');
+                detailOverdue.style.display = oldOverdue ? 'inline-flex' : 'none';
+
+                saveBtn.disabled = false;
+                exitEditMode();
+                showToast('Gagal memperbarui tugas', true);
+            });
+        }
+
+        function confirmDeleteFromDetail() {
+            const id = currentEditRow?.dataset.id;
+            if (id) {
+                const alpineEl = document.querySelector('[x-data]');
+                if (alpineEl && window.Alpine) {
+                    window.Alpine.$data(alpineEl).confirmDelete(id);
                 }
             }
+        }
 
-            if (id) {
-                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-                fetch('/owner/maintenances/' + id + '/update', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
-                    body: JSON.stringify(data),
-                }).catch(err => console.error('Gagal update:', err));
-            }
+        function showToast(msg, isError) {
+            const existing = document.querySelector('.custom-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast';
+            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:999999;padding:14px 20px;border-radius:12px;font-weight:600;font-size:14px;color:white;box-shadow:0 8px 32px rgba(0,0,0,.15);transition:all .3s ease;display:flex;align-items:center;gap:10px;max-width:400px;'
+                + (isError ? 'background:#dc2626;' : 'background:#16a34a;');
+            toast.innerHTML = (isError ? '❌ ' : '✅ ') + msg
+                + '<span style="margin-left:12px;cursor:pointer;font-size:18px;opacity:.7;hover:opacity:1;" onclick="this.parentElement.remove()">&times;</span>';
+            document.body.appendChild(toast);
+
+            setTimeout(() => { const t = document.querySelector('.custom-toast'); if (t) t.remove(); }, 4000);
         }
 
         rows.forEach(row => {
             if (row.querySelector('td[colspan]')) return;
 
             row.addEventListener('click', (e) => {
-                if (e.target.closest('.action-btn') || e.target.closest('input[type="checkbox"]')) return;
+                if (e.target.closest('.action-btn')) return;
 
                 rows.forEach(r => {
                     if (!r.querySelector('td[colspan]')) r.style.background = 'white';
@@ -600,7 +811,7 @@
 
             rows.forEach(row => {
                 if (row.querySelector('td[colspan]')) return;
-                const matchField = !fVal || row.dataset.lapangan === document.querySelector('#filter-field option[value="' + fVal + '"]')?.textContent;
+                const matchField = !fVal || row.dataset.fieldId === fVal;
                 const matchType = !tVal || row.dataset.jenis === tVal;
                 const matchStatus = !sVal || row.dataset.status === sVal;
                 const matchSearch = !q || row.textContent.toLowerCase().includes(q);
@@ -620,6 +831,39 @@
             if (searchInput) searchInput.value = '';
             rows.forEach(row => {
                 if (!row.querySelector('td[colspan]')) row.style.display = '';
+            });
+        });
+
+        /* === CREATE REPORT === */
+        const createForm = document.getElementById('createReportForm');
+        const createSubmit = document.getElementById('createReportSubmit');
+        createForm?.addEventListener('submit', function (e) {
+            e.preventDefault();
+            createSubmit.disabled = true;
+            createSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+            const formData = new FormData(createForm);
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            fetch('/owner/maintenances/store', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf },
+                body: formData,
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Gagal');
+                return r.json();
+            })
+            .then(() => {
+                document.getElementById('createReportModal').style.display = 'none';
+                createForm.reset();
+                showToast('Tugas pemeliharaan berhasil dibuat');
+                location.reload();
+            })
+            .catch(() => {
+                createSubmit.disabled = false;
+                createSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk mr-1"></i> Simpan';
+                showToast('Gagal membuat tugas', true);
             });
         });
 

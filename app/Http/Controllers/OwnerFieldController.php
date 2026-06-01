@@ -11,15 +11,16 @@ class OwnerFieldController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'type'        => 'required|string|max:50',
-            'price'       => 'required|numeric|min:0',
-            'location'    => 'required|string|max:255',
-            'maps_link'   => 'required|url|max:500',
-            'open_time'   => 'required|string|max:5',
-            'close_time'  => 'required|string|max:5',
-            'facilities'  => 'nullable|array',
-            'image'       => 'nullable|image|max:2048',
+            'name'             => 'required|string|max:255',
+            'type'             => 'required|string|max:50',
+            'price'            => 'required|numeric|min:0',
+            'location'         => 'required|string|max:255',
+            'maps_link'        => 'required|url|max:500',
+            'open_time'        => 'required|string|max:5',
+            'close_time'       => 'required|string|max:5',
+            'facilities'       => 'nullable|array',
+            'image'            => 'nullable|image|max:2048',
+            'number_of_courts' => 'required|integer|min:1|max:6',
         ]);
 
         $path = null;
@@ -28,18 +29,19 @@ class OwnerFieldController extends Controller
         }
 
         Field::create([
-            'name'           => $data['name'],
-            'type'           => $data['type'],
-            'description'    => $request->input('description'),
-            'location'       => $data['location'],
-            'maps_link'      => $data['maps_link'],
-            'price_per_hour' => $data['price'],
-            'open_time'      => $data['open_time'],
-            'close_time'     => $data['close_time'],
-            'owner_id'       => auth()->id(),
-            'image'          => $path,
-            'facilities'     => $data['facilities'] ?? [],
-            'is_available'   => true,
+            'name'             => $data['name'],
+            'type'             => $data['type'],
+            'description'      => $request->input('description'),
+            'location'         => $data['location'],
+            'maps_link'        => $data['maps_link'],
+            'price_per_hour'   => $data['price'],
+            'open_time'        => $data['open_time'],
+            'close_time'       => $data['close_time'],
+            'number_of_courts' => $data['number_of_courts'],
+            'owner_id'         => auth()->id(),
+            'image'            => $path,
+            'facilities'       => $data['facilities'] ?? [],
+            'is_available'     => true,
         ]);
 
         return redirect()->route('owner.kelolaLapangan')
@@ -53,26 +55,28 @@ class OwnerFieldController extends Controller
         }
 
         $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'type'        => 'required|string|max:50',
-            'price'       => 'required|numeric|min:0',
-            'location'    => 'required|string|max:255',
-            'maps_link'   => 'required|url|max:500',
-            'open_time'   => 'required|string|max:5',
-            'close_time'  => 'required|string|max:5',
-            'facilities'  => 'nullable|array',
-            'image'       => 'nullable|image|max:2048',
+            'name'             => 'required|string|max:255',
+            'type'             => 'required|string|max:50',
+            'price'            => 'required|numeric|min:0',
+            'location'         => 'required|string|max:255',
+            'maps_link'        => 'required|url|max:500',
+            'open_time'        => 'required|string|max:5',
+            'close_time'       => 'required|string|max:5',
+            'facilities'       => 'nullable|array',
+            'image'            => 'nullable|image|max:2048',
+            'number_of_courts' => 'required|integer|min:1|max:6',
         ]);
 
         $updateData = [
-            'name'           => $data['name'],
-            'type'           => $data['type'],
-            'location'       => $data['location'],
-            'maps_link'      => $data['maps_link'] ?? null,
-            'price_per_hour' => $data['price'],
-            'open_time'      => $data['open_time'],
-            'close_time'     => $data['close_time'],
-            'facilities'     => $data['facilities'] ?? [],
+            'name'             => $data['name'],
+            'type'             => $data['type'],
+            'location'         => $data['location'],
+            'maps_link'        => $data['maps_link'] ?? null,
+            'price_per_hour'   => $data['price'],
+            'open_time'        => $data['open_time'],
+            'close_time'       => $data['close_time'],
+            'number_of_courts' => $data['number_of_courts'],
+            'facilities'       => $data['facilities'] ?? [],
         ];
 
         if ($request->hasFile('image')) {

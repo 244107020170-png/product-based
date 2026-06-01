@@ -3,8 +3,9 @@
     $unreadCount = auth()->user()->unreadNotifications()->count();
 
     $typeConfig = [
-        'owner_new_booking'     => ['icon' => 'fa-calendar-plus',      'category' => 'PEMESANAN', 'color' => '#dc2626', 'bg' => '#fef2f2'],
-        'owner_payment_received'=> ['icon' => 'fa-circle-check',       'category' => 'PEMESANAN', 'color' => '#006c49', 'bg' => '#f0fdf4'],
+        'owner_new_booking'      => ['icon' => 'fa-calendar-plus',      'category' => 'PEMESANAN', 'color' => '#dc2626', 'bg' => '#fef2f2'],
+        'owner_payment_received' => ['icon' => 'fa-circle-check',       'category' => 'PEMESANAN', 'color' => '#006c49', 'bg' => '#f0fdf4'],
+        'owner_booking_cancelled'=> ['icon' => 'fa-ban',                'category' => 'PEMESANAN', 'color' => '#991b1b', 'bg' => '#fee2e2'],
         'owner_promo_claimed'   => ['icon' => 'fa-tag',                'category' => 'PROMO',     'color' => '#7f4f00', 'bg' => '#fffbeb'],
         'owner_new_review'      => ['icon' => 'fa-star',               'category' => 'SISTEM',    'color' => '#f59e0b', 'bg' => '#fff7ed'],
     ];
@@ -16,7 +17,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Notifikasi - Spiessport Owner Portal</title>
+    <title>Notifikasi - Spiessport Portal Pemilik</title>
     @vite(['resources/css/app.css', 'resources/css/owner-dashboard.css'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -92,7 +93,7 @@
 
         @php
             $allNotifs = $notifications;
-            $bookingCount = $allNotifs->filter(fn($n) => ($n->data['type'] ?? '') === 'owner_new_booking' || ($n->data['type'] ?? '') === 'owner_payment_received')->count();
+            $bookingCount = $allNotifs->filter(fn($n) => in_array($n->data['type'] ?? '', ['owner_new_booking', 'owner_payment_received', 'owner_booking_cancelled']))->count();
             $promoCount = $allNotifs->filter(fn($n) => ($n->data['type'] ?? '') === 'owner_promo_claimed')->count();
             $systemCount = $allNotifs->filter(fn($n) => ($n->data['type'] ?? '') === 'owner_new_review')->count();
         @endphp
@@ -115,7 +116,7 @@
             </div>
             <div class="stats-card">
                 <div>
-                    <p>Booking & Pembayaran</p>
+                    <p>Pesanan & Pembayaran</p>
                     <h2 style="color:#1db954;">{{ $bookingCount }}</h2>
                 </div>
                 <div class="stats-icon green"><i class="fa-solid fa-calendar-check"></i></div>
@@ -135,7 +136,7 @@
                 {{-- Tabs --}}
                 <div class="notif-tabs-wrap" style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:20px;">
                     <button class="notif-tab is-active" data-ntab="semua">Semua</button>
-                    <button class="notif-tab" data-ntab="booking">Booking</button>
+                    <button class="notif-tab" data-ntab="booking">Pesanan</button>
                     <button class="notif-tab" data-ntab="promo">Promo</button>
                     <button class="notif-tab" data-ntab="sistem">Sistem</button>
                 </div>
@@ -156,23 +157,26 @@
                                 $isUnread = $notif->unread();
 
                                 $ntabCat = match($type) {
-                                    'owner_new_booking', 'owner_payment_received' => 'booking',
+                                    'owner_new_booking', 'owner_payment_received', 'owner_booking_cancelled' => 'booking',
                                     'owner_promo_claimed' => 'promo',
                                     'owner_new_review' => 'sistem',
                                     default => 'sistem',
                                 };
 
                                 if ($type === 'owner_new_booking') {
-                                    $_title = 'Booking Baru';
+                                    $_title = 'Pesanan Baru';
                                     $_message = $data['user_name'] . ' memesan ' . ($data['field_name'] ?? 'Lapangan') . ' pada ' . Carbon::parse($data['date'] ?? '')->locale('id')->translatedFormat('d M Y') . ' (' . substr($data['start_time'] ?? '', 0, 5) . ' - ' . substr($data['end_time'] ?? '', 0, 5) . ').';
                                 } elseif ($type === 'owner_payment_received') {
                                     $_title = 'Pembayaran Diterima';
-                                    $_message = 'Pembayaran dari ' . $data['user_name'] . ' untuk ' . ($data['field_name'] ?? 'Lapangan') . ' telah diterima.';
+                                    $_message = 'Pembayaran dari ' . $data['user_name'] . ' untuk ' . ($data['field_name'] ?? 'Lapangan') . ' telah diterima dan pesanan otomatis dikonfirmasi.';
+                                } elseif ($type === 'owner_booking_cancelled') {
+                                    $_title = 'Pesanan Dibatalkan';
+                                    $_message = $data['user_name'] . ' membatalkan ' . ($data['field_name'] ?? 'Lapangan') . ' pada ' . Carbon::parse($data['date'] ?? '')->locale('id')->translatedFormat('d M Y') . ' (' . substr($data['start_time'] ?? '', 0, 5) . ' - ' . substr($data['end_time'] ?? '', 0, 5) . ').';
                                 } elseif ($type === 'owner_promo_claimed') {
                                     $_title = 'Promo Diklaim';
                                     $_message = $data['user_name'] . ' mengklaim promo "' . ($data['promo_name'] ?? 'Promo') . '" kode ' . ($data['promo_code'] ?? '') . '.';
                                 } elseif ($type === 'owner_new_review') {
-                                    $_title = 'Review Baru';
+                                    $_title = 'Ulasan Baru';
                                     $_message = $data['user_name'] . ' memberikan rating ' . str_repeat('<i class="fa-solid fa-star" style="color:#f59e0b;font-size:12px;"></i>', (int)($data['rating'] ?? 0)) . ' untuk ' . ($data['field_name'] ?? 'Lapangan') . '.';
                                 } else {
                                     $_title = 'Notifikasi';
@@ -198,7 +202,7 @@
                                         </span>
                                     </div>
                                     <p style="font-size:13px;color:#64748b;margin:0;line-height:1.5;">{!! $_message !!}</p>
-                                    @if($type === 'owner_new_booking' && ($data['booking_id'] ?? null))
+                                    @if(in_array($type, ['owner_new_booking', 'owner_booking_cancelled']) && ($data['booking_id'] ?? null))
                                         <div style="margin-top:8px;">
                                             <a href="{{ route('owner.kelolaBooking') }}" style="font-size:12px;font-weight:600;color:#dc2626;text-decoration:none;">
                                                 <i class="fa-solid fa-arrow-right" style="margin-right:4px;"></i>Lihat Pesanan

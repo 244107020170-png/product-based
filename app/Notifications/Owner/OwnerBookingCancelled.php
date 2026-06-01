@@ -6,7 +6,7 @@ use App\Models\Booking;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
-class OwnerPaymentReceived extends Notification
+class OwnerBookingCancelled extends Notification
 {
     use Queueable;
 
@@ -22,7 +22,7 @@ class OwnerPaymentReceived extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'type'        => 'owner_payment_received',
+            'type'        => 'owner_booking_cancelled',
             'booking_id'  => $this->booking->id,
             'field_name'  => $this->booking->field?->name ?? 'Lapangan',
             'user_name'   => $this->booking->user?->name ?? 'Pemain',

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Masuk</title>
-    @vite('resources/css/app.css', 'resources/js/app.js')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="h-screen bg-login flex overflow-hidden relative">
@@ -93,7 +93,7 @@
 
             <!-- GOOGLE -->
             <div class="flex items-center gap-2 mt-2 mb-3">
-                <button type="button" onclick="alert('Google login belum disetup')" class="w-full text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 bg-[#00004D] hover:bg-[#000033] transition-colors duration-200">
+                <button type="button" x-data @click="$dispatch('open-modal-google-info')" class="w-full text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 bg-[#00004D] hover:bg-[#000033] transition-colors duration-200">
                     <img src="{{ asset('assets/images/icons/google.png') }}" class="w-4">
                     Masuk dengan Google
                 </button>
@@ -114,6 +114,12 @@
         </div>
 
     </div>
+
+<x-custom-modal name="google-info"
+                 type="info"
+                 title="Fitur Segera Hadir"
+                 message="Login dengan Google belum tersedia. Silakan gunakan email dan password untuk masuk."
+                 cancelText="Tutup" />
 
 </body>
 </html>

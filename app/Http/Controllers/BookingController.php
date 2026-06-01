@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\BookingStatus;
 use App\Models\Field;
 use App\Models\Booking;
+use App\Models\Slot;
 use App\Models\Matchs;
 use App\Notifications\Owner\OwnerNewBooking;
 use App\Notifications\Owner\OwnerPaymentReceived;
@@ -18,8 +19,108 @@ use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
 {
+    private const VALID_TRANSITIONS = [
+        'pending' => ['waiting_payment', 'waiting_confirmation', 'paid', 'cancelled'],
+        'waiting_payment' => ['pending', 'waiting_confirmation', 'paid', 'cancelled', 'expired'],
+        'waiting_confirmation' => ['pending', 'waiting_payment', 'paid', 'confirmed', 'rejected', 'cancelled'],
+        'paid' => ['pending', 'waiting_payment', 'waiting_confirmation', 'confirmed'],
+        'confirmed' => ['paid', 'waiting_confirmation', 'completed', 'cancelled'],
+        'completed' => [],
+        'cancelled' => [],
+        'rejected' => [],
+        'expired' => [],
+    ];
+
+    public static function isValidTransition(?string $from, string $to): bool
+    {
+        if (!$from) return true;
+        $allowed = self::VALID_TRANSITIONS[$from] ?? [];
+        return in_array($to, $allowed, true);
+    }
+
     public function __construct(protected BookingService $bookingService)
     {
+    }
+
+    public function assignCourtAndConfirm(Booking $booking, bool $setPaidAt = true): void
+    {
+        $field = $booking->field;
+        $numCourts = $field->number_of_courts ?? 1;
+        $date = $booking->date instanceof Carbon ? $booking->date->toDateString() : $booking->date;
+        $startHour = (int) Carbon::parse($booking->start_time)->format('G');
+        $endHour = (int) Carbon::parse($booking->end_time)->format('G');
+
+        $assignedCourt = null;
+
+        for ($court = 1; $court <= $numCourts; $court++) {
+            $allAvailable = true;
+            for ($h = $startHour; $h < $endHour; $h++) {
+                $existing = Slot::where('field_id', $field->id)
+                    ->where('court_number', $court)
+                    ->where('date', $date)
+                    ->where('hour', $h)
+                    ->first();
+
+                if ($existing && $existing->status !== 'tersedia') {
+                    $allAvailable = false;
+                    break;
+                }
+            }
+
+            if ($allAvailable) {
+                $assignedCourt = $court;
+                break;
+            }
+        }
+
+        if (!$assignedCourt) {
+            for ($court = 1; $court <= $numCourts; $court++) {
+                $canAssign = true;
+                for ($h = $startHour; $h < $endHour; $h++) {
+                    $existing = Slot::where('field_id', $field->id)
+                        ->where('court_number', $court)
+                        ->where('date', $date)
+                        ->where('hour', $h)
+                        ->first();
+
+                    if ($existing && in_array($existing->status, ['dibooking', 'tutup', 'perbaikan'])) {
+                        $canAssign = false;
+                        break;
+                    }
+                }
+
+                if ($canAssign) {
+                    $assignedCourt = $court;
+                    break;
+                }
+            }
+        }
+
+        if (!$assignedCourt) {
+            $assignedCourt = 1;
+        }
+
+        for ($h = $startHour; $h < $endHour; $h++) {
+            Slot::updateOrCreate(
+                [
+                    'field_id'     => $field->id,
+                    'court_number' => $assignedCourt,
+                    'date'         => $date,
+                    'hour'         => $h,
+                ],
+                ['status' => 'dibooking']
+            );
+        }
+
+        $data = [
+            'status' => BookingStatus::CONFIRMED,
+            'court_number' => $assignedCourt,
+            'confirmed_at' => now(),
+        ];
+        if ($setPaidAt) {
+            $data['paid_at'] = now();
+        }
+        $booking->update($data);
     }
     /**
      * Show booking page for a specific field
@@ -188,6 +289,13 @@ class BookingController extends Controller
         }
 
         $booking->load('field');
+
+        // Auto-confirm legacy waiting_confirmation bookings
+        if ($booking->status === BookingStatus::WAITING_CONFIRMATION) {
+            $this->assignCourtAndConfirm($booking, false);
+            $booking->refresh();
+        }
+
         return view('booking.detail', compact('booking'));
     }
 
@@ -211,10 +319,7 @@ class BookingController extends Controller
             return redirect()->route('booking.detail', $booking->id)->with('error', 'Waktu pembayaran telah kadaluarsa.');
         }
 
-        $booking->update([
-            'status' => BookingStatus::WAITING_CONFIRMATION,
-            'paid_at' => now(),
-        ]);
+        $this->assignCourtAndConfirm($booking);
 
         $booking->user->notify(new \App\Notifications\BookingPaymentReceived($booking));
 
@@ -227,7 +332,7 @@ class BookingController extends Controller
             Log::warning('Gagal notifikasi owner: ' . $e->getMessage());
         }
 
-        return redirect()->route('booking.detail', $booking->id)->with('success', 'Pembayaran berhasil! Silakan tunggu konfirmasi owner.');
+        return redirect()->route('booking.detail', $booking->id)->with('success', 'Pembayaran berhasil! Booking otomatis dikonfirmasi.');
     }
 
     public function pay(Booking $booking)
@@ -245,10 +350,7 @@ class BookingController extends Controller
             return back()->with('error', 'Waktu pembayaran telah kadaluarsa.');
         }
 
-        $booking->update([
-            'status' => BookingStatus::WAITING_CONFIRMATION,
-            'paid_at' => now(),
-        ]);
+        $this->assignCourtAndConfirm($booking);
 
         try {
             $owner = $booking->field->owner;
@@ -259,7 +361,7 @@ class BookingController extends Controller
             Log::warning('Gagal notifikasi owner: ' . $e->getMessage());
         }
 
-        return back()->with('success', 'Kami menerima notifikasi pembayaran Anda. Silakan tunggu konfirmasi owner.');
+        return back()->with('success', 'Pembayaran berhasil! Booking otomatis dikonfirmasi.');
     }
 
     public function confirmPayment(Booking $booking)
@@ -272,15 +374,89 @@ class BookingController extends Controller
             return back()->with('error', 'Booking tidak dalam status menunggu konfirmasi.');
         }
 
+        // Auto-assign court and mark slots as dibooking
+        $field = $booking->field;
+        $numCourts = $field->number_of_courts ?? 1;
+        $date = $booking->date instanceof Carbon ? $booking->date->toDateString() : $booking->date;
+        $startHour = (int) Carbon::parse($booking->start_time)->format('G');
+        $endHour = (int) Carbon::parse($booking->end_time)->format('G');
+
+        $assignedCourt = null;
+
+        // Try to find a court that has all requested hours available (tersedia)
+        for ($court = 1; $court <= $numCourts; $court++) {
+            $allAvailable = true;
+            for ($h = $startHour; $h < $endHour; $h++) {
+                $existing = Slot::where('field_id', $field->id)
+                    ->where('court_number', $court)
+                    ->where('date', $date)
+                    ->where('hour', $h)
+                    ->first();
+
+                if ($existing && $existing->status !== 'tersedia') {
+                    $allAvailable = false;
+                    break;
+                }
+            }
+
+            if ($allAvailable) {
+                $assignedCourt = $court;
+                break;
+            }
+        }
+
+        // If no court fully available, find one with 'tersedia' or null slots
+        if (!$assignedCourt) {
+            for ($court = 1; $court <= $numCourts; $court++) {
+                $canAssign = true;
+                for ($h = $startHour; $h < $endHour; $h++) {
+                    $existing = Slot::where('field_id', $field->id)
+                        ->where('court_number', $court)
+                        ->where('date', $date)
+                        ->where('hour', $h)
+                        ->first();
+
+                    if ($existing && in_array($existing->status, ['dibooking', 'tutup', 'perbaikan'])) {
+                        $canAssign = false;
+                        break;
+                    }
+                }
+
+                if ($canAssign) {
+                    $assignedCourt = $court;
+                    break;
+                }
+            }
+        }
+
+        // If still none, use first court
+        if (!$assignedCourt) {
+            $assignedCourt = 1;
+        }
+
+        // Update slots for the assigned court
+        for ($h = $startHour; $h < $endHour; $h++) {
+            Slot::updateOrCreate(
+                [
+                    'field_id'     => $field->id,
+                    'court_number' => $assignedCourt,
+                    'date'         => $date,
+                    'hour'         => $h,
+                ],
+                ['status' => 'dibooking']
+            );
+        }
+
         $booking->update([
             'status' => BookingStatus::CONFIRMED,
+            'court_number' => $assignedCourt,
             'confirmed_at' => now(),
         ]);
 
         $booking->load('user');
         $booking->user->notify(new \App\Notifications\BookingConfirmed($booking));
 
-        return back()->with('success', 'Booking telah dikonfirmasi.');
+        return back()->with('success', 'Booking telah dikonfirmasi. Lapangan ' . $assignedCourt . ' otomatis dibooking.');
     }
 
     public function rejectPayment(Booking $booking)
@@ -293,10 +469,85 @@ class BookingController extends Controller
             return back()->with('error', 'Booking tidak dalam status menunggu konfirmasi.');
         }
 
+        // Validate status transition
+        if (!self::isValidTransition($booking->status, BookingStatus::REJECTED)) {
+            return back()->with('error', 'Tidak dapat menolak booking dengan status saat ini.');
+        }
+
+        // Revert dibooking slots back to tersedia (only for the assigned court)
+        $field = $booking->field;
+        $date = $booking->date instanceof Carbon ? $booking->date->toDateString() : $booking->date;
+        $startHour = (int) Carbon::parse($booking->start_time)->format('G');
+        $endHour = (int) Carbon::parse($booking->end_time)->format('G');
+
+        $query = Slot::where('field_id', $field->id)
+            ->where('date', $date)
+            ->whereBetween('hour', [$startHour, $endHour - 1])
+            ->where('status', 'dibooking');
+
+        // Only revert the specific court if the booking has one assigned
+        if ($booking->court_number) {
+            $query->where('court_number', $booking->court_number);
+        }
+
+        $query->update(['status' => 'tersedia']);
+
         $booking->update([
             'status' => BookingStatus::REJECTED,
         ]);
 
         return back()->with('success', 'Booking pembayaran telah ditolak.');
+    }
+
+    public function cancel(Booking $booking)
+    {
+        if ($booking->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($booking->status !== BookingStatus::CONFIRMED) {
+            return back()->with('error', 'Hanya booking dengan status Dikonfirmasi yang dapat dibatalkan.');
+        }
+
+        $bookingDate = $booking->date instanceof Carbon ? $booking->date->toDateString() : $booking->date;
+        $today = now()->toDateString();
+        $currentTime = now()->toTimeString();
+
+        if ($bookingDate < $today || ($bookingDate === $today && $booking->start_time <= $currentTime)) {
+            return back()->with('error', 'Tidak dapat membatalkan booking yang sudah atau sedang berlangsung.');
+        }
+
+        if (!self::isValidTransition($booking->status, BookingStatus::CANCELLED)) {
+            return back()->with('error', 'Tidak dapat membatalkan booking dengan status saat ini.');
+        }
+
+        $field = $booking->field;
+        $date = $bookingDate;
+        $startHour = (int) Carbon::parse($booking->start_time)->format('G');
+        $endHour = (int) Carbon::parse($booking->end_time)->format('G');
+
+        $query = Slot::where('field_id', $field->id)
+            ->where('date', $date)
+            ->whereBetween('hour', [$startHour, $endHour - 1])
+            ->where('status', 'dibooking');
+
+        if ($booking->court_number) {
+            $query->where('court_number', $booking->court_number);
+        }
+
+        $query->update(['status' => 'tersedia']);
+
+        $booking->update(['status' => BookingStatus::CANCELLED]);
+
+        try {
+            $owner = $booking->field->owner;
+            if ($owner) {
+                $owner->notify(new \App\Notifications\Owner\OwnerBookingCancelled($booking));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Gagal notifikasi owner: ' . $e->getMessage());
+        }
+
+        return redirect()->route('booking.detail', $booking->id)->with('success', 'Pesanan berhasil dibatalkan.');
     }
 }

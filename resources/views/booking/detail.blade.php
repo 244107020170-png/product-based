@@ -9,7 +9,7 @@
         'waiting_payment' => 'Menunggu Pembayaran',
         'waiting_confirmation' => 'Menunggu Konfirmasi',
         'paid' => 'Dibayar',
-        'confirmed' => 'Terkonfirmasi',
+        'confirmed' => 'Dikonfirmasi',
         'completed' => 'Selesai',
         'cancelled' => 'Dibatalkan',
         'expired' => 'Kadaluarsa',
@@ -70,6 +70,11 @@
         ['label'=>'Pengaturan', 'icon'=>asset('assets/images/icons/pengaturan.png'), 'href'=>route('profile.edit')],
     ];
 
+    $isUpcoming = $booking->status === 'confirmed' && (
+        $booking->date > now()->toDateString() ||
+        ($booking->date == now()->toDateString() && $booking->start_time > now()->toTimeString())
+    );
+
     $referer = request()->headers->get('referer');
     $previousUrl = url()->previous();
     $currentUrl = url()->current();
@@ -86,6 +91,7 @@
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
+        'resources/js/app.js',
     ])
 </head>
 <body class="player-dashboard-page" style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">
@@ -292,7 +298,7 @@
                                 @elseif($booking->status === 'waiting_confirmation')
                                     <!-- payment success shown in QR card -->
                                 @elseif($booking->status === 'confirmed')
-                                    <div style="padding: 14px 16px; border-radius: 14px; background: #e7f5ff; color: #0d3c61; font-weight: 700;">Pemesanan sudah dikonfirmasi.</div>
+                                    <div style="padding: 14px 16px; border-radius: 14px; background: #d4edda; color: #155724; font-weight: 700;">Pemesanan sudah dikonfirmasi.</div>
                                 @elseif($booking->status === 'expired')
                                     <div style="padding: 16px; border-radius: 14px; background: #fff4f4; color: #842029; font-weight: 700; text-align: center;">
                                         <div style="margin-bottom: 12px;">Pembayaran sudah kadaluarsa.</div>
@@ -316,7 +322,9 @@
                                     </svg>
                                 </div>
                                 <div style="font-size: 15px; font-weight: 700; color: #16a34a; margin-bottom: 4px;">Pembayaran Berhasil</div>
-                                <div style="font-size: 13px; color: #666;">Menunggu konfirmasi owner</div>
+                                <div style="font-size: 13px; color: #666;">
+                                    {{ $booking->status === 'confirmed' ? 'Pesanan otomatis dikonfirmasi' : ($booking->status === 'completed' ? 'Pesanan selesai' : 'Menunggu konfirmasi owner') }}
+                                </div>
                             @else
                                 <div style="font-size: 13px; color: #666; margin-bottom: 12px;">Scan QR untuk bayar</div>
                                 <a href="{{ $payUrl }}" target="_blank">
@@ -331,6 +339,29 @@
                 </div>
             </div>
         </div>
+
+        @if($isUpcoming)
+        <div x-data="{}" x-on:modal-confirmed.window="if ($event.detail.name === 'cancel-booking') $refs.cancelForm.submit()" style="margin-top:24px; background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,77,.06); border:1px solid rgba(0,0,77,.08);">
+            <form method="POST" action="{{ route('booking.cancel', $booking->id) }}" x-ref="cancelForm">
+                @csrf
+                <p style="margin:0 0 16px; color:#666; font-size:14px;">Jika kamu membatalkan pesanan, slot lapangan akan dikembalikan dan tersedia untuk pemesan lain.</p>
+                <button type="button" style="width:100%; padding:14px; background:#dc2626; color:white; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:all .2s;"
+                    onmouseover="this.style.background='#b91c1c';this.style.transform='scale(1.02)'"
+                    onmouseout="this.style.background='#dc2626';this.style.transform='scale(1)'"
+                    @click="$dispatch('open-modal-cancel-booking')">
+                    Batalkan Pesanan
+                </button>
+            </form>
+
+            <x-custom-modal name="cancel-booking"
+                             type="confirm"
+                             title="Batalkan Pesanan"
+                             message="Anda yakin ingin membatalkan pesanan ini? Pesanan yang dibatalkan akan diproses untuk refund sesuai kebijakan yang berlaku."
+                             confirmText="Ya, Batalkan"
+                             cancelText="Kembali"
+                             confirmVariant="danger" />
+        </div>
+        @endif
 
         {{-- REVIEW SECTION --}}
         @if(in_array($booking->status, ['confirmed', 'completed', 'selesai']))

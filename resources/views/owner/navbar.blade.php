@@ -58,7 +58,7 @@
     {{-- BOTTOM MENU --}}
     <div class="sidebar-bottom">
 
-        <a href="#" class="menu-item">
+        <a href="/owner/pengaturan" class="menu-item {{ Request::is('owner/pengaturan*') ? 'active' : '' }}">
             <i class="fa-solid fa-gear"></i>
             <span>Pengaturan</span>
         </a>

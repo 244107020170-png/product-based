@@ -241,7 +241,7 @@
 
                 {{-- Recent Reviews --}}
                 <div class="bg-white rounded-2xl p-6 shadow-sm">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">⭐ Review Terbaru</h3>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">⭐ Ulasan Terbaru</h3>
                     @if($recentReviews->count())
                     <div class="space-y-4">
                         @foreach($recentReviews as $rv)
@@ -271,7 +271,7 @@
                     @else
                     <div class="text-center py-8 text-gray-400">
                         <i class="fa-regular fa-star text-3xl mb-3 block"></i>
-                        <p class="text-sm">Belum ada review</p>
+                        <p class="text-sm">Belum ada ulasan</p>
                     </div>
                     @endif
                 </div>

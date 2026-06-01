@@ -10,6 +10,7 @@ class Booking extends Model
     protected $fillable = [
         'user_id',
         'field_id',
+        'court_number',
         'date',
         'start_time',
         'end_time',
@@ -21,6 +22,7 @@ class Booking extends Model
     ];
 
     protected $casts = [
+        'court_number' => 'integer',
         'date' => 'date',
         'start_time' => 'string',
         'end_time' => 'string',
