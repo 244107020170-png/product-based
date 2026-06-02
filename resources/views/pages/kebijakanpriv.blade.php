@@ -68,7 +68,7 @@
 </div>
 <div class="relative flex justify-center items-center">
 <div class="glass-card p-sm rounded-xl rotate-3 relative z-20 shadow-2xl">
-<img alt="Friendly Sports Character" class="w-full max-w-[400px] rounded-lg shadow-inner" data-alt="A friendly, high-energy cartoonist character representing a modern athlete, wearing vibrant red and white sports gear. The character is smiling warmly with a thumbs up, set against a soft cream-colored background with subtle glassmorphic geometric shapes and floating sports icons like a stopwatch and a medal. The lighting is bright and cheerful, reflecting a professional yet approachable health-conscious brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3aYdoltHbvqmS8ZiInEtOcaYpWiGg9ivdeQvGhEiTaRk1RHbdnSnWFPoW4xvbLwGWlZ-pZlURpl9WwoJqD_c__UJGPiEqyJFlAWb6x562xL0DxYzIlgTCADFnrsTVOgf08Vm_b9BogmSY85reiMEWsstwbJGofHgaHOPt5tgFWGRu365ojUic-I4W7ALLfOWoQ-dm2RAI4TUyZoN5zx_SSsL1rIZ3mKOpxkZzu_AW9ZV7iahZWIvXXNzbDgXv21nSMn7Avr2eDuKt"/>
+<img alt="Privasi" class="w-full max-w-[400px] rounded-lg shadow-inner" src="{{ asset('assets/images/characters/privasi.png') }}"/>
 </div>
 <!-- Floating decorations -->
 <div class="absolute -top-10 -left-10 w-24 h-24 bg-tertiary-fixed rounded-full blur-2xl opacity-40"></div>
@@ -139,7 +139,7 @@
 <p class="text-secondary font-body-md">
                         Kami menggunakan enkripsi tingkat militer (AES-256) untuk melindungi data sensitif Anda. Keamanan Anda adalah komitmen tanpa kompromi kami.
                     </p>
-<a class="text-primary font-label-md flex items-center gap-xs hover:gap-sm transition-all" href="#">
+<a class="text-primary font-label-md flex items-center gap-xs hover:gap-sm transition-all" href="{{ route('layanan') }}">
                         Pelajari Protokol Kami <span class="material-symbols-outlined">arrow_forward</span>
 </a>
 </div>
@@ -172,39 +172,17 @@
                     Tim perlindungan data kami siap membantu menjelaskan bagaimana informasi Anda dikelola.
                 </p>
 <div class="flex flex-col md:flex-row gap-md justify-center items-center pt-md">
-<button class="bg-primary text-on-primary px-xl py-md rounded-full font-label-md text-label-md hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95">
+<a href="{{ route('contact') }}" class="bg-primary text-on-primary px-xl py-md rounded-full font-label-md text-label-md hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95 no-underline">
                         Hubungi Tim Kami
-                    </button>
-<button class="bg-white border-2 border-outline-variant text-on-surface-variant px-xl py-md rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-all">
+                    </a>
+<a href="{{ route('kebijakanpriv') }}" class="bg-white border-2 border-outline-variant text-on-surface-variant px-xl py-md rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-all no-underline">
                         Unduh PDF Kebijakan
-                    </button>
+                    </a>
 </div>
 </div>
 </section>
 </main>
-<!-- Footer -->
-<footer class="bg-surface-container-low border-t border-outline-variant/30 w-full rounded-t-lg">
-<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-lg gap-md max-w-[1440px] mx-auto">
-<div class="space-y-sm text-center md:text-left">
-<div class="font-headline-md text-headline-md text-primary">Spies Sport</div>
-<p class="font-label-md text-on-surface-variant max-w-[300px]">© 2024 Spies Sport. Tingkatkan permainanmu di setiap langkah.</p>
-</div>
-<div class="flex gap-lg flex-wrap justify-center">
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('kebijakanpriv') }}">Kebijakan Privasi</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('layanan') }}">Ketentuan Layanan</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('contact') }}">Hubungi Kami</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('about') }}">Tentang Kami</a>
-</div>
-<div class="flex gap-md">
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">public</span>
-</div>
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">alternate_email</span>
-</div>
-</div>
-</div>
-</footer>
+@include('partials.footer')
 <script>
         // Navbar scroll effect
         window.addEventListener('scroll', () => {

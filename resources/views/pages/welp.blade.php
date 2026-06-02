@@ -54,10 +54,10 @@
 <p class="font-body-lg text-body-lg text-on-surface-variant max-w-[500px]">
                     Kami hadir untuk memastikan pengalaman olahraga Anda tetap seru dan tanpa kendala. Temukan jawaban instan di bawah ini!
                 </p>
-<div class="relative group max-w-[540px]">
+<form action="{{ route('preview.help') }}" method="GET" class="relative group max-w-[540px]">
 <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-primary group-focus-within:scale-110 transition-transform">search</span>
-<input class="w-full pl-[56px] pr-md py-md rounded-xl glass-card border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all shadow-sm" placeholder="Cari topik bantuan (misal: booking, refund...)" type="text">
-</div>
+<input name="q" class="w-full pl-[56px] pr-md py-md rounded-xl glass-card border-outline-variant/30 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all shadow-sm" placeholder="Cari topik bantuan (misal: booking, refund...)" type="text">
+</form>
 </div>
 <div class="w-full md:w-1/2 flex justify-center">
 <div class="relative">
@@ -68,7 +68,7 @@
 </section>
 <!-- Categories Bento Grid -->
 <section class="grid grid-cols-1 md:grid-cols-4 gap-md mb-xl">
-<div class="md:col-span-2 glass-card p-lg rounded-lg flex flex-col justify-between hover:shadow-xl transition-all group cursor-pointer border-l-4 border-primary">
+<a href="{{ route('bantuan') }}" class="md:col-span-2 glass-card p-lg rounded-lg flex flex-col justify-between hover:shadow-xl transition-all group no-underline border-l-4 border-primary">
 <div class="space-y-sm">
 <div class="w-[56px] h-[56px] bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
 <span class="material-symbols-outlined text-[32px]">calendar_today</span>
@@ -77,38 +77,38 @@
 <p class="font-body-md text-body-md text-on-surface-variant">Panduan lengkap cara pesan lapangan, reschedule, dan melihat ketersediaan slot secara real-time.</p>
 </div>
 <span class="text-primary font-bold flex items-center gap-xs mt-md">Lihat FAQ <span class="material-symbols-outlined">arrow_forward</span></span>
-</div>
-<div class="glass-card p-lg rounded-lg flex flex-col items-center text-center gap-sm hover:shadow-xl transition-all group cursor-pointer">
+</a>
+<a href="{{ route('bantuan') }}" class="glass-card p-lg rounded-lg flex flex-col items-center text-center gap-sm hover:shadow-xl transition-all group no-underline">
 <div class="w-[56px] h-[56px] bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:rotate-12 transition-transform">
 <span class="material-symbols-outlined text-[32px]">payments</span>
 </div>
 <h3 class="font-title-lg text-title-lg">Pembayaran</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">Metode bayar &amp; e-wallet.</p>
-</div>
-<div class="glass-card p-lg rounded-lg flex flex-col items-center text-center gap-sm hover:shadow-xl transition-all group cursor-pointer">
+</a>
+<a href="{{ route('bantuan') }}" class="glass-card p-lg rounded-lg flex flex-col items-center text-center gap-sm hover:shadow-xl transition-all group no-underline">
 <div class="w-[56px] h-[56px] bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:rotate-12 transition-transform">
 <span class="material-symbols-outlined text-[32px]">person</span>
 </div>
 <h3 class="font-title-lg text-title-lg">Akun</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">Profil &amp; Keamanan.</p>
-</div>
-<div class="glass-card p-lg rounded-lg flex flex-col items-center text-center gap-sm hover:shadow-xl transition-all group cursor-pointer">
+</a>
+<a href="{{ route('bantuan') }}" class="glass-card p-lg rounded-lg flex flex-col items-center text-center gap-sm hover:shadow-xl transition-all group no-underline">
 <div class="w-[56px] h-[56px] bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:rotate-12 transition-transform">
 <span class="material-symbols-outlined text-[32px]">cancel_schedule_send</span>
 </div>
 <h3 class="font-title-lg text-title-lg">Pembatalan</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">Refund &amp; Prosedur.</p>
-</div>
-<div class="md:col-span-3 glass-card p-lg rounded-lg flex flex-col md:flex-row items-center gap-lg hover:shadow-xl transition-all group cursor-pointer border-r-4 border-tertiary">
+</a>
+<div class="md:col-span-3 glass-card p-lg rounded-lg flex flex-col md:flex-row items-center gap-lg border-r-4 border-tertiary">
 <div class="md:w-1/3">
 <img alt="Support" class="rounded-xl w-full h-40 object-cover" src="{{ asset('assets/images/characters/help2.png') }}">
 </div>
-<div class="md:w-2/2 space-y-sm">
+<div class="md:w-2/3 space-y-sm">
 <h3 class="font-headline-md text-headline-md">Belum menemukan jawaban?</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">Tim Support Spies Sport siap sedia membantu Anda melalui Live Chat atau WhatsApp secara instan.</p>
-<button class="bg-tertiary text-on-tertiary px-lg py-sm rounded-full font-bold flex items-center gap-sm shadow-lg shadow-tertiary/20">
+<a href="{{ route('contact') }}" class="inline-flex bg-tertiary text-on-tertiary px-lg py-sm rounded-full font-bold items-center gap-sm shadow-lg shadow-tertiary/20 hover:brightness-110 transition-all no-underline">
 <span class="material-symbols-outlined">chat</span> Hubungi Kami Sekarang
-                    </button>
+</a>
 </div>
 </div>
 </section>
@@ -150,29 +150,7 @@
 </div>
 </section>
 </main>
-<!-- Footer -->
-<footer class="bg-surface-container-low border-t border-outline-variant/30 w-full rounded-t-lg mt-xl">
-<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-lg gap-md max-w-[1440px] mx-auto">
-<div class="space-y-sm text-center md:text-left">
-<div class="font-headline-md text-headline-md text-primary">Spies Sport</div>
-<p class="font-label-md text-on-surface-variant max-w-[300px]">© 2024 Spies Sport. Tingkatkan permainanmu di setiap langkah.</p>
-</div>
-<div class="flex gap-lg flex-wrap justify-center">
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('kebijakanpriv') }}">Kebijakan Privasi</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('layanan') }}">Ketentuan Layanan</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('contact') }}">Hubungi Kami</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('about') }}">Tentang Kami</a>
-</div>
-<div class="flex gap-md">
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">public</span>
-</div>
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">alternate_email</span>
-</div>
-</div>
-</div>
-</footer>
+@include('partials.footer')
 <script>
         // Navbar scroll effect
         window.addEventListener('scroll', () => {

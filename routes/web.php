@@ -434,7 +434,31 @@ Route::get('/preview-help', function () {
 })->name('preview.help');
 
 Route::get('/lapangan', function () {
-    return view('pages.lapangan');
+    $query = \App\Models\Field::where('is_available', true);
+
+    if ($search = request('search')) {
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('location', 'like', "%{$search}%");
+        });
+    }
+
+    if ($type = request('type')) {
+        $query->where('type', $type);
+    }
+
+    $sort = request('sort', 'terbaru');
+    match ($sort) {
+        'termurah' => $query->orderBy('price_per_hour'),
+        'ternilai' => $query->orderBy('rating', 'desc'),
+        'terlama'  => $query->orderBy('created_at'),
+        default    => $query->orderBy('created_at', 'desc'),
+    };
+
+    $fields = $query->paginate(12)->withQueryString();
+    $types = \App\Models\Field::where('is_available', true)->select('type')->distinct()->pluck('type');
+
+    return view('pages.lapangan', compact('fields', 'types'));
 })->name('lapangan');
 
 Route::get('/komunitas', function () {

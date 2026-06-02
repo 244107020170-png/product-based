@@ -75,217 +75,76 @@
 </div>
 </header>
 <!-- Search and Filter Section -->
-<div class="mb-lg space-y-md">
+<form method="GET" action="{{ route('lapangan') }}" class="mb-lg space-y-md">
 <div class="flex flex-col md:flex-row gap-md">
-<!-- Search Bar -->
 <div class="flex-1 relative">
 <span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-secondary">search</span>
-<input class="w-full pl-[56px] pr-md py-md rounded-full bg-white/60 border border-secondary/20 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md" placeholder="Cari nama lapangan atau lokasi..." type="text">
+<input name="search" value="{{ request('search') }}" class="w-full pl-[56px] pr-md py-md rounded-full bg-white/60 border border-secondary/20 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-md" placeholder="Cari nama lapangan atau lokasi..." type="text">
 </div>
-<!-- Dropdown Sort -->
 <div class="flex gap-sm">
-<button class="flex items-center gap-xs px-lg py-md rounded-full bg-white/60 border border-secondary/20 text-secondary hover:text-primary transition-all font-label-md">
-<span class="material-symbols-outlined">filter_list</span>
-                        Filter
-                    </button>
-<button class="flex items-center gap-xs px-lg py-md rounded-full bg-white/60 border border-secondary/20 text-secondary hover:text-primary transition-all font-label-md">
-                        Urutkan
-                        <span class="material-symbols-outlined">keyboard_arrow_down</span>
-</button>
+<select name="type" onchange="this.form.submit()" class="px-lg py-md rounded-full bg-white/60 border border-secondary/20 text-secondary hover:text-primary transition-all font-label-md outline-none appearance-none cursor-pointer">
+<option value="">Semua Olahraga</option>
+@foreach($types as $t)
+<option value="{{ $t }}" {{ request('type') === $t ? 'selected' : '' }}>{{ $t }}</option>
+@endforeach
+</select>
+<select name="sort" onchange="this.form.submit()" class="px-lg py-md rounded-full bg-white/60 border border-secondary/20 text-secondary hover:text-primary transition-all font-label-md outline-none appearance-none cursor-pointer">
+<option value="terbaru" {{ request('sort', 'terbaru') === 'terbaru' ? 'selected' : '' }}>Terbaru</option>
+<option value="termurah" {{ request('sort') === 'termurah' ? 'selected' : '' }}>Termurah</option>
+<option value="ternilai" {{ request('sort') === 'ternilai' ? 'selected' : '' }}>Nilai Tertinggi</option>
+<option value="terlama" {{ request('sort') === 'terlama' ? 'selected' : '' }}>Terlama</option>
+</select>
 </div>
 </div>
 <!-- Categories Chips -->
 <div class="flex gap-sm overflow-x-auto pb-sm custom-scrollbar whitespace-nowrap">
-<button class="px-lg py-sm rounded-full bg-primary text-on-primary font-label-md">Semua</button>
-<button class="px-lg py-sm rounded-full bg-white/40 border border-white/60 text-secondary font-label-md hover:bg-white/60 transition-all">Futsal</button>
-<button class="px-lg py-sm rounded-full bg-white/40 border border-white/60 text-secondary font-label-md hover:bg-white/60 transition-all">Badminton</button>
-<button class="px-lg py-sm rounded-full bg-white/40 border border-white/60 text-secondary font-label-md hover:bg-white/60 transition-all">Tennis</button>
-<button class="px-lg py-sm rounded-full bg-white/40 border border-white/60 text-secondary font-label-md hover:bg-white/60 transition-all">Basket</button>
-<button class="px-lg py-sm rounded-full bg-white/40 border border-white/60 text-secondary font-label-md hover:bg-white/60 transition-all">Voli</button>
-<button class="px-lg py-sm rounded-full bg-white/40 border border-white/60 text-secondary font-label-md hover:bg-white/60 transition-all">Renang</button>
+<a href="{{ route('lapangan') }}" class="px-lg py-sm rounded-full {{ !request('type') ? 'bg-primary text-on-primary' : 'bg-white/40 border border-white/60 text-secondary hover:bg-white/60' }} font-label-md transition-all no-underline">Semua</a>
+@foreach($types as $t)
+<a href="{{ route('lapangan', ['type' => $t, 'search' => request('search'), 'sort' => request('sort')]) }}" class="px-lg py-sm rounded-full {{ request('type') === $t ? 'bg-primary text-on-primary' : 'bg-white/40 border border-white/60 text-secondary hover:bg-white/60' }} font-label-md transition-all no-underline">{{ $t }}</a>
+@endforeach
 </div>
-</div>
+</form>
 <!-- Fields Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
-<!-- Card 1 -->
+@forelse($fields as $f)
 <div class="glass-card rounded-lg overflow-hidden flex flex-col group">
 <div class="relative h-[200px]">
-<img class="w-full h-full object-cover" data-alt="A high-quality indoor futsal court with vibrant green artificial turf and bright overhead professional stadium lighting. The atmosphere is energetic and modern, featuring clean white lines and a high-end sports facility aesthetic with soft teal undertones. The scene captures the precision and premium quality of a professional sports venue." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLTDV9I-cGlPqF4rdDnfEUtkohT6ShfDAafeGTbLMgv1FCx0ro8fUpslOqsKhUKlz2zHDEnATXB3VhxNE0bYX9Zfi9mEmiN-l_R72THNXDKm0xuuME4AHQtFB0M3omK8gCo_4-A3fzuer9r9a3XerK9z-hS-0E7e85rSOfRullT_g9r6TXyfA98YQAVsToz1rjW3DkATurnYxq-aPD4zZVY1qauRxjjxKualhLtBmmIk8oyk43x_zvbTrainYXIEk0EHkr5qTYKRgl">
+<img class="w-full h-full object-cover" alt="{{ $f->name }}" src="{{ $f->image_url ?? 'https://via.placeholder.com/400x300?text=' . urlencode($f->name) }}" onerror="this.style.display='none'">
 <div class="absolute top-sm right-sm bg-primary/90 text-on-primary px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
 <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                        4.8
+                        {{ number_format($f->rating ?? 0, 1) }}
                     </div>
-<div class="absolute bottom-sm left-sm bg-white/80 backdrop-blur-md px-sm py-xs rounded-full text-label-sm text-primary font-bold">Futsal</div>
+<div class="absolute bottom-sm left-sm bg-white/80 backdrop-blur-md px-sm py-xs rounded-full text-label-sm text-primary font-bold">{{ $f->type ?? 'Olahraga' }}</div>
 </div>
 <div class="p-md flex flex-col flex-1 gap-sm">
-<h3 class="font-headline-md text-primary truncate">Stadion Futsal Kencana</h3>
+<h3 class="font-headline-md text-primary truncate">{{ $f->name }}</h3>
 <div class="flex items-center gap-xs text-secondary text-label-md">
 <span class="material-symbols-outlined text-[18px]">location_on</span>
-                        Jakarta Selatan, DKI Jakarta
+                        {{ $f->location ?: 'Lokasi tidak tersedia' }}
                     </div>
 <div class="mt-auto pt-md flex items-center justify-between">
 <div class="flex flex-col">
 <span class="text-label-sm text-secondary uppercase tracking-wider">MULAI DARI</span>
-<span class="text-title-lg text-primary font-bold">Rp 150.000<span class="text-label-sm font-normal text-secondary">/jam</span></span>
+<span class="text-title-lg text-primary font-bold">Rp {{ number_format($f->price_per_hour, 0, ',', '.') }}<span class="text-label-sm font-normal text-secondary">/jam</span></span>
 </div>
 </div>
-<button class="w-full mt-sm py-sm rounded-full border-2 border-primary text-primary font-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">Cek Jadwal</button>
+<a href="{{ route('booking.show', $f->id) }}" class="block w-full mt-sm py-sm rounded-full border-2 border-primary text-primary font-label-md text-center hover:bg-primary hover:text-on-primary transition-all active:scale-95 no-underline">Cek Jadwal</a>
 </div>
 </div>
-<!-- Card 2 -->
-<div class="glass-card rounded-lg overflow-hidden flex flex-col group">
-<div class="relative h-[200px]">
-<img class="w-full h-full object-cover" data-alt="A professional indoor badminton court with multiple blue-surfaced courts and bright, even lighting. The visual style is crisp and technological, highlighting the clean lines of the nets and the vibrant indoor arena. The lighting is high-key and clean, suggesting a premium health-conscious and professional sports facility." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS1AeU8tPZ4yeMJSwHVaFXrMKCoPXHwaq2EjbWxY6iQTYxcGECtEGfaHiHiKKDFe9xuLzuSJPl_HRstRGiWW2YUcXxFXbyeMWsWwvbiAFLTG9QL5q0ZtoyIPTc1W-6-6xKJKx4RiI6YMG3iM6uN3ccppHna13Nod4AYwIWhxhkrX1bPnAT2rX6Yp36A0KYoYuU29einYKn_Zg43oK0UmN4-rQwuH7R4Hduhuft1EUT9WzQJ0ikNmEVDsMWkwDbX0gQXw3iJrQ6dKwr">
-<div class="absolute top-sm right-sm bg-primary/90 text-on-primary px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
-<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                        4.9
-                    </div>
-<div class="absolute bottom-sm left-sm bg-white/80 backdrop-blur-md px-sm py-xs rounded-full text-label-sm text-primary font-bold">Badminton</div>
+@empty
+<div class="col-span-full text-center py-xl">
+<p class="text-secondary text-body-lg">Tidak ada lapangan ditemukan.</p>
 </div>
-<div class="p-md flex flex-col flex-1 gap-sm">
-<h3 class="font-headline-md text-primary truncate">Spies Shuttle Arena</h3>
-<div class="flex items-center gap-xs text-secondary text-label-md">
-<span class="material-symbols-outlined text-[18px]">location_on</span>
-                        Tangerang, Banten
-                    </div>
-<div class="mt-auto pt-md flex items-center justify-between">
-<div class="flex flex-col">
-<span class="text-label-sm text-secondary uppercase tracking-wider">MULAI DARI</span>
-<span class="text-title-lg text-primary font-bold">Rp 80.000<span class="text-label-sm font-normal text-secondary">/jam</span></span>
-</div>
-</div>
-<button class="w-full mt-sm py-sm rounded-full border-2 border-primary text-primary font-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">Cek Jadwal</button>
-</div>
-</div>
-<!-- Card 3 -->
-<div class="glass-card rounded-lg overflow-hidden flex flex-col group">
-<div class="relative h-[200px]">
-<img class="w-full h-full object-cover" data-alt="A bright, modern indoor basketball court with polished hardwood floors reflecting the bright arena lights. The setting is high-end and professional, featuring professional-grade hoops and clear court markings. The aesthetic is energetic and precise, with a clean light-mode atmosphere and vibrant red accents typical of elite sports venues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTgButrnbjsUp8y_DaHwc6CcXyKOTYngIFlFgWfpY7Xcdy-0fztMGmaocLyTR4YD1eB6WwQ8ZOMz6i-QN6u8JClA25f0vVDK18CNhEoJls_bPkrxG0FLTSz8MFvNmS4CV2Vuwv5dp_JGpn69xt62bUYxnk74w9o3Tv9ffz2Frsor-XT4JTVM0hmZ_pGXLExZQhWXNX9_DyQoluRN9NzRK22lxWKOWcRsAX-vdD6EemasbadutR1OttiHquMr4f6NNJPbikbRN7_-4l">
-<div class="absolute top-sm right-sm bg-primary/90 text-on-primary px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
-<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                        4.7
-                    </div>
-<div class="absolute bottom-sm left-sm bg-white/80 backdrop-blur-md px-sm py-xs rounded-full text-label-sm text-primary font-bold">Basket</div>
-</div>
-<div class="p-md flex flex-col flex-1 gap-sm">
-<h3 class="font-headline-md text-primary truncate">Elite Hoops Center</h3>
-<div class="flex items-center gap-xs text-secondary text-label-md">
-<span class="material-symbols-outlined text-[18px]">location_on</span>
-                        Jakarta Pusat, DKI Jakarta
-                    </div>
-<div class="mt-auto pt-md flex items-center justify-between">
-<div class="flex flex-col">
-<span class="text-label-sm text-secondary uppercase tracking-wider">MULAI DARI</span>
-<span class="text-title-lg text-primary font-bold">Rp 200.000<span class="text-label-sm font-normal text-secondary">/jam</span></span>
-</div>
-</div>
-<button class="w-full mt-sm py-sm rounded-full border-2 border-primary text-primary font-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">Cek Jadwal</button>
-</div>
-</div>
-<!-- Card 4 -->
-<div class="glass-card rounded-lg overflow-hidden flex flex-col group">
-<div class="relative h-[200px]">
-<img class="w-full h-full object-cover" data-alt="A pristine outdoor clay tennis court at sunset, with soft golden hour light hitting the warm orange clay surface. The background features lush green landscaping and modern sports facilities. The mood is serene and premium, emphasizing a wellness-oriented sports experience with high-contrast slate-tinted text and vibrant red branding elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCepUrTfaYRwDFuMaGBPxcQj_fk81QlaIe6z_0E2tudCIkgUFEvV9-gDcwi16a63hRWsjGsHB9Z8FvTpwraejOYRTsDezNWCQDbNFmYW-tFyxXzJfAoE0mwDBW5cuIfDGDfZtCXztrxUk6VQOd3gm7n63GqeDnIgrckPyn11kR_IpPx3Mk8G_Gu5lneJt6QNNJbMTr6-iI87LsIH0Si76T14t6IqxMoM_bfMQOjhdn4qQy7SkSwpBB5_qFMa5EK8E2HqKk_fsXyxLd4">
-<div class="absolute top-sm right-sm bg-primary/90 text-on-primary px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
-<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                        4.5
-                    </div>
-<div class="absolute bottom-sm left-sm bg-white/80 backdrop-blur-md px-sm py-xs rounded-full text-label-sm text-primary font-bold">Tennis</div>
-</div>
-<div class="p-md flex flex-col flex-1 gap-sm">
-<h3 class="font-headline-md text-primary truncate">Grand Slam Court</h3>
-<div class="flex items-center gap-xs text-secondary text-label-md">
-<span class="material-symbols-outlined text-[18px]">location_on</span>
-                        Bandung, Jawa Barat
-                    </div>
-<div class="mt-auto pt-md flex items-center justify-between">
-<div class="flex flex-col">
-<span class="text-label-sm text-secondary uppercase tracking-wider">MULAI DARI</span>
-<span class="text-title-lg text-primary font-bold">Rp 120.000<span class="text-label-sm font-normal text-secondary">/jam</span></span>
-</div>
-</div>
-<button class="w-full mt-sm py-sm rounded-full border-2 border-primary text-primary font-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">Cek Jadwal</button>
-</div>
-</div>
-<!-- Card 5 -->
-<div class="glass-card rounded-lg overflow-hidden flex flex-col group">
-<div class="relative h-[200px]">
-<img class="w-full h-full object-cover" data-alt="A high-end indoor volleyball court with specialized synthetic flooring and bright LED stadium lights. The space is clean and professional, with clear blue and white court markings. The atmosphere is focused and athletic, utilizing a sophisticated palette of deep slate and vibrant primary red highlights to emphasize high-performance data and elite training." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJiiel1SYo-0NEovUK5GDekey5r0sQfhGAry_061WFlf60peT09rs7dm8w312ErAZpoChIIX2HiFj8zgDLXUEp-OY3RErblzDa8PBjS34xyWk1SJjapVWPE9yAsFYHdriS5zyNYkv-yFQnyKi4US8xbDBN5EzytMvB_YtwXFUnqWOovVdaFkVIv53RJkVkJdIbqLsCcBchHPzLHIaZlqRLUcUcY85Ogb3Ut1usEcsfBYx-FOQPVofBKScL3TPAd_lSbDCJTnpmJqr_">
-<div class="absolute top-sm right-sm bg-primary/90 text-on-primary px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
-<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                        4.6
-                    </div>
-<div class="absolute bottom-sm left-sm bg-white/80 backdrop-blur-md px-sm py-xs rounded-full text-label-sm text-primary font-bold">Voli</div>
-</div>
-<div class="p-md flex flex-col flex-1 gap-sm">
-<h3 class="font-headline-md text-primary truncate">Volley Pro Hub</h3>
-<div class="flex items-center gap-xs text-secondary text-label-md">
-<span class="material-symbols-outlined text-[18px]">location_on</span>
-                        Bekasi, Jawa Barat
-                    </div>
-<div class="mt-auto pt-md flex items-center justify-between">
-<div class="flex flex-col">
-<span class="text-label-sm text-secondary uppercase tracking-wider">MULAI DARI</span>
-<span class="text-title-lg text-primary font-bold">Rp 95.000<span class="text-label-sm font-normal text-secondary">/jam</span></span>
-</div>
-</div>
-<button class="w-full mt-sm py-sm rounded-full border-2 border-primary text-primary font-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">Cek Jadwal</button>
-</div>
-</div>
-<!-- Card 6 -->
-<div class="glass-card rounded-lg overflow-hidden flex flex-col group">
-<div class="relative h-[200px]">
-<img class="w-full h-full object-cover" data-alt="A luxurious indoor swimming pool with crystal clear blue water and elegant architectural lighting. The scene is tranquil and high-end, featuring white stone surfaces and minimalist design. The atmosphere is one of serene wellness and professional precision, with soft teal accents and bright, clean reflections on the water's surface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUGeV_nl1wOBIfXHLzsHIM-j8DsF-M1FTNyOhw1yLjzMHEoC78dDxr2BPsa0V-Ogk_sACBWuiEVpD1bpCj_M6r_BNNpXdUsbDqeAev5LNmddIn1v6xAqZ4U-UKn3mQQ0fKbcYcyFM9LAf3IO6yFAk4izVYSWpd_SOobFjBKUDxWYayBehFWLepe0UPfz1VvDJxbe2eOaairgKIxzPL0bHBUGB7h8Cu4nfcS-We-nXp1dUitGEQ1-idjEYBbrvN1qN_2d89CAs0kFme">
-<div class="absolute top-sm right-sm bg-primary/90 text-on-primary px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
-<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                        4.9
-                    </div>
-<div class="absolute bottom-sm left-sm bg-white/80 backdrop-blur-md px-sm py-xs rounded-full text-label-sm text-primary font-bold">Renang</div>
-</div>
-<div class="p-md flex flex-col flex-1 gap-sm">
-<h3 class="font-headline-md text-primary truncate">Aquatic Spies Club</h3>
-<div class="flex items-center gap-xs text-secondary text-label-md">
-<span class="material-symbols-outlined text-[18px]">location_on</span>
-                        Jakarta Selatan, DKI Jakarta
-                    </div>
-<div class="mt-auto pt-md flex items-center justify-between">
-<div class="flex flex-col">
-<span class="text-label-sm text-secondary uppercase tracking-wider">MULAI DARI</span>
-<span class="text-title-lg text-primary font-bold">Rp 60.000<span class="text-label-sm font-normal text-secondary">/jam</span></span>
-</div>
-</div>
-<button class="w-full mt-sm py-sm rounded-full border-2 border-primary text-primary font-label-md hover:bg-primary hover:text-on-primary transition-all active:scale-95">Cek Jadwal</button>
-</div>
-</div>
+@endforelse
 </div>
 <!-- Pagination -->
-<div class="mt-xl flex justify-center items-center gap-sm">
-<button class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-secondary hover:text-primary transition-all">
-<span class="material-symbols-outlined">chevron_left</span>
-</button>
-<button class="w-10 h-10 rounded-full bg-primary text-on-primary font-bold">1</button>
-<button class="w-10 h-10 rounded-full glass-card text-secondary hover:text-primary font-bold transition-all">2</button>
-<button class="w-10 h-10 rounded-full glass-card text-secondary hover:text-primary font-bold transition-all">3</button>
-<span class="text-secondary">...</span>
-<button class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-secondary hover:text-primary transition-all">
-<span class="material-symbols-outlined">chevron_right</span>
-</button>
+@if($fields->hasPages())
+<div class="mt-xl">
+{{ $fields->links() }}
 </div>
+@endif
 </main>
-<!-- Footer -->
-<footer class="bg-surface-container-low w-full rounded-t-lg border-t border-outline-variant/30">
-<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop py-lg gap-md max-w-[1440px] mx-auto">
-<div class="font-headline-md text-headline-md text-primary font-extrabold">Spies Sport</div>
-<div class="flex gap-md">
-<a class="text-on-surface-variant font-medium hover:text-primary underline-offset-4 hover:underline transition-all" href="{{ route('kebijakanpriv') }}">Kebijakan Privasi</a>
-<a class="text-on-surface-variant font-medium hover:text-primary underline-offset-4 hover:underline transition-all" href="{{ route('layanan') }}">Ketentuan Layanan</a>
-<a class="text-on-surface-variant font-medium hover:text-primary underline-offset-4 hover:underline transition-all" href="{{ route('contact') }}">Hubungi Kami</a>
-<a class="text-on-surface-variant font-medium hover:text-primary underline-offset-4 hover:underline transition-all" href="{{ route('about') }}">Tentang Kami</a>
-</div>
-<div class="font-label-md text-label-md text-on-surface-variant">                ) 2024 Spies Sport. Tingkatkan permainanmu.
-            </div>
-</div>
-</footer>
+@include('partials.footer')
 <script>
         // Navbar scroll effect
         const mainNav = document.getElementById('mainNav');

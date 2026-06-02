@@ -65,7 +65,7 @@
 </div>
 <div class="flex-1 flex justify-center relative">
 <div class="absolute inset-0 bg-primary/5 rounded-full blur-3xl -z-10"></div>
-<img alt="Rules Character" class="w-full max-w-[400px] object-contain drop-shadow-xl" data-alt="A cheerful cartoonist-style character with big expressive eyes and a friendly smile, wearing a vibrant red sports jersey. The character is holding a giant scroll or paper marked with decorative checklist icons and friendly icons representing sports like soccer and badminton. The art style features thick, clean outlines and a warm cream and red color palette, creating a playful and welcoming atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUZZIzb8vDfluICRtpgWgMLZPUN_It--FGDBP-aAcxZ_frzJU_oTuJNEGHLBb3Qa5ZH9WapN9OwIG_mOaHFrYgKokxIfdETAbYd6xWStK6_De5oxI4cuZPNoJuhc8_MLgknupLGIidP3u3LMfg5e6-A7hrskUYLYb6Yqu8JU0aLKU0z1-CsPBA9DfVENngqYZsdWjwfLIgS1rwJJ9f6ZSb-tGbDOCkzveUpCtkqhjBEjGGdo0j9VwxqEMRj_bKufohWJjcpx0osMKl"/>
+<img alt="Layanan" class="w-full max-w-[400px] object-contain drop-shadow-xl" src="{{ asset('assets/images/characters/priv.png') }}"/>
 </div>
 </section>
 <!-- Bento Grid Content -->
@@ -142,40 +142,18 @@
 <p class="font-body-lg text-body-lg text-secondary">Tim support kami siap membantu 24/7 dengan gaya yang paling asik!</p>
 </div>
 <div class="flex gap-md">
-<button class="bg-primary text-white px-lg py-md rounded-full font-label-md text-label-md cartoon-border hover:translate-y-[-4px] transition-all">
+<a href="https://wa.me/6281234567890" target="_blank" class="bg-primary text-white px-lg py-md rounded-full font-label-md text-label-md cartoon-border hover:translate-y-[-4px] transition-all no-underline">
                     Chat WhatsApp
-                </button>
-<button class="bg-secondary text-white px-lg py-md rounded-full font-label-md text-label-md cartoon-border hover:translate-y-[-4px] transition-all">
+                </a>
+<a href="mailto:halo@spiessport.id" class="bg-secondary text-white px-lg py-md rounded-full font-label-md text-label-md cartoon-border hover:translate-y-[-4px] transition-all no-underline">
                     Kirim Email
-                </button>
+                </a>
 </div>
 </section>
 </main>
-<!-- Footer -->
-<footer class="bg-surface-container-low border-t border-outline-variant/30 w-full rounded-t-lg">
-<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-lg gap-md max-w-[1440px] mx-auto">
-<div class="space-y-sm text-center md:text-left">
-<div class="font-headline-md text-headline-md text-primary">Spies Sport</div>
-<p class="font-label-md text-on-surface-variant max-w-[300px]">© 2024 Spies Sport. Tingkatkan permainanmu di setiap langkah.</p>
-</div>
-<div class="flex gap-lg flex-wrap justify-center">
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('kebijakanpriv') }}">Kebijakan Privasi</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('layanan') }}">Ketentuan Layanan</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('contact') }}">Hubungi Kami</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('about') }}">Tentang Kami</a>
-</div>
-<div class="flex gap-md">
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">public</span>
-</div>
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">alternate_email</span>
-</div>
-</div>
-</div>
-</footer>
+@include('partials.footer')
 <!-- FAB for Quick Support -->
-<button class="fixed bottom-gutter right-gutter bg-primary-container text-on-primary-container w-16 h-16 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform z-50 cartoon-border border-white" id="fab">
+<button class="fixed bottom-gutter right-gutter bg-primary-container text-on-primary-container w-16 h-16 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform z-50 cartoon-border border-white" id="fab" onclick="window.location.href='https://wa.me/6281234567890'">
 <span class="material-symbols-outlined text-[32px]">question_answer</span>
 </button>
 <script>

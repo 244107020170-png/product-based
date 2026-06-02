@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -109,7 +109,7 @@
 
             <div class="slide-content absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-white">
                 <h1 class="text-4xl md:text-5xl font-bold">
-                    Cari Musuh Itu Gampang, <br> Cari Lawan Tanding yang Susah.
+                    Temukan Lawan Tanding yang <br> Sesuai dengan Levelmu.
                 </h1>
                 <p class="mt-4 text-lg text-white/80">Cari Lapangan Secepat Cari Lawan.</p>
             </div>
@@ -135,7 +135,7 @@
 
             <div class="slide-content absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-white">
                 <h1 class="text-4xl md:text-5xl font-bold">
-                    Sport for Everyone.
+                    Olahraga untuk Semua.
                 </h1>
                 <p class="mt-4 text-lg text-white/80">Main Bareng, Bukan Jaga Gengsi.</p>
             </div>

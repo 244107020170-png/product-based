@@ -70,7 +70,7 @@
 </div>
 <div class="md:col-span-5 relative flex justify-center">
 <div class="absolute -z-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl floating"></div>
-<img alt="Hero Character" class="w-full max-w-sm drop-shadow-2xl floating" data-alt="A vibrant and energetic cartoonist-style illustration of a diverse team of Indonesian athletes in dynamic sports poses. They are wearing sleek red and cream athletic gear with modern patterns. The background is a minimalist glassmorphic stadium with soft teal and white lighting, creating a bright and optimistic mood. The visual style is playful, professional, and full of motion with clean bold lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB68h0xwYBoQzdnav5UM_F1ZCTfT3vUCI9MNHRcUXzNOsgyQESxGF-1x-9N_5luNb4lC1w-DQZMT7O8rtD4Zv__7Ekd9HOvTqc4cFVofEFqRMnLtErLchvkFJ72o12ooYOg09zLKaKJ30POxruBvd1KIbE32azCOzg6yggyEtIzqOhapcECFvclRG2vczJnEuxJw0StAhL550VkOie5xsQFItYEVgVPSbRxtPnnzhlJZlffXChTl-36zRVMOHL7q78jXoYrYaMNrMnQ"/>
+<img alt="Hero Character" class="w-full max-w-sm drop-shadow-2xl floating" src="{{ asset('assets/images/characters/team.png') }}"/>
 </div>
 </div>
 </section>
@@ -186,8 +186,8 @@
 <h2 class="font-headline-lg text-on-primary mb-md">Siap Menjadi Bagian dari Perubahan?</h2>
 <p class="text-primary-fixed-dim font-body-lg mb-lg max-w-2xl mx-auto">Mari berkolaborasi membangun ekosistem olahraga yang lebih baik untuk Indonesia.</p>
 <div class="flex flex-col sm:flex-row gap-md justify-center">
-<button class="bg-surface text-primary px-xl py-md rounded-full font-label-md hover:scale-105 transition-transform">Hubungi Kami</button>
-<button class="border-2 border-surface/30 text-surface px-xl py-md rounded-full font-label-md hover:bg-surface/10 transition-colors">Lihat Program Kami</button>
+<a href="{{ route('contact') }}" class="bg-surface text-primary px-xl py-md rounded-full font-label-md hover:scale-105 transition-transform no-underline">Hubungi Kami</a>
+<a href="{{ route('lapangan') }}" class="border-2 border-surface/30 text-surface px-xl py-md rounded-full font-label-md hover:bg-surface/10 transition-colors no-underline">Lihat Program Kami</a>
 </div>
 </div>
 <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
@@ -195,29 +195,7 @@
 </div>
 </section>
 </main>
-<!-- Footer -->
-<footer class="bg-surface-container-low border-t border-outline-variant/30 w-full rounded-t-lg">
-<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-lg gap-md max-w-[1440px] mx-auto">
-<div class="space-y-sm text-center md:text-left">
-<div class="font-headline-md text-headline-md text-primary">Spies Sport</div>
-<p class="font-label-md text-on-surface-variant max-w-[300px]">© 2024 Spies Sport. Tingkatkan permainanmu di setiap langkah.</p>
-</div>
-<div class="flex gap-lg flex-wrap justify-center">
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('kebijakanpriv') }}">Kebijakan Privasi</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('layanan') }}">Ketentuan Layanan</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('contact') }}">Hubungi Kami</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('about') }}">Tentang Kami</a>
-</div>
-<div class="flex gap-md">
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">public</span>
-</div>
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">alternate_email</span>
-</div>
-</div>
-</div>
-</footer>
+@include('partials.footer')
 <script>
         // Navbar scroll effect
         window.addEventListener('scroll', () => {

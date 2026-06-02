@@ -116,7 +116,7 @@
 
         <title>Bantuan - {{ config('app.name', 'Spies Sport') }}</title>
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/pages.css', 'resources/js/app.js'])
     </head>
     <body
         class="min-h-screen text-[#00004d]"
@@ -282,5 +282,6 @@
                 });
             });
         </script>
+    @include('partials.footer')
     </body>
 </html>

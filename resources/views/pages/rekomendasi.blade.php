@@ -264,7 +264,7 @@ $empty = 5 - $full - $half;
 <span class="material-symbols-outlined text-yellow-500 text-[16px] md:text-[18px]">star</span>
 @endfor
 <span class="ml-1 font-bold text-[14px]">{{ number_format($field->rating, 1) }}</span>
-<span class="ml-1 text-[#5c403c] text-[12px] md:text-[14px]">({{ number_format($field->review_count) }} ulasan)</span>
+<span class="ml-1 text-[#5c403c] text-[12px] md:text-[14px]">({{ number_format($field->review_count ?? 0) }} ulasan)</span>
 </div>
 <div class="hidden sm:block h-4 w-[1px] bg-[#e6bdb8]"></div>
 <div class="text-[#5c403c] text-[12px] md:text-[14px] font-medium">{{ number_format($field->bookings_count ?? 0) }}+ Booking</div>

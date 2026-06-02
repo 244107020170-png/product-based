@@ -69,13 +69,13 @@
                     Temukan teman baru, pesan lapangan favorit, dan raih prestasi dalam satu platform yang ceria dan bertenaga.
                 </p>
 <div class="flex flex-col sm:flex-row gap-md pt-base">
-<button class="bg-primary text-on-primary px-[32px] py-[16px] rounded-full font-label-md shadow-xl shadow-primary/25 hover:-translate-y-1 transition-all active:scale-95">
+<a href="{{ route('choose.role') }}" class="no-underline bg-primary text-on-primary px-[32px] py-[16px] rounded-full font-label-md shadow-xl shadow-primary/25 hover:-translate-y-1 transition-all active:scale-95">
                         Main Sekarang
-                    </button>
-<button @guest onclick="showLoginPopup()" @endguest class="glass-card text-on-background px-[32px] py-[16px] rounded-full font-label-md border-white border hover:bg-white/80 transition-all active:scale-95 flex items-center justify-center gap-base">
+                    </a>
+<a href="{{ route('lapangan') }}" class="no-underline glass-card text-on-background px-[32px] py-[16px] rounded-full font-label-md border-white border hover:bg-white/80 transition-all active:scale-95 flex items-center justify-center gap-base">
                             <span class="material-symbols-outlined">search</span>
                         Cari Lapangan
-                    </button>
+                    </a>
 </div>
 </div>
 <div class="relative character-float" id="character-guide" style="transform: translate(2.9375px, 9.98022px);">
@@ -134,7 +134,7 @@
 <div class="flex-1 glass-card p-lg rounded-lg max-w-[500px]">
 <div class="flex items-center justify-between mb-lg">
 <h4 class="font-title-lg text-title-lg">Pilih Jadwal</h4>
-<div class="text-primary font-bold">10 April 2026</div>
+<div class="text-primary font-bold">{{ \Carbon\Carbon::now()->locale('id')->translatedFormat('j F Y') }}</div>
 </div>
 <div class="grid grid-cols-3 gap-md">
 <div class="p-md rounded-md bg-primary text-white text-center shadow-md">15:00</div>
@@ -197,9 +197,9 @@
 <h2 class="font-headline-lg text-headline-lg">Lapangan Populer</h2>
 <p class="text-secondary">Pilih arena terbaik untuk performa maksimalmu.</p>
 </div>
-<button @guest onclick="showLoginPopup()" @endguest class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
+<a href="{{ route('lapangan') }}" class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
                         Lihat Semua <span class="material-symbols-outlined">arrow_forward</span>
-                    </button>
+                    </a>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
 @php
@@ -232,12 +232,12 @@
 <span class="bg-primary/10 text-primary px-md py-xs rounded-full text-label-sm font-bold">Popular</span>
 @endif
 @if($popularField->bookings_count > 0)
-<span class="bg-amber-50 text-amber-700 px-md py-xs rounded-full text-label-sm font-bold">Most Booked</span>
+<span class="bg-amber-50 text-amber-700 px-md py-xs rounded-full text-label-sm font-bold">Paling Dibooking</span>
 @endif
 </div>
-<button @guest onclick="showLoginPopup()" @endguest onclick="window.location.href='{{ route('login') }}'" class="w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all">
+<a href="{{ route('lapangan') }}" class="block w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all text-center">
                             Cek Jadwal
-</button>
+</a>
 </div>
 </div>
 @empty
@@ -256,9 +256,9 @@
 <h2 class="font-headline-lg text-headline-lg">Promo & Diskon</h2>
 <p class="text-secondary">Jangan lewatkan penawaran spesial dari berbagai lapangan.</p>
 </div>
-<button @guest onclick="showLoginPopup()" @endguest class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
+<a href="{{ route('lapangan') }}" class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
     Lihat Semua <span class="material-symbols-outlined">arrow_forward</span>
-</button>
+</a>
 </div>
 @php
     $promoDiscounts = \App\Models\Discount::with('fields')
@@ -324,9 +324,9 @@
                 <span class="text-xl font-bold text-red-500">Rp{{ number_format($discountedPrice, 0, ',', '.') }}/jam</span>
                 <span class="text-sm text-gray-400 line-through">Rp{{ number_format($f->price_per_hour, 0, ',', '.') }}/jam</span>
             </div>
-            <button @guest onclick="showLoginPopup()" @endguest onclick="window.location.href='{{ route('login') }}'" class="block w-full bg-red-500 text-white text-center py-md rounded-full font-label-md font-bold shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all">
+            <a href="{{ route('booking.show', $f->id) }}" class="block w-full bg-red-500 text-white text-center py-md rounded-full font-label-md font-bold shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all no-underline">
                 Pesan Sekarang
-            </button>
+            </a>
         </div>
     </div>
     @endforeach
@@ -361,29 +361,7 @@
 </div>
 </div>
 </section>
-<!-- Footer -->
-<footer class="bg-surface-container-low border-t border-outline-variant/30 w-full rounded-t-lg">
-<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop py-lg gap-md max-w-[1440px] mx-auto">
-<div class="space-y-sm text-center md:text-left">
-<div class="font-headline-md text-headline-md text-primary">Spies Sport</div>
-<p class="font-label-md text-on-surface-variant max-w-[300px]">© 2024 Spies Sport. Tingkatkan permainanmu di setiap langkah.</p>
-</div>
-<div class="flex gap-lg flex-wrap justify-center">
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('kebijakanpriv') }}">Kebijakan Privasi</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('layanan') }}">Ketentuan Layanan</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('contact') }}">Hubungi Kami</a>
-<a class="font-label-md text-on-surface-variant hover:text-primary hover:underline underline-offset-4 transition-all" href="{{ route('about') }}">Tentang Kami</a>
-</div>
-<div class="flex gap-md">
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">public</span>
-</div>
-<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-outline-variant/20 hover:text-primary transition-all cursor-pointer">
-<span class="material-symbols-outlined">alternate_email</span>
-</div>
-</div>
-</div>
-</footer>
+@include('partials.footer')
 <!-- Login Popup -->
 <div id="loginPopup" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
     <div id="popupOverlay" class="absolute inset-0 bg-black/50"></div>
