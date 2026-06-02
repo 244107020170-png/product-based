@@ -29,7 +29,14 @@ class FieldController extends Controller
             $query->where('type', $type);
         }
 
-        $fields = $query->latest()->paginate(15)->withQueryString();
+        $sort = $request->get('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->oldest();
+        } else {
+            $query->latest();
+        }
+
+        $fields = $query->paginate(15)->withQueryString();
 
         $totalFields = Field::count();
         $pendingVerification = Field::where('verification_status', 'pending')->count();

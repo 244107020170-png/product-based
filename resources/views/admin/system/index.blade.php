@@ -36,11 +36,11 @@
         <h3 class="font-adm-headline text-adm-headline-sm text-adm-primary mb-6">Statistik Sistem</h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="text-center p-4 bg-adm-surface-low rounded-xl">
-                <p class="text-adm-label-sm text-adm-outline">Total User</p>
+                <p class="text-adm-label-sm text-adm-outline">Total Pengguna</p>
                 <p class="text-adm-headline-md font-bold text-adm-primary">{{ number_format($stats['total_users']) }}</p>
             </div>
             <div class="text-center p-4 bg-adm-surface-low rounded-xl">
-                <p class="text-adm-label-sm text-adm-outline">Total Booking</p>
+                <p class="text-adm-label-sm text-adm-outline">Total Pesanan</p>
                 <p class="text-adm-headline-md font-bold text-adm-primary">{{ number_format($stats['total_bookings']) }}</p>
             </div>
             <div class="text-center p-4 bg-adm-surface-low rounded-xl">

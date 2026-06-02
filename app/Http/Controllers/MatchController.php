@@ -14,11 +14,8 @@ use Illuminate\Validation\Rule;
 
 class MatchController extends Controller
 {
-    public function index()
+    private function buildCards()
     {
-        $user = auth()->user();
-        
-        // Only show upcoming public matches in "Cari tim" page, sorted by date
         $matches = Matchs::with(['field', 'paidPlayers', 'creator'])
             ->where('type', 'public')
             ->where('date', '>=', now()->toDateString())
@@ -29,7 +26,7 @@ class MatchController extends Controller
                 return $match->paidPlayers->count() < (int) $match->max_player;
             });
 
-        $cards = $matches->map(function (Matchs $match) {
+        return $matches->map(function (Matchs $match) {
             $fieldName = $match->field?->name ?? 'Lapangan';
             $sport = $match->sport ?: $this->detectSport($match->title . ' ' . $fieldName);
             $playersJoined = $match->paidPlayers->count();
@@ -54,8 +51,13 @@ class MatchController extends Controller
                 'creator_gender' => $match->creator?->gender,
             ];
         })->values();
+    }
 
-        // User's upcoming bookings (confirmed or waiting)
+    public function index()
+    {
+        $user = auth()->user();
+        
+        $cards = $this->buildCards();
         $upcomingBookings = \App\Models\Booking::where('user_id', $user->id)
             ->where('status', \App\Enums\BookingStatus::CONFIRMED)
             ->where(function($q) {
@@ -179,6 +181,11 @@ class MatchController extends Controller
         if ($points >= 21) return 'Pro';
         if ($points >= 6) return 'Aktif';
         return 'Pemula';
+    }
+
+    public function freshCards()
+    {
+        return response()->json($this->buildCards());
     }
 
     public function create()

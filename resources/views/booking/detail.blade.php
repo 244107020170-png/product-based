@@ -204,6 +204,12 @@
                         <span style="color: #666; font-size: 15px;">Tanggal Bermain</span>
                         <span style="font-weight: 700; color: #02025b; font-size: 15px;">{{ \Carbon\Carbon::parse($booking->date)->locale('id')->translatedFormat('l, d F Y') }}</span>
                     </div>
+                    @if($booking->court_number)
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(0,0,77,.1);">
+                        <span style="color: #666; font-size: 15px;">Lapangan</span>
+                        <span style="font-weight: 700; color: #02025b; font-size: 15px;">Lapangan {{ $booking->court_number }}</span>
+                    </div>
+                    @endif
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: #666; font-size: 15px;">Waktu</span>
                         <span style="font-weight: 700; color: #02025b; font-size: 15px;">{{ $booking->start_time }} - {{ $booking->end_time }}</span>

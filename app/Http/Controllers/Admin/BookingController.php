@@ -36,7 +36,14 @@ class BookingController extends Controller
             $query->whereHas('field', fn($fq) => $fq->where('owner_id', $ownerId));
         }
 
-        $bookings = $query->latest()->paginate(15)->withQueryString();
+        $sort = $request->get('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->oldest();
+        } else {
+            $query->latest();
+        }
+
+        $bookings = $query->paginate(15)->withQueryString();
 
         $totalBookings = Booking::count();
         $owners = User::where('role', 'owner')->pluck('name', 'id');

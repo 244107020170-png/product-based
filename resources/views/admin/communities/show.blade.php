@@ -4,7 +4,7 @@
 @section('content')
 <div class="space-y-8">
     <div class="flex items-center gap-4">
-        <a href="{{ route('admin.communities') }}" class="flex items-center gap-2 text-adm-outline hover:text-adm-dark transition-colors">
+        <a href="{{ route('admin.communities') }}" class="flex items-center gap-2 text-adm-outline hover:text-adm-dark transition-colors no-underline">
             <span class="material-symbols-outlined">arrow_back</span>
             <span class="font-adm-body text-adm-label-md">Kembali</span>
         </a>

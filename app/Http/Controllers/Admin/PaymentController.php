@@ -10,8 +10,7 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Booking::with(['user:id,name,email', 'field:id,name,owner_id', 'field.owner:id,name'])
-            ->whereNotNull('paid_at');
+        $query = Booking::with(['user:id,name,email', 'field:id,name,owner_id', 'field.owner:id,name']);
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -24,7 +23,14 @@ class PaymentController extends Controller
             $query->where('status', $status);
         }
 
-        $payments = $query->latest('paid_at')->paginate(15)->withQueryString();
+        $sort = $request->get('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->oldest('paid_at');
+        } else {
+            $query->latest('paid_at');
+        }
+
+        $payments = $query->paginate(15)->withQueryString();
 
         $totalRevenue = Booking::whereIn('status', ['confirmed', 'completed'])
             ->with('field.discounts')

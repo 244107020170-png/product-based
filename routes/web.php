@@ -488,6 +488,13 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/system', [SystemController::class, 'index'])->name('system');
 
+        Route::post('/logout', function () {
+            Auth::guard('web')->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+            return redirect('/admin/login');
+        })->name('logout');
+
         Route::get('/reports', [ReportController::class, 'index'])->name('reports');
 
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
@@ -1028,6 +1035,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/matches', [ActivityController::class, 'index'])->name('activity.index');
     Route::get('/cari-tim', [MatchController::class, 'index'])->name('matches.index');
+    Route::get('/cari-tim/fresh', [MatchController::class, 'freshCards'])->name('matches.fresh');
     Route::get('/buat-match', [MatchController::class, 'create'])->name('matches.create');
     Route::post('/buat-match', [MatchController::class, 'store'])->name('matches.store');
     Route::get('/cari-tim/{match}', [MatchController::class, 'show'])->name('matches.show');

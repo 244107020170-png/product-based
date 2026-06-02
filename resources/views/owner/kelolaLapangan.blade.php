@@ -243,6 +243,7 @@ function facilityIcon($name) {
                         <div class="field-actions">
                             <button class="edit-btn" onclick="location.href='{{ route('owner.field.edit', $field->id) }}'">Ubah</button>
                             <button class="schedule-btn" onclick="location.href='{{ url('owner/jadwalDanSlot?field_id=' . $field->id) }}'">Jadwal</button>
+                            <button class="delete-btn" data-field-id="{{ $field->id }}" data-field-name="{{ $field->name }}">Hapus</button>
                         </div>
                     </div>
                 </div>
@@ -323,6 +324,24 @@ function facilityIcon($name) {
 
 </div>
 
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:20px;padding:32px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fa-regular fa-trash-can" style="font-size:24px;color:#dc2626;"></i>
+        </div>
+        <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1e293b;">Hapus Lapangan</h3>
+        <p style="margin:0 0 24px;font-size:14px;color:#64748b;" id="deleteModalText">Apakah Anda yakin ingin menghapus lapangan <strong>ini</strong>?</p>
+        <form method="POST" id="deleteForm">
+            @csrf
+            @method('DELETE')
+            <div style="display:flex;gap:12px;">
+                <button type="button" onclick="closeDeleteModal()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #e2e8f0;background:white;color:#475569;font-size:14px;font-weight:600;cursor:pointer;">Batal</button>
+                <button type="submit" style="flex:1;padding:12px;border-radius:12px;border:none;background:#dc2626;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">Hapus</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @include('owner.faq-popup')
 
 <style>
@@ -334,18 +353,25 @@ function facilityIcon($name) {
 .stats-card { border-radius:25px; }
 .field-actions { display:flex; gap:8px; flex-wrap:wrap; }
 .field-actions .edit-btn,
-.field-actions .schedule-btn { flex:1; min-width:80px; padding:10px; font-size:13px; border-radius:10px; }
+.field-actions .schedule-btn,
+.field-actions .delete-btn { flex:1; min-width:80px; padding:10px; font-size:13px; border-radius:10px; }
+.field-actions .delete-btn { background:#fee2e2; color:#dc2626; border:1px solid #fecaca; cursor:pointer; font-weight:600; transition:.15s; }
+.field-actions .delete-btn:hover { background:#fecaca; }
+.field-actions .schedule-btn { background:#dbeafe; color:#2563eb; border:1px solid #bfdbfe; cursor:pointer; font-weight:600; transition:.15s; }
+.field-actions .schedule-btn:hover { background:#bfdbfe; }
 @media (max-width:768px) {
     .filter-section { flex-wrap:wrap; }
     .filter-section select,
     .filter-section button { flex:1; min-width:120px; }
     .field-actions .edit-btn,
-    .field-actions .schedule-btn { padding:8px; font-size:12px; }
+    .field-actions .schedule-btn,
+    .field-actions .delete-btn { padding:8px; font-size:12px; }
 }
 @media (max-width:480px) {
     .field-actions { flex-direction:column; }
     .field-actions .edit-btn,
-    .field-actions .schedule-btn { width:100%; }
+    .field-actions .schedule-btn,
+    .field-actions .delete-btn { width:100%; }
 }
 </style>
 <script>
@@ -399,6 +425,34 @@ function facilityIcon($name) {
         resetBtn.addEventListener('click', function() {
             filterSelect.value = '';
             applyFilter('');
+        });
+    }
+
+    // delete modal
+    var deleteModal = document.getElementById('deleteModal');
+    var deleteForm = document.getElementById('deleteForm');
+    var deleteModalText = document.getElementById('deleteModalText');
+    var deleteFormAction = '{{ route("owner.field.destroy", "__ID__") }}';
+
+    function openDeleteModal(fieldId, fieldName) {
+        deleteForm.action = deleteFormAction.replace('__ID__', fieldId);
+        deleteModalText.innerHTML = 'Apakah Anda yakin ingin menghapus lapangan <strong>' + fieldName + '</strong>? Tindakan ini tidak dapat dibatalkan.';
+        deleteModal.style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        deleteModal.style.display = 'none';
+    }
+
+    document.querySelectorAll('.delete-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            openDeleteModal(this.getAttribute('data-field-id'), this.getAttribute('data-field-name'));
+        });
+    });
+
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteModal();
         });
     }
 })();

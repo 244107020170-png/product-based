@@ -9,15 +9,11 @@
             <h2 class="font-adm-headline text-[22px] font-bold text-adm-primary tracking-tight">Ringkasan Eksekutif</h2>
             <p class="text-adm-on-surface-variant font-adm-body text-[13px] mt-0.5">Selamat datang kembali. Berikut adalah performa platform Anda hari ini.</p>
         </div>
-        <button class="flex items-center gap-1.5 bg-adm-dark text-adm-on-primary px-4 py-2 rounded-lg font-adm-body text-[12px] font-semibold hover:opacity-90 transition-all active:scale-95">
-            <span class="material-symbols-outlined text-[16px]">download</span>
-            Unduh Laporan Bulanan
-        </button>
     </div>
 
     <!-- Global Stats Grid (Bento Style) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Total Player -->
+        <!-- Total Pemain -->
         <div class="bg-adm-surface-lowest p-4 rounded-[16px] soft-shadow border border-adm-outline-variant group hover:border-adm-secondary transition-all">
             <div class="flex items-start justify-between">
                 <div class="w-10 h-10 bg-adm-secondary-container/20 text-adm-secondary rounded-[10px] flex items-center justify-center">
@@ -194,7 +190,7 @@
 
     <!-- Detailed Status Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <!-- User Aktif -->
+        <!-- Pengguna Aktif -->
         <div class="bg-adm-surface-lowest p-4 rounded-[16px] soft-shadow border border-adm-outline-variant flex flex-col">
             <div class="flex items-center gap-2.5 mb-3">
                 <div class="w-8 h-8 rounded-full bg-adm-success/10 text-adm-success flex items-center justify-center">
@@ -269,7 +265,7 @@
                 <h3 class="font-adm-headline text-[16px] font-bold text-adm-primary">Transaksi Terbaru</h3>
                 <p class="font-adm-body text-[12px] text-adm-outline">Update real-time pembayaran dari pengguna</p>
             </div>
-            <a href="{{ route('admin.bookings') }}" class="text-adm-dark font-adm-body text-[12px] font-semibold hover:underline">Lihat Semua</a>
+            <a href="{{ route('admin.bookings') }}" class="text-adm-dark font-adm-body text-[12px] font-semibold hover:opacity-80">Lihat Semua</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">

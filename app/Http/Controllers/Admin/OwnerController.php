@@ -24,7 +24,14 @@ class OwnerController extends Controller
             });
         }
 
-        $owners = $query->latest()->paginate(15)->withQueryString();
+        $sort = $request->get('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->oldest();
+        } else {
+            $query->latest();
+        }
+
+        $owners = $query->paginate(15)->withQueryString();
 
         $totalOwners = User::where('role', 'owner')->count();
         $activeToday = User::where('role', 'owner')

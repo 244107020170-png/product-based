@@ -25,8 +25,6 @@ class UserController extends Controller
         $sort = $request->get('sort', 'latest');
         if ($sort === 'oldest') {
             $query->oldest();
-        } elseif ($sort === 'name') {
-            $query->orderBy('name');
         } else {
             $query->latest();
         }

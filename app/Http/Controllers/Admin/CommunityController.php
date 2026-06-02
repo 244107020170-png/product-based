@@ -25,7 +25,14 @@ class CommunityController extends Controller
             $query->where('sport_category', $sport);
         }
 
-        $communities = $query->latest()->paginate(15)->withQueryString();
+        $sort = $request->get('sort', 'latest');
+        if ($sort === 'oldest') {
+            $query->oldest();
+        } else {
+            $query->latest();
+        }
+
+        $communities = $query->paginate(15)->withQueryString();
 
         $totalCommunities = Community::count();
         $sports = Community::select('sport_category')->distinct()->pluck('sport_category');

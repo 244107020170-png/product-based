@@ -4,7 +4,7 @@
 @section('content')
 <div class="space-y-8">
     <div class="flex items-center gap-4">
-        <a href="{{ route('admin.owners') }}" class="flex items-center gap-2 text-adm-outline hover:text-adm-dark transition-colors">
+        <a href="{{ route('admin.owners') }}" class="flex items-center gap-2 text-adm-outline hover:text-adm-dark transition-colors no-underline">
             <span class="material-symbols-outlined">arrow_back</span>
             <span class="font-adm-body text-adm-label-md">Kembali</span>
         </a>
@@ -31,7 +31,7 @@
                 <div class="bg-adm-surface-low rounded-xl p-4 border border-adm-outline-variant">
                     <p class="font-adm-body text-adm-label-md text-adm-primary">{{ $field->name }}</p>
                     <p class="text-adm-body-sm text-adm-outline mt-1">{{ $field->type }} - {{ $field->location }}</p>
-                    <p class="text-adm-body-sm text-adm-outline">{{ number_format($field->bookings_count) }} booking</p>
+                    <p class="text-adm-body-sm text-adm-outline">{{ number_format($field->bookings_count) }} pesanan</p>
                 </div>
                 @empty
                 <p class="text-adm-outline font-adm-body text-adm-body-md col-span-3">Belum ada lapangan</p>

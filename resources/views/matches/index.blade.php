@@ -1676,7 +1676,7 @@
         return;
     }
 
-    const allCards = (Array.isArray(allCardsRaw) ? allCardsRaw : Object.values(allCardsRaw || {}))
+    let allCards = (Array.isArray(allCardsRaw) ? allCardsRaw : Object.values(allCardsRaw || {}))
         .filter((item) => item && typeof item === 'object')
         .map((item, index) => ({
             ...item,
@@ -1889,6 +1889,47 @@
 
     // Initial render
     buildDeck();
+
+    // ── Auto-refresh expired/full cards every 30 seconds ──
+    const pollFreshCards = () => {
+        fetch('{{ route("matches.fresh") }}', {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(freshData => {
+            if (!Array.isArray(freshData)) return;
+            const freshIds = new Set(freshData.map(c => String(c.id)));
+
+            const beforeCount = allCards.length;
+            const removedKeys = new Set();
+            allCards = allCards.filter(c => {
+                const exists = freshIds.has(c._swipeKey);
+                if (!exists) removedKeys.add(c._swipeKey);
+                return exists;
+            });
+
+            if (removedKeys.size === 0) return;
+
+            removedKeys.forEach(key => swipedKeys.delete(key));
+
+            if (deck.length > 0 && removedKeys.has(deck[0]._swipeKey)) {
+                cardEl.style.transition = 'all 0.2s ease';
+                cardEl.style.transform = 'scale(0.9)';
+                cardEl.style.opacity = '0';
+                setTimeout(() => {
+                    cardEl.style.transform = '';
+                    cardEl.style.opacity = '';
+                    buildDeck();
+                }, 200);
+            } else {
+                buildDeck();
+            }
+        })
+        .catch(() => {});
+    };
+
+    setTimeout(pollFreshCards, 5000);
+    setInterval(pollFreshCards, 30000);
 })();
 </script>
 

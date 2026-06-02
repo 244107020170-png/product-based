@@ -16,12 +16,6 @@
                     @endforeach
                 </select>
             </form>
-            <button class="flex items-center gap-2 bg-adm-dark text-adm-on-primary px-4 py-2 rounded-lg font-adm-body text-adm-label-sm hover:opacity-90">
-                <span class="material-symbols-outlined text-[18px]">download</span> PDF
-            </button>
-            <button class="flex items-center gap-2 bg-adm-dark text-adm-on-primary px-4 py-2 rounded-lg font-adm-body text-adm-label-sm hover:opacity-90">
-                <span class="material-symbols-outlined text-[18px]">table</span> Excel
-            </button>
         </div>
     </div>
 
@@ -60,7 +54,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-adm-surface-lowest rounded-[20px] soft-shadow border border-adm-outline-variant overflow-hidden">
             <div class="px-6 py-4 border-b border-adm-outline-variant">
-                <h3 class="font-adm-headline text-adm-headline-sm text-adm-primary">Booking per Kota</h3>
+                <h3 class="font-adm-headline text-adm-headline-sm text-adm-primary">Pesanan per Kota</h3>
             </div>
             <div class="p-6">
                 @forelse ($bookingsPerCity as $city)
@@ -76,7 +70,7 @@
 
         <div class="bg-adm-surface-lowest rounded-[20px] soft-shadow border border-adm-outline-variant overflow-hidden">
             <div class="px-6 py-4 border-b border-adm-outline-variant">
-                <h3 class="font-adm-headline text-adm-headline-sm text-adm-primary">Booking per Olahraga</h3>
+                <h3 class="font-adm-headline text-adm-headline-sm text-adm-primary">Pesanan per Olahraga</h3>
             </div>
             <div class="p-6">
                 @forelse ($bookingsPerSport as $sport => $count)

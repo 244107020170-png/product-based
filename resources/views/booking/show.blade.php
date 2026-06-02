@@ -18,6 +18,12 @@
     $selectedFieldJson = $field->makeVisible($visibleFields);
     $allFieldsJson = $allFields->map(fn($f) => $f->makeVisible($visibleFields))->toArray();
     
+    $numCourts = $field->number_of_courts ?? 1;
+    $courtNames = [];
+    for ($i = 0; $i < $numCourts; $i++) {
+        $courtNames[] = ['id' => $i + 1, 'name' => 'Lapangan ' . ($i + 1), 'isFull' => ($numCourts === 1 ? false : $i === 0)];
+    }
+
     // Sidebar
     $sidebarItems = [
         ['label'=>'Beranda',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>true],
@@ -594,16 +600,9 @@ function bookingApp() {
             isFull: [0].includes(index) // e.g. 07.00 is full (red)
         })),
         
-        // Mock subfields for the current venue
-        subFields: [
-            { id: 1, name: 'Lapangan A', isFull: true }, // Full (red)
-            { id: 2, name: 'Lapangan B', isFull: false }, // Selected
-            { id: 3, name: 'Lapangan C', isFull: false },
-            { id: 4, name: 'Lapangan D', isFull: false },
-            { id: 5, name: 'Lapangan E', isFull: false },
-            { id: 6, name: 'Lapangan F', isFull: false }
-        ],
-        selectedSubfield: { id: 2, name: 'Lapangan B', isFull: false },
+        // Dynamic subfields from owner's number_of_courts
+        subFields: @json($courtNames),
+        selectedSubfield: null,
         
         selectedDate: '',
         selectedStartTime: '',
