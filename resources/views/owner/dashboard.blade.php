@@ -32,13 +32,13 @@
                 </a>
                 <button class="notif-btn" onclick="toggleFaqPopup()"><i class="fa-solid fa-headset"></i></button>
                 <a href="{{ route('owner.bantuan') }}" class="notif-btn question" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fa-solid fa-circle-question"></i></a>
-                <div class="profile-box">
+                <a href="#" class="profile-box" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="text-decoration:none;color:inherit;">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
                         <p>Profil Pemilik</p>
                     </div>
                     <img src="https://i.pravatar.cc/100" alt="Profil">
-                </div>
+                </a>
             </div>
         </div>
 
@@ -118,10 +118,26 @@
                             <tbody class="divide-y divide-gray-50">
                                 @foreach($recentBookings as $b)
                                 @php
-                                    $statusClass = match($b->status) {
-                                        'confirmed', 'completed', 'paid' => 'text-green-700 bg-green-50',
-                                        'pending', 'waiting_confirmation', 'waiting_payment' => 'text-yellow-700 bg-yellow-50',
-                                        'cancelled', 'rejected', 'expired' => 'text-red-700 bg-red-50',
+                                    $statusLabel = match($b->status) {
+                                        'pending', 'waiting_payment' => 'Menunggu Pembayaran',
+                                        'waiting_confirmation' => 'Menunggu Konfirmasi',
+                                        'paid'      => 'Dibayar',
+                                        'confirmed' => 'Dikonfirmasi',
+                                        'completed' => 'Selesai',
+                                        'cancelled' => 'Dibatalkan',
+                                        'rejected'  => 'Ditolak',
+                                        'expired'   => 'Kadaluarsa',
+                                        default     => ucfirst($b->status),
+                                    };
+                                    $badgeClass = match($b->status) {
+                                        'paid' => 'text-green-700 bg-green-50',
+                                        'confirmed' => 'text-green-700 bg-green-50',
+                                        'completed' => 'text-blue-700 bg-blue-50',
+                                        'pending', 'waiting_payment' => 'text-yellow-700 bg-yellow-50',
+                                        'waiting_confirmation' => 'text-orange-700 bg-orange-50',
+                                        'cancelled' => 'text-red-700 bg-red-50',
+                                        'rejected' => 'text-red-800 bg-red-100',
+                                        'expired' => 'text-red-700 bg-red-50',
                                         default => 'text-gray-700 bg-gray-50',
                                     };
                                 @endphp
@@ -140,21 +156,7 @@
                                         {{ \Carbon\Carbon::parse($b->start_time)->format('H.i') }} - {{ \Carbon\Carbon::parse($b->end_time)->format('H.i') }}
                                     </td>
                                     <td class="py-3 pr-4">
-                                        @php
-                                            $statusLabel = match($b->status) {
-                                                'confirmed' => 'Terkonfirmasi',
-                                                'completed' => 'Selesai',
-                                                'paid' => 'Dibayar',
-                                                'pending' => 'Menunggu',
-                                                'waiting_confirmation' => 'Menunggu Konfirmasi',
-                                                'waiting_payment' => 'Menunggu Pembayaran',
-                                                'cancelled' => 'Dibatalkan',
-                                                'rejected' => 'Ditolak',
-                                                'expired' => 'Kedaluwarsa',
-                                                default => ucfirst($b->status),
-                                            };
-                                        @endphp
-                                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">
+                                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $badgeClass }}">
                                             {{ $statusLabel }}
                                         </span>
                                     </td>

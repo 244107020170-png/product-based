@@ -64,7 +64,7 @@
                     <i class="fa-solid fa-circle-question"></i>
                 </a>
 
-                <div class="profile-box">
+                <a href="#" class="profile-box" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="text-decoration:none;color:inherit;">
 
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
@@ -74,7 +74,7 @@
                     <img src="https://i.pravatar.cc/100"
                          alt="Profil">
 
-                </div>
+                </a>
 
             </div>
 
@@ -102,33 +102,21 @@
                 {{-- STATS --}}
                 @php
                     $fieldIds = auth()->user()->fields->pluck('id');
-                    $totalFields = $fieldIds->count();
-                    $availableFields = \App\Models\Field::whereIn('id', $fieldIds)->where('is_available', true)->count();
-                    $inMaintenance = \App\Models\Maintenance::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
-                        ->where('status', '!=', 'Selesai')->count();
-                    $bookedCount = \App\Models\Booking::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
-                        ->whereIn('status', ['pending', 'waiting_payment', 'paid', 'confirmed', 'completed'])->count();
+                    $confirmedCount = \App\Models\Booking::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
+                        ->where('status', 'confirmed')->count();
+                    $completedCount = \App\Models\Booking::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
+                        ->where('status', 'completed')->count();
+                    $cancelledCount = \App\Models\Booking::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))
+                        ->where('status', 'cancelled')->count();
+                    $bookedCount = \App\Models\Booking::whereHas('field', fn($q) => $q->whereIn('id', $fieldIds))->count();
                 @endphp
                 <div class="stats-grid">
 
                     <div class="stats-card">
 
                         <div>
-                            <p>Total Lapangan</p>
-                            <h2>{{ $totalFields }}</h2>
-                        </div>
-
-                        <div class="stats-icon blue">
-                            <i class="fa-solid fa-futbol"></i>
-                        </div>
-
-                    </div>
-
-                    <div class="stats-card">
-
-                        <div>
-                            <p>Tersedia</p>
-                            <h2>{{ $availableFields }}</h2>
+                            <p>Dikonfirmasi</p>
+                            <h2>{{ $confirmedCount }}</h2>
                         </div>
 
                         <div class="stats-icon green">
@@ -140,12 +128,25 @@
                     <div class="stats-card">
 
                         <div>
-                            <p>Perbaikan</p>
-                            <h2>{{ $inMaintenance }}</h2>
+                            <p>Selesai</p>
+                            <h2>{{ $completedCount }}</h2>
                         </div>
 
-                        <div class="stats-icon yellow">
-                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                        <div class="stats-icon blue">
+                            <i class="fa-solid fa-flag-checkered"></i>
+                        </div>
+
+                    </div>
+
+                    <div class="stats-card">
+
+                        <div>
+                            <p>Dibatalkan</p>
+                            <h2>{{ $cancelledCount }}</h2>
+                        </div>
+
+                        <div class="stats-icon red">
+                            <i class="fa-solid fa-ban"></i>
                         </div>
 
                     </div>
@@ -157,7 +158,7 @@
                             <h2>{{ $bookedCount }}</h2>
                         </div>
 
-                        <div class="stats-icon red">
+                        <div class="stats-icon yellow">
                             <i class="fa-solid fa-calendar-check"></i>
                         </div>
 
@@ -279,7 +280,7 @@
                                     data-time-sort="{{ $booking->start_time }}"
                                     data-duration="{{ $duration }}"
                                     data-status="{{ $statusLabel }}"
-                                    data-price="Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}"
+                                    data-price="Rp{{ number_format($booking->subtotal_price ?? 0, 0, ',', '.') }}"
                                     data-raw-status="{{ $booking->status }}"
                                     data-court-number="{{ $booking->court_number ?? '' }}">
 
@@ -335,7 +336,7 @@
                                     </td>
 
                                     <td>
-                                        Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}
+                                        Rp{{ number_format($booking->subtotal_price ?? 0, 0, ',', '.') }}
                                     </td>
 
                                     <td>

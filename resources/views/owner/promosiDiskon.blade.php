@@ -32,13 +32,13 @@
                 </a>
                 <button class="notif-btn" onclick="toggleFaqPopup()"><i class="fa-solid fa-headset"></i></button>
                 <a href="{{ route('owner.bantuan') }}" class="notif-btn question" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fa-solid fa-circle-question"></i></a>
-                <div class="profile-box">
+                <a href="#" class="profile-box" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="text-decoration:none;color:inherit;">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
                         <p>Profil Pemilik</p>
                     </div>
                     <img src="https://i.pravatar.cc/100" alt="Profil">
-                </div>
+                </a>
             </div>
         </div>
 
@@ -63,15 +63,8 @@
             </div>
             <div class="stats-card">
                 <div>
-                    <p>Total Klaim</p>
-                    <h2 class="blue-text">{{ number_format($totalClaims ?? 0, 0, ',', '.') }}</h2>
-                </div>
-                <div class="stats-icon blue"><i class="fa-solid fa-ticket"></i></div>
-            </div>
-            <div class="stats-card">
-                <div>
                     <p>Estimasi Pendapatan</p>
-                    <h2 class="yellow-text">Rp {{ number_format($discounts->sum(fn($d) => $d->usage_count * ($d->type === 'fixed' ? $d->value : 50000)), 0, ',', '.') }}</h2>
+                    <h2 class="yellow-text">Rp {{ number_format($estimatedRevenue ?? 0, 0, ',', '.') }}</h2>
                 </div>
                 <div class="stats-icon yellow"><i class="fa-solid fa-coins"></i></div>
             </div>
@@ -178,7 +171,6 @@
                                     <th class="px-6 py-4">Nama Promo</th>
                                     <th class="px-6 py-4">Lapangan</th>
                                     <th class="px-6 py-4">Potongan</th>
-                                    <th class="px-6 py-4">Klaim</th>
                                     <th class="px-6 py-4 text-right">Status</th>
                                     <th class="px-6 py-4 text-right">Aksi</th>
                                 </tr>
@@ -197,7 +189,6 @@
                                             @else Rp{{ number_format($d->value, 0, ',', '.') }} @endif
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ number_format($d->usage_count) }} / {{ $d->usage_limit ?? '∞' }}</td>
                                     <td class="px-6 py-4 text-right">
                                         <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
                                             {{ $d->is_active && $d->end_date >= now() ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500' }}">
@@ -320,10 +311,6 @@
                     <input type="text" name="name" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none" placeholder="Contoh: Promo Akhir Pekan">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Promo (opsional)</label>
-                    <input type="text" name="code" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none" placeholder="Contoh: WEEKEND25">
-                </div>
-                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi</label>
                     <textarea name="description" rows="2" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none" placeholder="Jelaskan promo Anda..."></textarea>
                 </div>
@@ -348,16 +335,6 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Berakhir</label>
                         <input type="date" name="end_date" required value="{{ now()->addDays(7)->format('Y-m-d') }}" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Min. Pemesanan (Rp)</label>
-                        <input type="number" name="min_booking_amount" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Batas Klaim</label>
-                        <input type="number" name="usage_limit" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none" placeholder="Tidak terbatas">
                     </div>
                 </div>
                 <div>
@@ -411,10 +388,6 @@ function editPromo(id) {
                     <input type="text" name="name" value="${d.name}" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Promo</label>
-                    <input type="text" name="code" value="${d.code || ''}" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none">
-                </div>
-                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi</label>
                     <textarea name="description" rows="2" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none">${d.description || ''}</textarea>
                 </div>
@@ -439,16 +412,6 @@ function editPromo(id) {
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Berakhir</label>
                         <input type="date" name="end_date" value="${d.end_date}" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Min. Pemesanan (Rp)</label>
-                        <input type="number" name="min_booking_amount" value="${d.min_booking_amount || ''}" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Batas Klaim</label>
-                        <input type="number" name="usage_limit" value="${d.usage_limit || ''}" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none">
                     </div>
                 </div>
                 <div>

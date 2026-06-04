@@ -82,14 +82,14 @@ function facilityIcon($name) {
                     <i class="fa-solid fa-circle-question"></i>
                 </a>
 
-                <div class="profile-box">
+                <a href="#" class="profile-box" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="text-decoration:none;color:inherit;">
                     <div>
                         <h5>{{ auth()->user()->name }}</h5>
                         <p>Profil Pemilik</p>
                     </div>
 
                     <img src="https://i.pravatar.cc/100" alt="Profil">
-                </div>
+                </a>
             </div>
         </div>
 

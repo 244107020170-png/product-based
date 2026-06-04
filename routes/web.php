@@ -541,7 +541,7 @@ Route::middleware('auth')->group(function () {
             })->whereDate('date', Carbon::today())->count();
             $monthlyRevenue = \App\Models\Booking::whereHas('field', function ($q) use ($user) {
                 $q->where('owner_id', $user->id);
-            })->whereIn('status', ['completed', 'confirmed'])->count() * 50000;
+            })->whereIn('status', ['completed', 'confirmed'])->with('field.discounts')->get()->sum('subtotal_price');
 
             $reviewStats = \App\Models\Review::whereHas('field', function ($q) use ($user) {
                 $q->where('owner_id', $user->id);
@@ -613,21 +613,21 @@ Route::middleware('auth')->group(function () {
                 ->with('fields')->orderBy('created_at', 'desc')->get();
             $activePromos = \App\Models\Discount::where('owner_id', $user->id)
                 ->active()->with('fields')->get();
-            $totalClaims = \App\Models\Discount::where('owner_id', $user->id)->sum('usage_count');
             $fields = \App\Models\Field::where('owner_id', $user->id)->get();
-            return view('owner.promosiDiskon', compact('discounts', 'activePromos', 'totalClaims', 'fields'));
+            $estimatedRevenue = \App\Models\Booking::whereHas('field.discounts', function ($q) use ($user) {
+                $q->where('owner_id', $user->id);
+            })->whereIn('status', ['completed', 'confirmed'])->with('field.discounts')->get()->sum('subtotal_price');
+            return view('owner.promosiDiskon', compact('discounts', 'activePromos', 'fields', 'estimatedRevenue'));
         })->name('owner.promosiDiskon');
 
         Route::post('/discounts/store', function () {
             $data = request()->validate([
                 'field_id'          => 'nullable|exists:fields,id',
                 'name'              => 'required|string|max:255',
-                'code'              => 'nullable|string|max:50|unique:discounts,code',
                 'description'       => 'nullable|string',
                 'type'              => 'required|in:percentage,fixed',
                 'value'             => 'required|numeric|min:0',
                 'min_booking_amount'=> 'nullable|numeric|min:0',
-                'usage_limit'       => 'nullable|integer|min:0',
                 'start_date'        => 'required|date',
                 'end_date'          => 'required|date|after_or_equal:start_date',
             ]);
@@ -654,12 +654,10 @@ Route::middleware('auth')->group(function () {
             $data = request()->validate([
                 'field_id'          => 'nullable|exists:fields,id',
                 'name'              => 'required|string|max:255',
-                'code'              => 'nullable|string|max:50|unique:discounts,code,'.$discount->id,
                 'description'       => 'nullable|string',
                 'type'              => 'required|in:percentage,fixed',
                 'value'             => 'required|numeric|min:0',
                 'min_booking_amount'=> 'nullable|numeric|min:0',
-                'usage_limit'       => 'nullable|integer|min:0',
                 'start_date'        => 'required|date',
                 'end_date'          => 'required|date|after_or_equal:start_date',
             ]);
@@ -1142,37 +1140,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationsController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationsController::class, 'markAllAsRead'])->name('notifications.markAllRead');
 
-    /* CLAIM PROMO */
-    Route::post('/promo/claim', function () {
-        $data = request()->validate([
-            'code' => 'required|string|max:50',
-        ]);
 
-        $discount = \App\Models\Discount::active()
-            ->where('code', $data['code'])
-            ->first();
 
-        if (!$discount) {
-            return back()->with('error', 'Kode promo tidak valid atau sudah kedaluwarsa.');
-        }
-
-        if ($discount->usage_limit && $discount->usage_count >= $discount->usage_limit) {
-            return back()->with('error', 'Kode promo sudah mencapai batas pemakaian.');
-        }
-
-        $discount->increment('usage_count');
-
-        try {
-            $owner = $discount->owner;
-            if ($owner) {
-                $owner->notify(new \App\Notifications\Owner\OwnerPromoClaimed($discount, auth()->user()));
-            }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Gagal notifikasi promo: ' . $e->getMessage());
-        }
-
-        return back()->with('success', 'Promo "' . $discount->name . '" berhasil diklaim!');
-    })->name('promo.claim');
 
 });
 

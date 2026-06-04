@@ -128,14 +128,20 @@ class BookingController extends Controller
     public function show(Field $field, Request $request)
     {
         $allFields = Field::with('owner')->get();
-        $availableTimes = $this->getAvailableTimes($field, $request->input('date', today()->toDateString()));
+        $date = $request->input('date', today()->toDateString());
+        $availableTimes = $this->getAvailableTimes($field, $date);
         $privateSport = $request->input('sport');
-        
+
+        $slots = Slot::where('field_id', $field->id)
+            ->where('date', Carbon::parse($date)->toDateString())
+            ->get(['court_number', 'hour', 'status']);
+
         return view('booking.show', [
             'field' => $field,
             'allFields' => $allFields,
             'availableTimes' => $availableTimes,
             'privateSport' => $privateSport,
+            'slots' => $slots,
         ]);
     }
 

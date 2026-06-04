@@ -9,13 +9,10 @@ class Discount extends Model
     protected $fillable = [
         'owner_id',
         'name',
-        'code',
         'description',
         'type',
         'value',
         'min_booking_amount',
-        'usage_limit',
-        'usage_count',
         'start_date',
         'end_date',
         'is_active',

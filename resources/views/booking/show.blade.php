@@ -19,10 +19,6 @@
     $allFieldsJson = $allFields->map(fn($f) => $f->makeVisible($visibleFields))->toArray();
     
     $numCourts = $field->number_of_courts ?? 1;
-    $courtNames = [];
-    for ($i = 0; $i < $numCourts; $i++) {
-        $courtNames[] = ['id' => $i + 1, 'name' => 'Lapangan ' . ($i + 1), 'isFull' => ($numCourts === 1 ? false : $i === 0)];
-    }
 
     // Sidebar
     $sidebarItems = [
@@ -399,7 +395,7 @@
                                                 'full': time.isFull,
                                                 'clickable': !time.isFull
                                              }"
-                                             @click="if(!time.isFull) { selectedEndTime = time.start; timeSelectionPhase = 'complete'; showTimeDropdown = false; calculateTotal(); checkSubfieldsAvailability(); }">
+                                             @click="if(!time.isFull) { selectedEndTime = time.start; timeSelectionPhase = 'complete'; showTimeDropdown = false; calculateTotal(); computeCourtAvailability(); }">
                                             <span x-text="time.start"></span>
                                         </div>
                                     </template>
@@ -594,14 +590,14 @@ function bookingApp() {
         selectedField: @json($selectedFieldJson),
         allFields: @json($allFieldsJson),
         
-        // Setup initial times with some mocked 'isFull' states to match the screenshot
-        availableTimes: @json($availableTimes).map((t, index) => ({
+        availableTimes: @json($availableTimes).map(t => ({
             ...t,
-            isFull: [0].includes(index) // e.g. 07.00 is full (red)
+            isFull: !t.available
         })),
         
-        // Dynamic subfields from owner's number_of_courts
-        subFields: @json($courtNames),
+        slots: @json($slots),
+        
+        subFields: [],
         selectedSubfield: null,
         
         selectedDate: '',
@@ -618,15 +614,33 @@ function bookingApp() {
         totalPrice: 0,
         promoTotalPrice: 0,
         
-        checkSubfieldsAvailability() {
-            // When time changes, we randomly mock some subfields being full
-            // In a real app, this would be an API call fetching availability
-            this.subFields = this.subFields.map(sf => ({
-                ...sf,
-                isFull: Math.random() > 0.7 // 30% chance a field is full at a given time
-            }));
-            
-            // Unselect if current subfield became full
+        initSubFields() {
+            const numCourts = this.selectedField.number_of_courts || 1;
+            this.subFields = [];
+            for (let i = 0; i < numCourts; i++) {
+                this.subFields.push({ id: i + 1, name: 'Lapangan ' + (i + 1), isFull: false });
+            }
+            this.computeCourtAvailability();
+        },
+
+        computeCourtAvailability() {
+            if (!this.selectedStartTime || !this.selectedEndTime) {
+                this.subFields = this.subFields.map(sf => ({ ...sf, isFull: false }));
+                return;
+            }
+            const startHour = parseInt(this.selectedStartTime.split(':')[0]);
+            const endHour = parseInt(this.selectedEndTime.split(':')[0]);
+            this.subFields = this.subFields.map(sf => {
+                let full = false;
+                for (let h = startHour; h < endHour; h++) {
+                    const slot = this.slots.find(s => s.court_number === sf.id && s.hour === h);
+                    if (slot && slot.status !== 'tersedia') {
+                        full = true;
+                        break;
+                    }
+                }
+                return { ...sf, isFull: full };
+            });
             if (this.selectedSubfield && this.selectedSubfield.isFull) {
                 this.selectedSubfield = null;
             }
@@ -643,8 +657,13 @@ function bookingApp() {
                     dateFormat: "d M Y",
                     onChange: (selectedDates, dateStr) => {
                         const date = selectedDates[0];
-                        this.selectedDate = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                        this.$refs.dateInput.value = dateStr;
+                        const y = date.getFullYear();
+                        const m = String(date.getMonth()+1).padStart(2, '0');
+                        const d = String(date.getDate()).padStart(2, '0');
+                        const newDate = `${y}-${m}-${d}`;
+                        const params = new URLSearchParams(window.location.search);
+                        params.set('date', newDate);
+                        window.location.search = params.toString();
                     }
                 });
 
@@ -654,12 +673,13 @@ function bookingApp() {
                     this.selectedDate = prefillDate;
                 }
 
+                this.initSubFields();
                 if (prefillStart && prefillEnd) {
                     this.selectedStartTime = prefillStart;
                     this.selectedEndTime = prefillEnd;
                     this.timeSelectionPhase = 'complete';
                     this.calculateTotal();
-                    this.checkSubfieldsAvailability();
+                    this.initSubFields();
                 }
                 this.calculateTotal();
             });

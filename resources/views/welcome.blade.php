@@ -72,7 +72,11 @@
 <a href="{{ route('choose.role') }}" class="no-underline bg-primary text-on-primary px-[32px] py-[16px] rounded-full font-label-md shadow-xl shadow-primary/25 hover:-translate-y-1 transition-all active:scale-95">
                         Main Sekarang
                     </a>
+@guest
+<a href="javascript:void(0)" onclick="showLoginPopup()" class="no-underline glass-card text-on-background px-[32px] py-[16px] rounded-full font-label-md border-white border hover:bg-white/80 transition-all active:scale-95 flex items-center justify-center gap-base">
+@else
 <a href="{{ route('lapangan') }}" class="no-underline glass-card text-on-background px-[32px] py-[16px] rounded-full font-label-md border-white border hover:bg-white/80 transition-all active:scale-95 flex items-center justify-center gap-base">
+@endguest
                             <span class="material-symbols-outlined">search</span>
                         Cari Lapangan
                     </a>
@@ -197,7 +201,11 @@
 <h2 class="font-headline-lg text-headline-lg">Lapangan Populer</h2>
 <p class="text-secondary">Pilih arena terbaik untuk performa maksimalmu.</p>
 </div>
+@guest
+<a href="javascript:void(0)" onclick="showLoginPopup()" class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
+@else
 <a href="{{ route('lapangan') }}" class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
+@endguest
                         Lihat Semua <span class="material-symbols-outlined">arrow_forward</span>
                     </a>
 </div>
@@ -235,7 +243,11 @@
 <span class="bg-amber-50 text-amber-700 px-md py-xs rounded-full text-label-sm font-bold">Paling Dibooking</span>
 @endif
 </div>
+@guest
+<a href="javascript:void(0)" onclick="showLoginPopup()" class="block w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all text-center">
+@else
 <a href="{{ route('lapangan') }}" class="block w-full border-2 border-primary/20 text-primary py-md rounded-full font-label-md group-hover:bg-primary group-hover:text-white transition-all text-center">
+@endguest
                             Cek Jadwal
 </a>
 </div>
@@ -256,7 +268,11 @@
 <h2 class="font-headline-lg text-headline-lg">Promo & Diskon</h2>
 <p class="text-secondary">Jangan lewatkan penawaran spesial dari berbagai lapangan.</p>
 </div>
+@guest
+<a href="javascript:void(0)" onclick="showLoginPopup()" class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
+@else
 <a href="{{ route('lapangan') }}" class="text-primary font-bold flex items-center gap-xs hover:gap-md transition-all">
+@endguest
     Lihat Semua <span class="material-symbols-outlined">arrow_forward</span>
 </a>
 </div>
@@ -324,7 +340,11 @@
                 <span class="text-xl font-bold text-red-500">Rp{{ number_format($discountedPrice, 0, ',', '.') }}/jam</span>
                 <span class="text-sm text-gray-400 line-through">Rp{{ number_format($f->price_per_hour, 0, ',', '.') }}/jam</span>
             </div>
-            <a href="{{ route('booking.show', $f->id) }}" class="block w-full bg-red-500 text-white text-center py-md rounded-full font-label-md font-bold shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all no-underline">
+            @guest
+<a href="javascript:void(0)" onclick="showLoginPopup()" class="block w-full bg-red-500 text-white text-center py-md rounded-full font-label-md font-bold shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all no-underline">
+@else
+<a href="{{ route('booking.show', $f->id) }}" class="block w-full bg-red-500 text-white text-center py-md rounded-full font-label-md font-bold shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all no-underline">
+@endguest
                 Pesan Sekarang
             </a>
         </div>
