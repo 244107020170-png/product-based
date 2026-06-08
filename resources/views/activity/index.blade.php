@@ -445,7 +445,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
           <span class="act-rule__icon" style="background:#dbeafe;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/><circle cx="12" cy="14" r="1.5"/><circle cx="8.5" cy="14" r="1.5"/><circle cx="15.5" cy="14" r="1.5"/></svg>
           </span>
-          Booking lapangan
+          Pesanan lapangan
           <span class="act-rule__pts">+1 poin</span>
         </li>
         <li class="act-rule">

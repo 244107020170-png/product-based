@@ -68,7 +68,7 @@ class ActivityController extends Controller
         foreach ($bookings as $b) {
             $activities->push([
                 'type'       => 'booking',
-                'label'      => 'Kamu booking ' . ($b->field?->name ?? 'Lapangan'),
+                'label'      => 'Kamu memesan ' . ($b->field?->name ?? 'Lapangan'),
                 'points'     => +1,
                 'sport'      => $this->detectSport($b->field?->name ?? ''),
                 'created_at' => $b->created_at,
@@ -88,7 +88,7 @@ class ActivityController extends Controller
         foreach ($matchRows as $row) {
             $activities->push([
                 'type'       => 'match',
-                'label'      => 'Kamu join public match ' . $this->detectSport($row->field_name),
+                'label'      => 'Kamu mengikuti pertandingan umum ' . $this->detectSport($row->field_name),
                 'points'     => +2,
                 'sport'      => $this->detectSport($row->field_name),
                 'created_at' => Carbon::parse($row->created_at),

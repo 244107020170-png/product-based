@@ -439,7 +439,7 @@
                                 <img src="{{ asset('assets/images/characters/review.png') }}" alt="Review" style="width:72px; height:72px; object-fit:contain;">
                             </div>
                             <div>
-                                <p style="margin: 0; font-weight: 800; color: #02025b; font-size: 14px;">Gimana permainan nya?</p>
+                                <p style="margin: 0; font-weight: 800; color: #02025b; font-size: 14px;">Gimana permainannya?</p>
                                 <p style="margin: 2px 0 0; font-size: 12px; font-weight: 600; color: #02025b;">{{ $pendingReviewBooking->field->name }}</p>
                                 <p style="margin: 1px 0 0; font-size: 11px; color: #666;">{{ $pendingReviewBooking->field->location ?? 'Kota Malang' }}</p>
                                 <p style="margin: 1px 0 0; font-size: 10px; color: #999;">{{ \Carbon\Carbon::parse($pendingReviewBooking->date)->locale('id')->translatedFormat('j M') }} - {{ \Carbon\Carbon::parse($pendingReviewBooking->start_time)->format('H:i') }} WIB</p>

@@ -8,7 +8,7 @@
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
     $profileAvatar = $user?->avatarUrl();
     $sportOptions = $cards->pluck('sport')->unique()->values();
-    $defaultSports = collect(['Futsal', 'Badminton', 'Basket', 'Voli', 'Tennis', 'Golf', 'Renang', 'Panahan', 'Lari', 'Sepeda', 'Tinju', 'Bela Diri', 'Yoga', 'Fitness', 'Hiking', 'Padel', 'Baseball', 'Rugby', 'Senam']);
+    $defaultSports = collect(['Futsal', 'Bulu Tangkis', 'Basket', 'Voli', 'Tenis', 'Golf', 'Renang', 'Panahan', 'Lari', 'Sepeda', 'Tinju', 'Bela Diri', 'Yoga', 'Fitness', 'Hiking', 'Padel', 'Baseball', 'Rugby', 'Senam']);
     $sportOptions = $sportOptions->merge($defaultSports)->unique()->values();
     $sportEmojiMap = [
         'Futsal' => '⚽',
@@ -311,7 +311,7 @@
                     <div class="flex gap-3">
                         <a href="{{ route('matches.create') }}" class="flex-1 flex items-center justify-center gap-2.5 py-4 px-6 bg-[#11114b] hover:bg-[#02025b] text-white font-extrabold font-archivo rounded-2xl shadow-md shadow-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group active:translate-y-0">
                             <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                            <span>Buat Publik</span>
+                            <span>Buat Tim</span>
                         </a>
                         <button @click="openPrivateSportModal = true" class="flex-1 flex items-center justify-center gap-2.5 py-4 px-6 bg-white hover:bg-slate-50 text-[#11114b] font-extrabold font-archivo rounded-2xl border-2 border-[#11114b] shadow-md shadow-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group active:translate-y-0">
                             <svg class="w-5 h-5 transition-transform group-hover:scale-110 duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
@@ -550,28 +550,28 @@
                                     @php
                                         $teamSport = match(true) {
                                             str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'futsal') => 'Futsal',
-                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'badminton') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'bulu') => 'Badminton',
+                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'bulu tangkis') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'bulu') => 'Bulu Tangkis',
                                             str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'basket') => 'Basket',
                                             str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'voli') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'volley') => 'Voli',
-                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'tenis') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'tennis') => 'Tennis',
+                                            str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'tenis') || str_contains(strtolower($team->title . ' ' . ($team->field?->name ?? '')), 'tennis') => 'Tenis',
                                             default => 'Olahraga'
                                         };
 
                                         $teamSportEmoji = match($teamSport) {
                                             'Futsal' => '⚽',
-                                            'Badminton' => '🏸',
+                                            'Bulu Tangkis' => '🏸',
                                             'Basket' => '🏀',
                                             'Voli' => '🏐',
-                                            'Tennis' => '🎾',
+                                            'Tenis' => '🎾',
                                             default => '🏆',
                                         };
                                         
                                         $teamBadgeColor = match($teamSport) {
                                             'Futsal' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                            'Badminton' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                            'Bulu Tangkis' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
                                             'Basket' => 'bg-orange-50 text-orange-600 border-orange-100',
                                             'Voli' => 'bg-purple-50 text-purple-600 border-purple-100',
-                                            'Tennis' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                            'Tenis' => 'bg-rose-50 text-rose-600 border-rose-100',
                                             default => 'bg-slate-50 text-slate-600 border-slate-100',
                                         };
                                     @endphp
@@ -620,7 +620,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                     <h3 class="text-sm font-extrabold font-archivo text-[#02025b] uppercase tracking-wider flex items-center gap-2">
                         <svg class="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
-                        <span>Cari Teman Main</span>
+                        <span>cari Teman Main</span>
                     </h3>
                     <div class="flex flex-wrap items-center gap-2">
                         <select id="partnerSportFilter" onchange="filterPartners()" class="partner-filter-select">
@@ -652,7 +652,7 @@
             <div id="partnerModal" class="partner-modal-overlay" onclick="closePartnerModal(event)">
                 <div class="partner-modal" onclick="event.stopPropagation()">
                     <div class="partner-modal__header">
-                        <h3 class="partner-modal__title">Cari Teman Main</h3>
+                        <h3 class="partner-modal__title">cari Teman Main</h3>
                         <button type="button" onclick="closePartnerModal()" class="partner-modal__close">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
@@ -1216,7 +1216,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <div class="relative">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                            <input type="text" id="communitySearch" placeholder="Cari nama komunitas..." oninput="filterCommunities()" class="text-[12px] font-bold font-archivo tracking-wide bg-slate-50 border border-slate-200 text-slate-600 rounded-xl pl-9 pr-3 py-2.5 w-[160px] sm:w-[180px] focus:ring-2 focus:ring-emerald-300/40 focus:border-emerald-300 outline-none transition-shadow placeholder:text-slate-400">
+                            <input type="text" id="communitySearch" placeholder="cari nama komunitas" oninput="filterCommunities()" class="text-[12px] font-bold font-archivo tracking-wide bg-slate-50 border border-slate-200 text-slate-600 rounded-xl pl-9 pr-3 py-2.5 w-[160px] sm:w-[180px] focus:ring-2 focus:ring-emerald-300/40 focus:border-emerald-300 outline-none transition-shadow placeholder:text-slate-400">
                         </div>
                         <select id="communitySportFilter" onchange="filterCommunities()" class="text-[12px] font-bold font-archivo tracking-wide bg-slate-50 border border-slate-200 text-slate-600 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-emerald-300/40 focus:border-emerald-300 outline-none transition-shadow cursor-pointer">
                             <option value="">Semua Kategori</option>
@@ -1318,28 +1318,28 @@
                         @php
                             $sport = match(true) {
                                 str_contains(strtolower($booking->field->name), 'futsal') => 'Futsal',
-                                str_contains(strtolower($booking->field->name), 'badminton') || str_contains(strtolower($booking->field->name), 'bulu') => 'Badminton',
+                                str_contains(strtolower($booking->field->name), 'badminton') || str_contains(strtolower($booking->field->name), 'bulu') => 'Bulu Tangkis',
                                 str_contains(strtolower($booking->field->name), 'basket') => 'Basket',
                                 str_contains(strtolower($booking->field->name), 'voli') || str_contains(strtolower($booking->field->name), 'volley') => 'Voli',
-                                str_contains(strtolower($booking->field->name), 'tenis') || str_contains(strtolower($booking->field->name), 'tennis') => 'Tennis',
+                                str_contains(strtolower($booking->field->name), 'tenis') || str_contains(strtolower($booking->field->name), 'tennis') => 'Tenis',
                                 default => 'Olahraga'
                             };
                             
                             $sportEmoji = match($sport) {
                                 'Futsal' => '⚽',
-                                'Badminton' => '🏸',
+                                'Bulu Tangkis' => '🏸',
                                 'Basket' => '🏀',
                                 'Voli' => '🏐',
-                                'Tennis' => '🎾',
+                                'Tenis' => '🎾',
                                 default => '🏆',
                             };
 
                             $sportBadgeColor = match($sport) {
                                 'Futsal' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                'Badminton' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                'Bulu Tangkis' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
                                 'Basket' => 'bg-orange-50 text-orange-600 border-orange-100',
                                 'Voli' => 'bg-purple-50 text-purple-600 border-purple-100',
-                                'Tennis' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                'Tenis' => 'bg-rose-50 text-rose-600 border-rose-100',
                                 default => 'bg-slate-50 text-slate-600 border-slate-100',
                             };
                         @endphp
@@ -1425,10 +1425,10 @@
                         @php
                             $emoji = match($sport) {
                                 'Futsal' => '⚽',
-                                'Badminton' => '🏸',
+                                'Bulu Tangkis' => '🏸',
                                 'Basket' => '🏀',
                                 'Voli' => '🏐',
-                                'Tennis' => '🎾',
+                                'Tenis' => '🎾',
                                 default => '🏆',
                             };
                         @endphp
@@ -1496,8 +1496,8 @@
                 <div class="grid grid-cols-3 gap-2.5 max-h-[280px] overflow-y-auto pr-1 upcoming-scroll">
                     @php
                         $privateSportEmoji = [
-                            'Futsal' => '⚽', 'Badminton' => '🏸', 'Basket' => '🏀',
-                            'Voli' => '🏐', 'Tennis' => '🎾', 'Golf' => '🏌️',
+                            'Futsal' => '⚽', 'Bulu Tangkis' => '🏸', 'Basket' => '🏀',
+                            'Voli' => '🏐', 'Tenis' => '🎾', 'Golf' => '🏌️',
                             'Renang' => '🏊', 'Panahan' => '🏹', 'Lari' => '🏃',
                             'Sepeda' => '🚴', 'Tinju' => '🥊', 'Bela Diri' => '🥋',
                             'Yoga' => '🧘', 'Fitness' => '🏋️', 'Hiking' => '🥾',
@@ -1610,7 +1610,7 @@
                     @csrf
                     <div style="margin-bottom:16px;">
                         <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Nama Komunitas <span style="color:#dc2626;">*</span></p>
-                        <input type="text" name="name" required maxlength="255" placeholder="Contoh: Badminton Malang Raya" style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;transition:border-color .2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'">
+                        <input type="text" name="name" required maxlength="255" placeholder="Contoh: Bulu Tangkis Malang Raya" style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(0,0,77,.12);font-size:13px;outline:none;box-sizing:border-box;font-family:inherit;font-weight:500;transition:border-color .2s;" onfocus="this.style.borderColor='#059669'" onblur="this.style.borderColor='rgba(0,0,77,.12)'">
                     </div>
                     <div style="margin-bottom:16px;">
                         <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#02025b;">Kategori Olahraga <span style="color:#dc2626;">*</span></p>

@@ -29,6 +29,11 @@ class MatchController extends Controller
         return $matches->map(function (Matchs $match) {
             $fieldName = $match->field?->name ?? 'Lapangan';
             $sport = $match->sport ?: $this->detectSport($match->title . ' ' . $fieldName);
+            $sport = match ($sport) {
+                'Badminton' => 'Bulu Tangkis',
+                'Tennis'    => 'Tenis',
+                default     => $sport,
+            };
             $playersJoined = $match->paidPlayers->count();
             $neededPlayers = max(0, (int) $match->max_player - $playersJoined);
 
@@ -361,9 +366,9 @@ class MatchController extends Controller
 
         if (str_contains($text, 'basket')) return 'Basket';
         if (str_contains($text, 'futsal')) return 'Futsal';
-        if (str_contains($text, 'badminton') || str_contains($text, 'bulu')) return 'Badminton';
+        if (str_contains($text, 'badminton') || str_contains($text, 'bulu')) return 'Bulu Tangkis';
         if (str_contains($text, 'voli') || str_contains($text, 'volley')) return 'Voli';
-        if (str_contains($text, 'tenis') || str_contains($text, 'tennis')) return 'Tennis';
+        if (str_contains($text, 'tenis') || str_contains($text, 'tennis')) return 'Tenis';
 
         return 'Olahraga';
     }
@@ -394,9 +399,9 @@ class MatchController extends Controller
         return match ($sport) {
             'Basket' => 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80',
             'Futsal' => 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=1200&q=80',
-            'Badminton' => 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80',
+            'Bulu Tangkis' => 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80',
             'Voli' => 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1200&q=80',
-            'Tennis' => 'https://images.unsplash.com/photo-1622279457486-28f232ff1a48?auto=format&fit=crop&w=1200&q=80',
+            'Tenis' => 'https://images.unsplash.com/photo-1622279457486-28f232ff1a48?auto=format&fit=crop&w=1200&q=80',
             default => 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80',
         };
     }
