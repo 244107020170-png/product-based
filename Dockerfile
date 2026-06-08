@@ -1,5 +1,7 @@
 FROM dunglas/frankenphp:php8.3
 
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 RUN install-php-extensions \
     intl \
     zip \
@@ -20,4 +22,4 @@ RUN npm run build
 
 EXPOSE 8080
 
-CMD php artisan serve --host=0.0.0.0 --port=8080
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
