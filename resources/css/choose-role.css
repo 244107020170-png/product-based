@@ -91,3 +91,56 @@
     50%  { transform: translateY(-15px); }
     100% { transform: translateY(0px); }
 }
+
+/* ===== RESPONSIVE UNTUK HP ===== */
+@media (max-width: 768px) {
+    .choose-role-page {
+        padding: 20px;
+        justify-content: center;
+    }
+
+    .title {
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 10px;
+    }
+
+    .role-container {
+        flex-direction: column;
+        gap: 40px;
+        width: 100%;
+        align-items: center;
+    }
+
+    .role-box {
+        padding: 16px 60px;
+        font-size: 20px;
+    }
+
+    .role-image {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 20px;
+        margin-bottom: 24px;
+    }
+
+    .role-container {
+        gap: 30px;
+    }
+
+    .role-box {
+        padding: 14px 40px;
+        font-size: 18px;
+    }
+
+    .role-image {
+        width: 140px;
+        height: 140px;
+    }
+}
