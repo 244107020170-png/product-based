@@ -12,19 +12,19 @@
     $sportOptions = $sportOptions->merge($defaultSports)->unique()->values();
     $sportEmojiMap = [
         'Futsal' => '⚽',
-        'Badminton' => '🏸',
+        'Bulu Tangkis' => '🏸',
         'Basket' => '🏀',
         'Voli' => '🏐',
-        'Tennis' => '🎾',
+        'Tenis' => '🎾',
     ];
 
 
 
     $allFields = Field::with('owner')->get();
     $fullSportEmoji = [
-        'Futsal'=>'⚽','Badminton'=>'🏸','Basket'=>'🏀','Voli'=>'🏐','Tennis'=>'🎾',
+        'Futsal'=>'⚽','Bulu Tangkis'=>'🏸','Basket'=>'🏀','Voli'=>'🏐','Tenis'=>'🎾',
         'Golf'=>'🏌️','Renang'=>'🏊','Panahan'=>'🏹','Lari'=>'🏃','Sepeda'=>'🚴',
-        'Tinju'=>'🥊','Bela Diri'=>'🥋','Yoga'=>'🧘','Fitness'=>'🏋️','Hiking'=>'🥾',
+        'Tinju'=>'🥊','Bela Diri'=>'🥋','Yoga'=>'🧘','Fitness'=>'🏋️','Mendaki'=>'🥾',
         'Padel'=>'🎾','Baseball'=>'⚾','Rugby'=>'🏉','Senam'=>'🤸',
     ];
     $fieldJson = json_encode($allFields->map(fn($f) => [

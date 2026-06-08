@@ -374,31 +374,67 @@
 .history-status {
     display: inline-flex;
     align-items: center;
-    border-radius: 999px;
-    padding: 4px 13px;
-    font-size: 0.75rem;
-    font-weight: 800;
+    gap: 6px;
+    border-radius: 100px;
+    padding: 5px 14px 5px 11px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     white-space: nowrap;
+    border: 1px solid;
+    position: relative;
+}
+
+.history-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .history-status--selesai {
+    background: linear-gradient(135deg, rgba(30,143,103,0.10), rgba(30,143,103,0.04));
+    color: #0f6b4a;
+    border-color: rgba(30,143,103,0.22);
+    box-shadow: 0 1px 4px rgba(30,143,103,0.08);
+}
+.history-status--selesai::before {
     background: #1e8f67;
-    color: #fff;
+    box-shadow: 0 0 5px rgba(30,143,103,0.45);
 }
 
 .history-status--akan {
+    background: linear-gradient(135deg, rgba(245,158,11,0.10), rgba(245,158,11,0.04));
+    color: #92400e;
+    border-color: rgba(245,158,11,0.22);
+    box-shadow: 0 1px 4px rgba(245,158,11,0.08);
+}
+.history-status--akan::before {
     background: #f59e0b;
-    color: #fff;
+    box-shadow: 0 0 5px rgba(245,158,11,0.45);
 }
 
 .history-status--dibatal {
+    background: linear-gradient(135deg, rgba(239,68,68,0.10), rgba(239,68,68,0.04));
+    color: #b91c1c;
+    border-color: rgba(239,68,68,0.22);
+    box-shadow: 0 1px 4px rgba(239,68,68,0.08);
+}
+.history-status--dibatal::before {
     background: #ef4444;
-    color: #fff;
+    box-shadow: 0 0 5px rgba(239,68,68,0.45);
 }
 
 .history-status--pending {
+    background: linear-gradient(135deg, rgba(249,115,22,0.10), rgba(249,115,22,0.04));
+    color: #c2410c;
+    border-color: rgba(249,115,22,0.22);
+    box-shadow: 0 1px 4px rgba(249,115,22,0.08);
+}
+.history-status--pending::before {
     background: #f97316;
-    color: #fff;
+    box-shadow: 0 0 5px rgba(249,115,22,0.45);
 }
 
 /* ── Action buttons ── */
@@ -589,20 +625,24 @@
 .hist-rv-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
+    gap: 5px;
+    padding: 5px 13px 5px 10px;
+    border-radius: 100px;
+    font-size: 11px;
     font-weight: 700;
+    letter-spacing: 0.02em;
     white-space: nowrap;
+    border: 1px solid;
 }
 .hist-rv-badge--done {
-    background: #e6f7f0;
-    color: #0f7b5a;
+    background: linear-gradient(135deg, rgba(30,143,103,0.10), rgba(30,143,103,0.04));
+    color: #0f6b4a;
+    border-color: rgba(30,143,103,0.20);
 }
 .hist-rv-badge--pending {
-    background: #fef9e7;
-    color: #b8860b;
+    background: linear-gradient(135deg, rgba(245,158,11,0.10), rgba(245,158,11,0.04));
+    color: #92400e;
+    border-color: rgba(245,158,11,0.20);
 }
 
 /* ── Review card (tab ulasan) ── */

@@ -29,8 +29,8 @@ class ActivityController extends Controller
         $totalPoints = ($totalBookings * 1) + ($totalMatches * 2) + ($totalReviews * 3);
 
         $levels = [
-            ['name' => 'Beginner', 'min' => 0,  'max' => 5],
-            ['name' => 'Active',   'min' => 6,  'max' => 20],
+            ['name' => 'Pemula', 'min' => 0,  'max' => 5],
+            ['name' => 'Aktif',   'min' => 6,  'max' => 20],
             ['name' => 'Pro',      'min' => 21, 'max' => PHP_INT_MAX],
         ];
 

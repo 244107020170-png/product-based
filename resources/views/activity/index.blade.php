@@ -417,8 +417,8 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
       {{-- Info --}}
       <div class="act-hero__info">
         <p class="act-hero__name">{{ $userName }}</p>
-        <p class="act-hero__level">{{ $currentLevel['name'] }} Player</p>
-        <p class="act-hero__pts">{{ $totalPoints }} Points</p>
+        <p class="act-hero__level">Pemain {{ $currentLevel['name'] }}</p>
+        <p class="act-hero__pts">{{ $totalPoints }} Poin</p>
 
         <div class="act-pbar-wrap">
           <div class="act-pbar-track">

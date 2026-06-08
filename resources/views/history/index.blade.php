@@ -305,9 +305,9 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                             <span class="history-status {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
                                             @if($statusKey === 'selesai')
                                                 @if(in_array($field->id, $reviewedFieldIds))
-                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--done">🟢 Sudah Direview</span></div>
+                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--done"><svg width="7" height="7" viewBox="0 0 7 7" fill="none"><circle cx="3.5" cy="3.5" r="3.5" fill="#1e8f67"/></svg> Sudah Direview</span></div>
                                                 @else
-                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--pending">🟡 Menunggu Review</span></div>
+                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--pending"><svg width="7" height="7" viewBox="0 0 7 7" fill="none"><circle cx="3.5" cy="3.5" r="3.5" fill="#f59e0b"/></svg> Menunggu Review</span></div>
                                                 @endif
                                             @endif
                                         </div>

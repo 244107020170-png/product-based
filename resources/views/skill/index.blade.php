@@ -455,8 +455,8 @@
       {{-- Info --}}
       <div class="sk-hero__info">
         <p class="sk-hero__name">{{ $userName }}</p>
-        <p class="sk-hero__level">{{ $currentLevel['name'] }} Player</p>
-        <p class="sk-hero__points">{{ $totalPoints }} Points</p>
+        <p class="sk-hero__level">Pemain {{ $currentLevel['name'] }}</p>
+        <p class="sk-hero__points">{{ $totalPoints }} Poin</p>
 
         <div class="sk-pbar-wrap">
           <div class="sk-pbar-track">
@@ -478,11 +478,11 @@
     <div class="sk-stats">
       <div class="sk-stat">
         <span class="sk-stat__num" data-count="{{ $totalBookings }}">0</span>
-        <p class="sk-stat__lbl">Booking Lapangan</p>
+        <p class="sk-stat__lbl">Pesanan Lapangan</p>
       </div>
       <div class="sk-stat">
         <span class="sk-stat__num" data-count="{{ $totalMatches }}">0</span>
-        <p class="sk-stat__lbl">Gabung Pertandingan Publik</p>
+        <p class="sk-stat__lbl">Gabung Pertandingan Umum</p>
       </div>
     </div>
 
@@ -494,7 +494,7 @@
           <span class="sk-dot" style="background:{{ $sport['color'] }}"></span>
           <div class="sk-sport-meta">
             <h3>{{ $sport['name'] }}</h3>
-            <p>{{ $sport['bookings'] }}x booking • {{ $sport['matches'] }}x public match</p>
+            <p>{{ $sport['bookings'] }}x pesanan • {{ $sport['matches'] }}x pertandingan umum</p>
           </div>
           <div class="sk-sport-bar">
             <div class="sk-sport-bar-track" style="background:{{ $sport['bg'] }}">
@@ -508,7 +508,7 @@
     </div>
 
     {{-- ── BADGE ── --}}
-    <p class="sk-title">Badge</p>
+    <p class="sk-title">Level</p>
     <div class="sk-badges">
       @foreach($badges as $badge)
         <div class="sk-badge{{ !$badge['earned'] ? ' is-locked' : '' }}">

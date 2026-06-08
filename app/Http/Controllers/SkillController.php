@@ -29,8 +29,8 @@ class SkillController extends Controller
         $totalPoints = ($totalBookings * 1) + ($totalMatches * 2) + ($totalReviews * 3);
 
         $levels = [
-            ['name' => 'Beginner', 'min' => 0,  'max' => 5,  'icon' => '<svg viewBox="0 0 24 24" fill="none"><path d="M12 22V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12C12 12 7 11 5 7C3 3 7 2 9 3C11 4 12 7 12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12C12 12 17 10 18 6C19 2 15 2 13 3C11 4 12 7 12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',  'range' => '0-5 Poin'],
-            ['name' => 'Active',   'min' => 6,  'max' => 20, 'icon' => '<svg viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>',  'range' => '6-20 Poin'],
+            ['name' => 'Pemula', 'min' => 0,  'max' => 5,  'icon' => '<svg viewBox="0 0 24 24" fill="none"><path d="M12 22V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12C12 12 7 11 5 7C3 3 7 2 9 3C11 4 12 7 12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12C12 12 17 10 18 6C19 2 15 2 13 3C11 4 12 7 12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',  'range' => '0-5 Poin'],
+            ['name' => 'Aktif',   'min' => 6,  'max' => 20, 'icon' => '<svg viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>',  'range' => '6-20 Poin'],
             ['name' => 'Pro',      'min' => 21, 'max' => PHP_INT_MAX, 'icon' => '<svg viewBox="0 0 24 24" fill="none"><path d="M8 21H16M12 17V21M7 4H17V11C17 14.314 14.761 17 12 17C9.239 17 7 14.314 7 11V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 6H4C4 6 3 10 6 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 6H20C20 6 21 10 18 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', 'range' => '>20 Poin'],
         ];
 
@@ -134,18 +134,18 @@ class SkillController extends Controller
         // ── Badges ───────────────────────────────────────────────────
         $badges = [
             [
-                'name'    => 'Beginner',
+                'name'    => 'Pemula',
                 'range'   => '0-5 Poin',
                 'icon'    => $levels[0]['icon'],
                 'earned'  => $totalPoints >= 1,
-                'current' => $currentLevel['name'] === 'Beginner',
+                'current' => $currentLevel['name'] === 'Pemula',
             ],
             [
-                'name'    => 'Active',
+                'name'    => 'Aktif',
                 'range'   => '6-20 Poin',
                 'icon'    => $levels[1]['icon'],
                 'earned'  => $totalPoints >= 6,
-                'current' => $currentLevel['name'] === 'Active',
+                'current' => $currentLevel['name'] === 'Aktif',
             ],
             [
                 'name'    => 'Pro',
