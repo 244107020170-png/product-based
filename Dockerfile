@@ -2,6 +2,14 @@ FROM dunglas/frankenphp:php8.3
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    unzip
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs
+
 RUN install-php-extensions \
     intl \
     zip \
