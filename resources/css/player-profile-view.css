@@ -661,3 +661,17 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 400px) {
+    .profview-container { padding: 8px; }
+    .profview-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .profview-header__info { width: 100%; }
+    .profview-header__name { font-size: 20px; }
+    .profview-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .profview-stat-card { padding: 12px; }
+    .profview-stat-card h3 { font-size: 18px; }
+    .profview-section-title { font-size: 16px; }
+    .profview-match-card { grid-template-columns: 1fr; }
+    .profview-match-card__img-wrap { min-height: 100px; }
+    .profview-badge-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+}

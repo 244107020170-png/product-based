@@ -1284,3 +1284,17 @@ body{
         width: 100%;
     }
 }
+
+@media(max-width: 400px){
+    .welcome-section h1 { font-size: 17px; }
+    .main-content { padding: 16px 10px !important; padding-top: 70px !important; }
+    .stats-card { padding: 14px; }
+    .stats-card p { font-size: 12px; }
+    .stats-card h2 { font-size: 18px; }
+    .topbar-right { gap: 6px; }
+    .profile-box h5 { font-size: 11px; }
+    .profile-box p { display: none; }
+    .profile-box img { width: 32px; height: 32px; }
+    .notif-btn { width: 34px; height: 34px; font-size: 13px; }
+    .search-box { padding: 10px 14px; }
+}

@@ -629,7 +629,61 @@ body {
         gap: 16px;
     }
 
+    .welcome-section h1 {
+        font-size: 22px;
+    }
+
     .actions-grid {
         grid-template-columns: 1fr;
+    }
+
+    .stats-card h2 {
+        font-size: 24px;
+    }
+
+    .stats-card {
+        padding: 16px;
+    }
+
+    .topbar-right {
+        gap: 8px;
+    }
+
+    .profile-box h5 {
+        font-size: 12px;
+    }
+
+    .profile-box p {
+        display: none;
+    }
+
+    .profile-box img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .notif-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 400px) {
+    .welcome-section h1 {
+        font-size: 18px;
+    }
+
+    .stats-card h2 {
+        font-size: 20px;
+    }
+
+    .main-content {
+        padding: 16px 10px !important;
+        padding-top: 70px !important;
+    }
+
+    .search-box {
+        padding: 10px 14px;
     }
 }

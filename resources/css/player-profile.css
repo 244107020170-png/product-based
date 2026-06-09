@@ -376,3 +376,16 @@
         text-align: center;
     }
 }
+
+@media (max-width: 400px) {
+    .profile-container { padding: 8px; }
+    .profile-cover { height: 120px; }
+    .profile-avatar-wrap__img { width: 72px; height: 72px; }
+    .profile-topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .profile-page-title h1 { font-size: 1.2rem; }
+    .profile-info-section { padding: 14px; }
+    .profile-stat { padding: 10px; }
+    .profile-stat h3 { font-size: 16px; }
+    .profile-actions { flex-direction: column; }
+    .profile-btn { width: 100%; text-align: center; }
+}

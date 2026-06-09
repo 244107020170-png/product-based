@@ -66,6 +66,7 @@
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
+        'resources/js/player-dashboard.js',
     ])
 </head>
 <body class="player-dashboard-page"
@@ -363,7 +364,7 @@
                     font-size: 8px;
                 }
             }
-            .player-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; align-self: flex-start; }
+            @media (min-width: 1181px) { .player-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; align-self: flex-start; } }
             .player-sidebar__inner { height: 100%; }
             .player-search-wrapper { position: relative; flex:1; max-width:360px; }
             .player-search { width:100%; margin-left:0; }
@@ -387,6 +388,89 @@
             .profile-dropdown-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; text-decoration:none; color:#02025b; font-size:13px; font-weight:600; transition:background .15s; cursor:pointer; border:none; background:none; width:100%; text-align:left; font-family:inherit; }
             .profile-dropdown-item:hover { background:#f5f5ff; }
             .profile-dropdown-divider { height:1px; background:#e2e8f0; margin:4px 8px; }
+
+            /* ── RESPONSIVE MOBILE (320px–1180px) ── */
+            /* Sidebar + main content full-width on mobile */
+            @media (max-width: 1180px) {
+                .player-dashboard-shell { display: block; }
+                .player-dashboard-main { width: 100%; max-width: 100%; padding: 20px 16px 34px; }
+                .player-dashboard-main section[style*="max-width: 1400px"] { max-width: 100% !important; padding: 20px 0 !important; margin: 0 !important; }
+                #dashboard-above-sections > div:not(.dashboard-header-flex):not([style*="margin-bottom"]) { padding-left: 0 !important; padding-right: 0 !important; }
+            }
+            @media (max-width: 768px) {
+                .hero-section .hero-content-inner { max-width: 100% !important; }
+                .hero-bg-card h2 { font-size: 20px !important; }
+                .dashboard-header-flex h1 { font-size: 22px !important; }
+                .dashboard-header-flex > div { width: 100%; }
+                .dashboard-header-flex > div a { width: 100%; text-align: center; }
+                .player-dashboard-main section[style*="max-width: 1400px"] { padding: 16px 0 !important; }
+            }
+            @media (max-width: 640px) {
+                .player-dashboard-main section[style*="max-width: 1400px"] { padding: 12px 0 !important; }
+                .hero-section > div:first-child { overflow: visible !important; }
+                .hero-bg-card { padding: 20px !important; height: auto !important; min-height: 260px; background-size: auto 200px !important; background-position: right -10px bottom !important; }
+                .hero-bg-card h2 { font-size: 18px !important; max-width: 60%; }
+                #field-card-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+                #field-card-grid .field-card > div[style*="height: 200px"] { height: 160px !important; }
+                #field-card-grid .field-card > div[style*="padding: 16px 18px 18px"] { padding: 12px 14px 14px !important; }
+                #field-card-grid .field-card h3 { font-size: 16px !important; }
+                #field-card-grid .field-card button { font-size: 11px !important; padding: 6px 12px !important; }
+                .dashboard-header-flex { margin-bottom: 16px !important; }
+                .dashboard-header-flex h1 { font-size: 20px !important; }
+                .dashboard-section h2[style*="font-size: 24px"] { font-size: 20px !important; }
+                .dashboard-section .lvl-card { padding: 14px !important; }
+                .player-dashboard-topbar__left .player-search-wrapper { max-width: 100% !important; }
+                .player-dashboard-topbar__left .player-search-wrapper .player-search { margin: 4px 0 !important; }
+                .player-dashboard-topbar__left button[onclick*="findNearestFields"],
+                .player-dashboard-topbar__left a[href*="nearby"] { font-size: 11px !important; padding: 6px 12px !important; }
+                .player-dashboard-topbar__right { flex-wrap: wrap; justify-content: space-between; }
+                .player-dashboard-topbar__date { font-size: 0.75rem; padding: 4px 8px; }
+                .player-dashboard-topbar__icon { width: 36px; height: 36px; }
+                .player-profile-pill { padding: 4px 6px 4px 4px !important; }
+                .player-profile-pill__avatar { width: 32px !important; height: 32px !important; }
+                .player-profile-pill__name { font-size: 0.8rem !important; }
+                .player-dashboard-topbar__menu { width: 36px; height: 36px; }
+                .player-dashboard-main { padding: 12px 12px 24px !important; }
+                .hero-section { gap: 16px !important; }
+                .profile-dropdown-menu { right: 0; left: auto; min-width: 160px; }
+                /* Collapse all grids to single column */
+                #dashboard-above-sections > div[style*="grid"],
+                .dashboard-section > div[style*="grid"],
+                .dashboard-section > div > div[style*="grid"],
+                div[style*="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))"],
+                div[style*="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))"],
+                div[style*="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))"] {
+                    grid-template-columns: 1fr !important; gap: 16px !important;
+                }
+            }
+            @media (max-width: 480px) {
+                .player-dashboard-main { padding: 8px 8px 20px !important; }
+                .player-dashboard-main section[style*="max-width: 1400px"] { padding: 8px 0 !important; }
+                .hero-bg-card { background-size: auto 160px !important; min-height: 220px; padding: 16px !important; }
+                .hero-bg-card h2 { font-size: 16px !important; max-width: 55%; }
+                #field-card-grid .field-card > div[style*="height: 200px"] { height: 140px !important; }
+                #field-card-grid .field-card > div[style*="padding: 16px 18px 18px"] { padding: 10px 12px 12px !important; }
+                #field-card-grid .field-card h3 { font-size: 15px !important; }
+                #field-card-grid .field-card p { font-size: 12px !important; }
+                .dashboard-header-flex h1 { font-size: 18px !important; }
+                .dashboard-section h2[style*="font-size: 24px"] { font-size: 18px !important; }
+                .dashboard-section > div[style*="padding: 20px;"] { padding: 14px !important; }
+                .dashboard-section .lvl-card__body { padding: 10px !important; }
+                .player-dashboard-topbar__right .player-dashboard-topbar__date span:last-child { display: none; }
+                .player-dashboard-topbar__right .profile-dropdown-wrap .player-profile-pill .player-profile-pill__name { display: none; }
+                .dashboard-section h4 { font-size: 14px !important; }
+                #dashboard-above-sections > div[style*="grid"] { gap: 12px !important; }
+            }
+            @media (max-width: 380px) {
+                .player-dashboard-main { padding: 8px 6px 16px !important; }
+                .player-dashboard-main section[style*="max-width: 1400px"] { padding: 6px 0 !important; }
+                .hero-bg-card { background-size: auto 130px !important; min-height: 180px; padding: 12px !important; }
+                .hero-bg-card h2 { font-size: 14px !important; max-width: 55%; }
+                .hero-section { gap: 12px !important; }
+                #field-card-grid { gap: 12px !important; }
+                #field-card-grid .field-card > div[style*="height: 200px"] { height: 120px !important; }
+                .dashboard-section > div[style*="padding: 20px;"] { padding: 10px !important; }
+            }
         </style>
 
         <div id="dashboard-above-sections" class="dashboard-section">
@@ -426,6 +510,17 @@
                             height: 300px;
                             background-size: auto 240px;
                             background-position: right -15px bottom;
+                        }
+                    }
+                    @media (max-width: 480px) {
+                        .hero-bg-card {
+                            height: 240px;
+                            background-size: auto 180px;
+                            background-position: right -20px bottom;
+                            padding: 20px;
+                        }
+                        .hero-bg-card h2 {
+                            font-size: 18px !important;
                         }
                     }
                 </style>
@@ -1106,7 +1201,7 @@
 </main>
 </div>
 
-<script src="{{ asset('js/player-dashboard.js') }}"></script>
+
 <script>
 (function(){
     var cdEl = document.getElementById('upcoming-countdown');

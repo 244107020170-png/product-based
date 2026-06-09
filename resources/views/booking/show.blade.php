@@ -135,9 +135,32 @@
         
         @media (max-width: 768px) {
             .bk-top-wrap { flex-direction: column; }
-            .bk-carousel { width: 100%; }
+            .bk-carousel { width: 100%; height: 180px; }
             .bk-form-wrap { flex-direction: column; }
             .bk-form-right { width: 100%; }
+            .bk-container { padding: 12px; }
+            .bk-info h1 { font-size: 20px; }
+            .bk-time-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        }
+        @media (max-width: 480px) {
+            .bk-container { padding: 8px; }
+            .bk-carousel { height: 160px; }
+            .bk-info h1 { font-size: 17px; }
+            .bk-meta { flex-wrap: wrap; gap: 8px; font-size: 12px; }
+            .bk-time-grid { grid-template-columns: repeat(2, 1fr); }
+            .bk-time-pill { font-size: 11px; padding: 6px 2px; }
+            .bk-form-wrap { padding: 14px; gap: 16px; }
+            .bk-summary { padding: 16px; }
+            .bk-total-row { font-size: 16px; }
+            .bk-btn-submit { font-size: 14px; padding: 12px; }
+            .bk-fasilitas-grid { grid-template-columns: repeat(2, 1fr); }
+            .bk-f-item { font-size: 11px; padding: 8px 10px; }
+        }
+        @media (max-width: 360px) {
+            .bk-carousel { height: 140px; }
+            .bk-time-grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+            .bk-time-pill { font-size: 10px; padding: 5px 2px; }
+            .bk-subfield-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>

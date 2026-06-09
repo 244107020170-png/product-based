@@ -2,8 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Masuk</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        .login-character {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            height: 100%;
+            width: 1000px;
+            object-fit: contain;
+            object-position: right bottom;
+            pointer-events: none;
+        }
+
+        .login-card-wrap {
+            position: absolute;
+            top: 50%;
+            left: 128px;
+            transform: translateY(-50%);
+            width: 500px;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        @media (max-width: 1100px) {
+            .login-character { width: 700px; }
+            .login-card-wrap { left: 2rem; width: 420px; }
+        }
+
+        @media (max-width: 768px) {
+            body.bg-login {
+                overflow: auto;
+                flex-direction: column;
+                min-height: 100vh;
+                height: auto;
+                background-position: top center;
+                padding: 0;
+            }
+
+            .login-character {
+                position: relative;
+                width: 100%;
+                height: 260px;
+                object-position: center 60%;
+                margin-top: 1rem;
+            }
+
+            .login-card-wrap {
+                position: relative;
+                top: auto;
+                left: auto;
+                transform: none;
+                width: 100%;
+                height: auto;
+                padding: 0 1rem 2rem;
+            }
+
+            .card-auth { padding: 1.5rem !important; }
+        }
+
+        @media (max-width: 480px) {
+            .login-character { height: 180px; }
+
+            .login-card-wrap { padding: 0 0.75rem 1.5rem; }
+
+            .card-auth { padding: 1rem !important; }
+
+            .login-title { font-size: 2.5rem !important; }
+
+            .login-nav a { font-size: 11px; padding: 2px 6px; }
+        }
+    </style>
 </head>
 
 <body class="h-screen bg-login flex overflow-hidden relative">
@@ -11,11 +86,11 @@
     <!-- CHARACTER BACKGROUND -->
     <img 
         src="{{ asset('assets/images/characters/char.png') }}"
-        class="absolute bottom-0 right-0 h-full w-[1000px] object-contain pointer-events-none floating"
+        class="login-character floating"
     >
 
     <!-- LEFT -->
-    <div class="absolute top-1/2 left-32 transform -translate-y-1/2 card auth w-[500px] h-screen flex items-center justify-center relative z-10">
+    <div class="login-card-wrap card auth">
 
         <div class="card-auth w-full p-12">
 
@@ -25,14 +100,14 @@
                     <img src="{{ asset('assets/images/logo/logo.png') }}" class="w-33">
                 </a>
 
-                <div class="flex gap-3 text-[12px] text-indigo-950 text-allign-right ml-auto">
+                <div class="login-nav flex gap-3 text-[12px] text-indigo-950 text-allign-right ml-auto">
                     <a href="{{ route('explore') }}" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Jelajahi</a>
                     <a href="{{ route('preview.help') }}" class="transition-all duration-200 hover:text-orange-500 hover:shadow-lg hover:shadow-orange-200 px-2 py-1 rounded">Bantuan</a>
                 </div>
             </div>
 
             <!-- TITLE -->
-            <h1 class="text-5xl font-bold text-indigo-950 mt-6 mb-8">Masuk</h1>
+            <h1 class="login-title text-5xl font-bold text-indigo-950 mt-6 mb-8">Masuk</h1>
 
             <!-- FORM LOGIN -->
             <form method="POST" action="{{ route('login') }}">

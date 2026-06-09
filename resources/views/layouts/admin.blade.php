@@ -47,7 +47,7 @@
 @endphp
 
 <!-- SideNavBar -->
-<aside class="fixed left-0 top-0 h-full z-50 pt-1 pb-5 px-3 w-[220px] bg-adm-surface-lowest border-r border-adm-outline-variant shadow-sm flex flex-col">
+<aside id="adminSidebar" class="fixed left-0 top-0 h-full z-50 pt-1 pb-5 px-3 w-[220px] bg-adm-surface-lowest border-r border-adm-outline-variant shadow-sm flex flex-col admin-sidebar">
     <div class="flex items-center gap-2 mb-3 px-2">
         <div>
             <h1 class="font-adm-headline text-[18px] font-bold text-adm-primary leading-tight">SPIES SPORT</h1>
@@ -86,6 +86,16 @@
         </div>
     </div>
 </aside>
+
+<!-- Mobile Sidebar Overlay -->
+<div id="adminSidebarOverlay" class="admin-sidebar-overlay" onclick="toggleAdminSidebar()"></div>
+
+<!-- Mobile Sidebar Toggle -->
+<button id="adminSidebarToggle" class="admin-sidebar-toggle" onclick="toggleAdminSidebar()" aria-label="Toggle sidebar">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
 
 @if($showTopbar)
 <!-- TopAppBar -->
@@ -253,6 +263,13 @@
 
 @stack('scripts')
 <script>
+// ── Mobile Sidebar Toggle ──
+function toggleAdminSidebar() {
+    document.getElementById('adminSidebar').classList.toggle('is-open');
+    document.getElementById('adminSidebarOverlay').classList.toggle('is-visible');
+    document.getElementById('adminSidebarToggle').classList.toggle('is-active');
+}
+
 // ── Notification Dropdown ──
 (function() {
     var bell = document.getElementById('admin-notif-bell');

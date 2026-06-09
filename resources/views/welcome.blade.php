@@ -30,6 +30,18 @@
             transform: rotate(-3deg) translateX(-10px);
         }
 
+        @media (max-width: 400px) {
+            .text-display-lg { font-size: clamp(1.8rem, 10vw, 2.5rem) !important; }
+            .text-headline-lg { font-size: clamp(1.3rem, 6vw, 1.8rem) !important; }
+            .px-margin-mobile { padding-left: 12px !important; padding-right: 12px !important; }
+            .gap-lg { gap: 16px !important; }
+            .gap-md { gap: 10px !important; }
+            .h-64 { height: 200px !important; }
+        }
+        @media (max-width: 360px) {
+            .flex-col.sm\:flex-row { flex-direction: column !important; }
+            .flex-col.sm\:flex-row a { width: 100% !important; text-align: center !important; }
+        }
     </style>
 </head>
 <body class="font-body-md text-on-background bg-background overflow-x-hidden">
@@ -51,9 +63,31 @@
 <div class="flex items-center gap-md">
 <a href="{{ route('login') }}" class="hidden sm:block font-label-md text-secondary hover:text-primary active:scale-95 transition-all">Masuk</a>
 <a href="{{ route('choose.role') }}" class="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Daftar</a>
+<!-- Mobile Hamburger -->
+<button id="mobileNavToggle" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-white/80 text-primary shadow-sm hover:bg-white transition-all" onclick="toggleMobileNav()" aria-label="Menu">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path id="navOpenIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        <path id="navCloseIcon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+</button>
 </div>
 </div>
 </nav>
+
+<!-- Mobile Navigation Menu -->
+<div id="mobileNavMenu" class="hidden md:hidden fixed inset-x-0 top-[80px] z-40 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200 transform -translate-y-full transition-transform duration-300">
+    <div class="flex flex-col p-6 space-y-4">
+        <a class="text-primary font-bold text-lg border-b-2 border-primary pb-2" href="{{ route('home') }}" onclick="toggleMobileNav()">Beranda</a>
+        <a class="text-secondary font-medium text-lg hover:text-primary transition-all pb-2 border-b border-gray-100" href="{{ route('lapangan') }}" onclick="toggleMobileNav()">Lapangan</a>
+        <a class="text-secondary font-medium text-lg hover:text-primary transition-all pb-2 border-b border-gray-100" href="{{ route('komunitas') }}" onclick="toggleMobileNav()">Komunitas</a>
+        <a class="text-secondary font-medium text-lg hover:text-primary transition-all pb-2 border-b border-gray-100" href="{{ route('bantuan') }}" onclick="toggleMobileNav()">Bantuan</a>
+        <div class="pt-2">
+            <a href="{{ route('login') }}" class="block w-full text-center border border-gray-300 text-secondary py-3 rounded-full font-label-md hover:bg-gray-50 transition-all mb-3">Masuk</a>
+            <a href="{{ route('choose.role') }}" class="block w-full text-center bg-primary text-on-primary py-3 rounded-full font-label-md shadow-lg shadow-primary/20 hover:brightness-110 transition-all">Daftar</a>
+        </div>
+    </div>
+</div>
+
 <!-- Hero Section -->
 <section class="relative pt-[120px] pb-xl md:py-xl min-h-[90vh] flex items-center overflow-hidden">
 <div class="container mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-2 gap-lg items-center relative z-10">
@@ -517,6 +551,30 @@
             const x = (e.clientX / window.innerWidth - 0.5) * amount;
             const y = (e.clientY / window.innerHeight - 0.5) * amount;
             character.style.transform = `translate(${x}px, ${y}px)`;
+        });
+
+        // Mobile Nav Toggle
+        function toggleMobileNav() {
+            const menu = document.getElementById('mobileNavMenu');
+            const openIcon = document.getElementById('navOpenIcon');
+            const closeIcon = document.getElementById('navCloseIcon');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('-translate-y-full');
+            openIcon.classList.toggle('hidden');
+            closeIcon.classList.toggle('hidden');
+        }
+
+        // Close mobile nav on resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                const menu = document.getElementById('mobileNavMenu');
+                if (!menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                    menu.classList.add('-translate-y-full');
+                    document.getElementById('navOpenIcon').classList.remove('hidden');
+                    document.getElementById('navCloseIcon').classList.add('hidden');
+                }
+            }
         });
 
         // Login Popup

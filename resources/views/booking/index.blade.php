@@ -48,6 +48,7 @@
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
+        'resources/js/player-dashboard.js',
     ])
 </head>
 <body class="player-dashboard-page"
@@ -228,7 +229,6 @@
         transform: translateY(-1px);
     }
 </style>
-<script src="{{ asset('js/player-dashboard.js') }}"></script>
 <script>
     var toastEl = document.getElementById('toast');
     var toastMsg = document.getElementById('toast-msg');
