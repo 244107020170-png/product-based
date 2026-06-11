@@ -770,7 +770,7 @@
             }
             .partner-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
                 gap: 12px;
             }
             .partner-card {
@@ -1005,7 +1005,7 @@
                 overflow-y: auto;
                 padding: 16px 24px 24px;
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
                 gap: 10px;
             }
             .partner-modal__list .partner-empty {
@@ -1036,13 +1036,21 @@
                 box-shadow: 0 5px 16px rgba(244,63,94,.35);
             }
 
-            @media (max-width: 500px) {
+            @media (max-width: 768px) {
                 .partner-grid {
-                    grid-template-columns: 1fr;
+                    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                }
+                .partner-modal__list {
+                    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
                 }
                 .partner-filter-select {
                     min-width: 0;
                     flex: 1;
+                }
+            }
+            @media (max-width: 500px) {
+                .partner-grid {
+                    grid-template-columns: 1fr;
                 }
                 .partner-modal {
                     max-height: 90vh;
@@ -1053,6 +1061,36 @@
                 }
                 .partner-modal__list {
                     grid-template-columns: 1fr;
+                }
+            }
+            @media (max-width: 380px) {
+                .partner-card__invite {
+                    padding: 6px 10px;
+                    font-size: 10px;
+                }
+                .partner-card__invite--modal {
+                    padding: 6px 12px;
+                    font-size: 11px;
+                }
+                .partner-card__avatar {
+                    width: 36px;
+                    height: 36px;
+                }
+                .partner-card {
+                    padding: 10px;
+                    gap: 8px;
+                }
+                .partner-card__name {
+                    font-size: 12px;
+                    word-break: break-word;
+                    white-space: normal;
+                }
+                .partner-card__meta {
+                    font-size: 10px;
+                }
+                .partner-card__skill {
+                    font-size: 9px;
+                    padding: 1px 6px;
                 }
             }
             </style>
