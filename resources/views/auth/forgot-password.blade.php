@@ -43,7 +43,7 @@
 
                         <div class="mt-4 flex items-center justify-end">
                             <x-primary-button>
-                                {{ __('Email Password Reset Link') }}
+                                Kirim Tautan Reset Password
                             </x-primary-button>
                         </div>
                     </form>

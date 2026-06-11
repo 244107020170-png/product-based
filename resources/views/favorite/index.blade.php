@@ -401,7 +401,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
-          <div class="grid grid-cols-3 gap-2.5 max-h-[320px] overflow-y-auto pr-1">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[320px] overflow-y-auto pr-1">
             <button @click="activeSport='all'; openSportModal=false"
                     class="flex flex-col items-center gap-1.5 p-3.5 border-2 rounded-2xl cursor-pointer transition-all duration-200 font-inherit text-xs font-extrabold uppercase tracking-wide"
                     :class="activeSport==='all' ? 'border-indigo-400 bg-indigo-50/80 text-indigo-700' : 'border-slate-100 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/30'">

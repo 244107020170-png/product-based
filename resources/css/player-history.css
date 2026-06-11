@@ -755,6 +755,271 @@
     }
 }
 
+@media (max-width: 480px) {
+    .history-stats {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 12px;
+        gap: 10px;
+    }
+
+    .history-list,
+    .history-toolbar {
+        padding: 0 12px;
+    }
+
+    .history-toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .history-filters {
+        width: 100%;
+    }
+
+    .hfilter-select {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.8rem;
+        padding: 6px 28px 6px 10px;
+    }
+
+    .history-total-card {
+        margin-left: 0;
+        width: 100%;
+        padding: 12px 14px;
+    }
+
+    .history-total-card__amount {
+        font-size: 0.92rem;
+    }
+
+    .history-card {
+        min-height: 120px;
+    }
+
+    .history-card__image {
+        width: 90px;
+        min-height: 120px;
+    }
+
+    .history-card__body {
+        padding: 10px 12px;
+    }
+
+    .history-card__body h3,
+    .history-card__name {
+        font-size: 0.88rem;
+    }
+
+    .history-card__location {
+        font-size: 0.72rem;
+        padding-left: 0;
+    }
+
+    .history-card__meta {
+        gap: 8px;
+    }
+
+    .history-card__meta-item {
+        font-size: 0.72rem;
+    }
+
+    .history-card__price {
+        font-size: 0.85rem;
+    }
+
+    .history-card__actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .history-card__actions a,
+    .history-card__actions button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hbtn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    .hist-review-card {
+        flex-direction: column;
+        padding: 14px;
+    }
+
+    .hist-review-card__avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .hist-review-card__photos {
+        gap: 6px;
+    }
+
+    .hist-review-card__photo,
+    .hist-review-card__photo-more {
+        width: 64px;
+        height: 64px;
+    }
+
+    .hist-tabs-wrap {
+        padding: 0 12px;
+    }
+
+    .history-stat-card {
+        padding: 12px 14px;
+    }
+
+    .history-stat-card__number {
+        font-size: 1.5rem;
+    }
+
+    .history-stat-card__label {
+        font-size: 0.72rem;
+    }
+
+    .history-page__title {
+        padding-left: 12px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .history-stats {
+        grid-template-columns: 1fr 1fr;
+        padding: 0 8px;
+        gap: 6px;
+    }
+
+    .history-list,
+    .history-toolbar {
+        padding: 0 8px;
+    }
+
+    .history-toolbar {
+        gap: 6px;
+    }
+
+    .history-filters {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .history-card {
+        min-height: 100px;
+    }
+
+    .history-card__image {
+        width: 70px;
+        min-height: 100px;
+    }
+
+    .history-card__body {
+        padding: 8px 10px;
+        gap: 4px;
+    }
+
+    .history-card__body h3,
+    .history-card__name {
+        font-size: 0.82rem;
+    }
+
+    .history-card__location {
+        font-size: 0.68rem;
+    }
+
+    .history-card__meta {
+        gap: 6px;
+    }
+
+    .history-card__meta-item {
+        font-size: 0.68rem;
+    }
+
+    .history-card__price {
+        font-size: 0.8rem;
+    }
+
+    .history-card__footer {
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+    }
+
+    .history-status {
+        padding: 3px 8px 3px 6px;
+        font-size: 0.65rem;
+    }
+
+    .hbtn {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+        border-radius: 10px;
+    }
+
+    .history-stat-card {
+        padding: 10px 12px;
+    }
+
+    .history-stat-card__number {
+        font-size: 1.3rem;
+    }
+
+    .history-stat-card__label {
+        font-size: 0.68rem;
+    }
+
+    .history-total-card {
+        padding: 10px 12px;
+    }
+
+    .history-total-card__label {
+        font-size: 0.72rem;
+    }
+
+    .history-total-card__amount {
+        font-size: 0.85rem;
+    }
+
+    .history-page__title {
+        padding-left: 8px;
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
+
+    .history-empty {
+        padding: 40px 12px;
+    }
+
+    .hist-review-card {
+        padding: 12px;
+    }
+
+    .hist-review-card__field {
+        font-size: 0.82rem;
+    }
+
+    .hist-review-card__text {
+        font-size: 0.75rem;
+    }
+
+    .hist-review-card__date {
+        font-size: 0.68rem;
+    }
+
+    .hist-tabs {
+        max-width: 100%;
+    }
+
+    .hist-tab {
+        font-size: 0.72rem;
+        padding: 8px 0;
+    }
+}
+
 @media (max-width: 400px) {
     .history-stats { grid-template-columns: 1fr; padding: 0 8px; gap: 8px; }
     .history-list,

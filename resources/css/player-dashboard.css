@@ -1522,3 +1522,257 @@
         font-size: 0.78rem;
     }
 }
+
+@media (max-width: 360px) {
+    .player-dashboard-main {
+        padding: 8px 4px 18px;
+    }
+
+    .player-dashboard-topbar {
+        gap: 4px;
+    }
+
+    .player-dashboard-topbar__left {
+        gap: 4px;
+    }
+
+    .player-dashboard-topbar__right {
+        gap: 4px;
+    }
+
+    .player-dashboard-topbar__date {
+        font-size: 0.68rem;
+        padding: 3px 6px;
+    }
+
+    .player-dashboard-topbar__icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .player-dashboard-topbar__menu {
+        width: 32px;
+        height: 32px;
+    }
+
+    .player-dashboard-topbar__menu span {
+        width: 16px;
+    }
+
+    .player-dashboard-topbar__menu span:nth-child(1) {
+        transform: translateY(-5px);
+    }
+
+    .player-dashboard-topbar__menu span:nth-child(3) {
+        transform: translateY(5px);
+    }
+
+    .player-search {
+        margin: 2px 0 0;
+    }
+
+    .player-search input {
+        font-size: 0.78rem;
+    }
+
+    .player-profile-pill {
+        padding: 2px 4px 2px 2px;
+        gap: 3px;
+    }
+
+    .player-profile-pill__avatar {
+        width: 26px;
+        height: 26px;
+    }
+
+    .player-profile-pill__name {
+        font-size: 0.72rem;
+    }
+
+    .player-dashboard-title h1 {
+        font-size: 1rem;
+    }
+
+    .player-dashboard-title__actions {
+        gap: 6px;
+    }
+
+    .player-dashboard-hero {
+        gap: 10px;
+    }
+
+    .player-hero__title {
+        font-size: 1.1rem !important;
+        transform: translateY(0);
+        padding-left: 0 !important;
+    }
+
+    .player-hero__art {
+        min-height: 150px;
+    }
+
+    .player-hero__character-frame {
+        width: 200px;
+        min-height: 150px;
+        position: relative;
+        right: auto;
+        top: auto;
+        bottom: auto;
+    }
+
+    .player-hero__character-image {
+        max-width: 160px;
+        transform: translate(0, 4px);
+    }
+
+    .player-dashboard-card {
+        padding: 8px;
+        border-radius: 14px;
+    }
+
+    .player-dashboard-card--hero {
+        padding: 8px 10px;
+    }
+
+    .player-dashboard-card__heading h2,
+    .player-dashboard-card__heading--split h2,
+    .player-dashboard-card__heading h3 {
+        font-size: 0.78rem;
+    }
+
+    .player-review-card {
+        padding: 10px 12px;
+        transform: scale(1);
+    }
+
+    .player-review-card__avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .player-review-card__copy h3 {
+        font-size: 0.82rem;
+    }
+
+    .player-review-card__copy p {
+        font-size: 0.68rem;
+    }
+
+    .player-upcoming-card {
+        padding: 8px;
+    }
+
+    .player-upcoming-card__participants {
+        margin: 10px 0 12px;
+        padding-top: 10px;
+    }
+
+    .player-list-card {
+        padding: 6px 8px;
+        gap: 6px;
+    }
+
+    .player-list-card__content h3 {
+        font-size: 0.78rem;
+    }
+
+    .player-list-card__content p {
+        font-size: 0.7rem;
+    }
+
+    .player-stack-item {
+        padding: 6px 8px;
+    }
+
+    .player-badge-card {
+        padding: 8px;
+    }
+
+    .player-badge-card__main-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .player-badge-card__steps {
+        gap: 6px;
+    }
+
+    .player-badge-step span {
+        font-size: 0.64rem;
+    }
+
+    .player-chip,
+    .player-badge,
+    .player-quick-button {
+        font-size: 0.55rem;
+        padding: 2px 5px;
+    }
+
+    .player-primary-button {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+
+    .player-filter__button {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+        gap: 6px;
+    }
+
+    .player-sidebar {
+        width: min(240px, 82vw);
+    }
+
+    .player-sidebar__inner {
+        padding: 12px 8px 12px 10px;
+        gap: 12px;
+    }
+
+    .player-sidebar__logo {
+        width: 90px;
+    }
+
+    .player-sidebar__label {
+        font-size: 0.78rem;
+    }
+
+    .player-sidebar__item {
+        padding: 5px 6px;
+        gap: 6px;
+    }
+
+    .player-sidebar__icon-wrap {
+        width: 26px;
+        height: 26px;
+    }
+
+    .player-sidebar__icon {
+        max-width: 24px;
+        max-height: 20px;
+    }
+
+    .player-empty-state {
+        padding: 8px;
+        font-size: 0.75rem;
+    }
+
+    .player-dashboard-rebook {
+        margin-top: 14px;
+    }
+
+    .player-dashboard-card--rebook {
+        padding: 12px;
+    }
+
+    .player-rebook-grid {
+        gap: 8px;
+    }
+
+    .player-rebook-card__body p {
+        font-size: 0.72rem;
+    }
+
+    .player-slot--image {
+        min-height: 120px;
+    }
+}

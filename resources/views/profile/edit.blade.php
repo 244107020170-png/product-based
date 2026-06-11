@@ -270,7 +270,7 @@
                 <div class="profile-actions">
                     <a href="{{ route('profile.show') }}" class="profile-btn profile-btn--discard">Batal</a>
                     <button type="submit" class="profile-btn profile-btn--save" id="profile-save-btn">
-                        <span class="profile-btn__label">Simpan</span>
+                        <span class="profile-btn__label">Simpan Perubahan</span>
                         <span class="profile-btn__spinner" aria-hidden="true" style="display:none;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="spinning"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-dasharray="40" stroke-dashoffset="20" stroke-linecap="round"/></svg>
                         </span>

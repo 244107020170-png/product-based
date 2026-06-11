@@ -67,7 +67,7 @@
             'type'    => $m->type === 'public' ? 'Publik' : 'Pribadi',
             'title'   => $m->title,
             'team'    => optional($m->creator)->name ?? '-',
-            'members' => $memberCount.' Member',
+            'members' => $memberCount.' Anggota',
             'sport'   => $m->sport ?: ($field?->type ?: 'Olahraga'),
             'lokasi'  => $field?->location ?? ($field?->name ?? '-'),
             'waktu'   => $m->timeRange(),
@@ -98,7 +98,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Profil Player – {{ config('app.name', 'Spies Sport') }}</title>
+    <title>Profil Pemain – {{ config('app.name', 'Spies Sport') }}</title>
     @vite([
         'resources/css/app.css',
         'resources/css/player-dashboard.css',
@@ -162,7 +162,7 @@
     {{-- Topbar --}}
     <header class="profview-topbar">
         <button type="button" class="player-dashboard-topbar__menu" data-sidebar-open aria-label="Menu"><span></span><span></span><span></span></button>
-        <h1 class="profview-topbar__title">Profil Player</h1>
+        <h1 class="profview-topbar__title">Profil Pemain</h1>
         <div class="profview-topbar__right">
             <button type="button" class="player-dashboard-topbar__icon" aria-label="Pesan">
                 <span class="player-inline-icon">
@@ -237,7 +237,7 @@
                         <span style="display: inline-block; margin-top: 4px; padding: 6px 16px; border-radius: 999px; font-size: .85rem; font-weight: 800; color: white; background: {{ $badgeColor }};">{{ $badgeLabel }}</span>
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <div class="profview-badge-grid">
                     @foreach($badgeDefs as $bd)
                     <div style="text-align: center; padding: 20px 12px 16px; border-radius: 16px; border: 1.5px solid {{ $bd['earned'] ? $bd['color'].'44' : 'rgba(0,0,0,.08)' }}; background: {{ $bd['earned'] ? $bd['color'].'18' : '#f8fafc' }}; {{ !$bd['earned'] ? 'filter: saturate(.35);' : '' }}">
                         <div style="font-size: 2rem; margin-bottom: 8px; line-height: 1;">{{ $bd['icon'] }}</div>

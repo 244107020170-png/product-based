@@ -142,7 +142,7 @@
                 {{-- Baris 2: Harga & Jumlah Lapangan --}}
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Harga Sewa (per Jam)</label>
+                        <label>Harga per Jam</label>
                         <input type="number" name="price" class="form-control" value="{{ isset($field) ? $field->price_per_hour : '' }}" placeholder="Contoh: 120000" required>
                     </div>
 

@@ -33,7 +33,7 @@
                     <div class="relative w-[180px] h-10 flex-shrink-0">
                         <select name="verification_status" class="w-full h-full appearance-none bg-adm-surface border border-adm-outline-variant rounded-lg font-adm-body text-[13px] pl-3 pr-8 focus:ring-2 outline-none cursor-pointer">
                             <option value="">Semua Status</option>
-                            <option value="pending" {{ request('verification_status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="pending" {{ request('verification_status') === 'pending' ? 'selected' : '' }}>Menunggu</option>
                             <option value="approved" {{ request('verification_status') === 'approved' ? 'selected' : '' }}>Terverifikasi</option>
                             <option value="rejected" {{ request('verification_status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
                         </select>
@@ -76,7 +76,7 @@
                         <td class="px-6 py-3.5 font-adm-body text-[13px] text-adm-primary font-semibold">{{ number_format($field->bookings_count) }}</td>
                         <td class="px-6 py-3.5">
                             @php
-                                $vMap = ['approved' => ['label' => 'Terverifikasi', 'class' => 'text-adm-success bg-adm-success/10'], 'pending' => ['label' => 'Pending', 'class' => 'text-adm-warning bg-adm-warning/10'], 'rejected' => ['label' => 'Ditolak', 'class' => 'text-adm-error bg-adm-error/10']];
+                                $vMap = ['approved' => ['label' => 'Terverifikasi', 'class' => 'text-adm-success bg-adm-success/10'], 'pending' => ['label' => 'Menunggu', 'class' => 'text-adm-warning bg-adm-warning/10'], 'rejected' => ['label' => 'Ditolak', 'class' => 'text-adm-error bg-adm-error/10']];
                                 $vInfo = $vMap[$field->verification_status] ?? ['label' => $field->verification_status, 'class' => 'text-adm-outline bg-adm-surface'];
                             @endphp
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $vInfo['class'] }}">{{ $vInfo['label'] }}</span>

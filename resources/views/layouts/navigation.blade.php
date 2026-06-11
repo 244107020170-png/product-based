@@ -21,7 +21,7 @@
                     <!-- Navigation Links -->
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="$dashboardRoute" :active="request()->routeIs('owner.dashboard') || request()->routeIs('dashboard')">
-                            {{ __('Dashboard') }}
+                            {{ __('Dasbor') }}
                         </x-nav-link>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
 
                         <x-slot name="content">
                             <x-dropdown-link :href="route('profile.edit')">
-                                {{ __('Profile') }}
+                                {{ __('Profil') }}
                             </x-dropdown-link>
 
                             <!-- Authentication -->
@@ -76,7 +76,7 @@
         <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
             <div class="pt-2 pb-3 space-y-1">
                 <x-responsive-nav-link :href="$dashboardRoute" :active="request()->routeIs('owner.dashboard') || request()->routeIs('dashboard')">
-                    {{ __('Dashboard') }}
+                    {{ __('Dasbor') }}
                 </x-responsive-nav-link>
             </div>
 
@@ -89,7 +89,7 @@
 
                 <div class="mt-3 space-y-1">
                     <x-responsive-nav-link :href="route('profile.edit')">
-                        {{ __('Profile') }}
+                        {{ __('Profil') }}
                     </x-responsive-nav-link>
 
                     <!-- Authentication -->

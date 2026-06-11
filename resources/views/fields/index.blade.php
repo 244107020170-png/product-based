@@ -138,7 +138,7 @@
                 <a href="{{ route('dashboard') }}" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:white; color:#02025b; border:1.5px solid rgba(0,0,77,.12); border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; text-decoration:none; transition:all .2s;" onmouseover="this.style.borderColor='#EB5436'" onmouseout="this.style.borderColor='rgba(0,0,77,.12)'">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <span class="hidden sm:inline">Kembali</span>
-                    <span class="sm:hidden">Back</span>
+                    <span class="sm:hidden">Kembali</span>
                 </a>
             @else
             <button onclick="findNearestFields()" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#EB5436; color:white; border:none; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(235,84,54,.25); transition:all .2s;" onmouseover="this.style.boxShadow='0 6px 20px rgba(235,84,54,.35)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(235,84,54,.25)'">
@@ -180,7 +180,7 @@
                         @csrf
                         <button type="submit" class="profile-dropdown-item" style="color:#dc2626;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            Logout
+                            Keluar
                         </button>
                     </form>
                 </div>
@@ -470,6 +470,16 @@
                 #field-card-grid { gap: 12px !important; }
                 #field-card-grid .field-card > div[style*="height: 200px"] { height: 120px !important; }
                 .dashboard-section > div[style*="padding: 20px;"] { padding: 10px !important; }
+            }
+            /* Sport grid responsive override */
+            @media (max-width: 480px) {
+                #sportGrid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+                #sportGrid button { padding: 12px 6px !important; }
+            }
+            @media (max-width: 360px) {
+                #sportGrid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+                #sportGrid button { padding: 10px 4px !important; }
+                #sportGrid button span:last-child { font-size: 8px !important; }
             }
         </style>
 
@@ -778,7 +788,7 @@
                         foreach ($recFields as $f) {
                             $widgetRecItems->push((object)[
                                 'badgeType' => 'recommended',
-                                'badgeText' => 'Recommended For You',
+                                'badgeText' => 'Rekomendasi Untukmu',
                                 'name' => $f->name,
                                 'location' => $f->location,
                                 'url' => route('booking.show', $f->id),
@@ -800,7 +810,7 @@
                     foreach ($popFields as $f) {
                         $widgetRecItems->push((object)[
                             'badgeType' => 'popular',
-                            'badgeText' => 'Popular Choice',
+                            'badgeText' => 'Pilihan Populer',
                             'name' => $f->name,
                             'location' => $f->location,
                             'url' => route('booking.show', $f->id),
@@ -1153,7 +1163,7 @@
                     @if($field->featured)
                     <div style="position:absolute;bottom:12px;left:12px;background:#02025b;color:white;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:3px;z-index:2;">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        Featured
+                        Unggulan
                     </div>
                     @endif
                 </div>

@@ -230,3 +230,55 @@ input[type="file"].form-control {
     color: #ffffff;
     border: none;
 }
+
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .form-container {
+        padding: 20px;
+    }
+
+    .time-grid {
+        width: min(320px, calc(100vw - 32px));
+    }
+
+    .time-picker-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 400px) {
+    .form-container {
+        padding: 14px;
+    }
+
+    .form-row {
+        gap: 10px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions button,
+    .form-actions a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .checkbox-group {
+        gap: 12px;
+    }
+
+    .time-grid {
+        width: min(280px, calc(100vw - 24px));
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        padding: 8px;
+    }
+}

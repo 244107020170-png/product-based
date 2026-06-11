@@ -263,7 +263,7 @@
         <div class="px-5 py-3.5 border-b border-adm-outline-variant flex items-center justify-between">
             <div>
                 <h3 class="font-adm-headline text-[16px] font-bold text-adm-primary">Transaksi Terbaru</h3>
-                <p class="font-adm-body text-[12px] text-adm-outline">Update real-time pembayaran dari pengguna</p>
+                <p class="font-adm-body text-[12px] text-adm-outline">Pembaruan pembayaran dari pengguna</p>
             </div>
             <a href="{{ route('admin.bookings') }}" class="text-adm-dark font-adm-body text-[12px] font-semibold hover:opacity-80">Lihat Semua</a>
         </div>
@@ -299,7 +299,7 @@
                         <td class="px-5 py-3">
                             @php
                                 $statusMap = [
-                                    'pending' => ['label' => 'Pending', 'class' => 'bg-adm-warning/10 text-adm-warning'],
+                                    'pending' => ['label' => 'Menunggu', 'class' => 'bg-adm-warning/10 text-adm-warning'],
                                     'waiting_payment' => ['label' => 'Menunggu Bayar', 'class' => 'bg-adm-warning/10 text-adm-warning'],
                                     'paid' => ['label' => 'Dibayar', 'class' => 'bg-adm-accent/10 text-adm-accent'],
                                     'confirmed' => ['label' => 'Dikonfirmasi', 'class' => 'bg-adm-success/10 text-adm-success'],

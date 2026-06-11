@@ -307,7 +307,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                                 @if(in_array($field->id, $reviewedFieldIds))
                                                 <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--done"><svg width="7" height="7" viewBox="0 0 7 7" fill="none"><circle cx="3.5" cy="3.5" r="3.5" fill="#1e8f67"/></svg> Sudah Direview</span></div>
                                                 @else
-                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--pending"><svg width="7" height="7" viewBox="0 0 7 7" fill="none"><circle cx="3.5" cy="3.5" r="3.5" fill="#f59e0b"/></svg> Menunggu Review</span></div>
+                                                <div style="margin-top:6px;"><span class="hist-rv-badge hist-rv-badge--pending"><svg width="7" height="7" viewBox="0 0 7 7" fill="none"><circle cx="3.5" cy="3.5" r="3.5" fill="#f59e0b"/></svg> Menunggu Ulasan</span></div>
                                                 @endif
                                             @endif
                                         </div>
@@ -326,7 +326,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                         <span class="history-card__price">Rp{{ number_format($price, 0, ',', '.') }}</span>
                                         <div class="history-card__actions">
                                             @if($statusKey === 'selesai' && !in_array($field->id, $reviewedFieldIds))
-                                                <button type="button" class="hbtn hbtn--review" onclick="openReviewModal({{ $booking->id }}, '{{ addslashes($field->name ?? 'Lapangan') }}', {{ $field->id ?? 'null' }})">⭐ Beri Review</button>
+                                                <button type="button" class="hbtn hbtn--review" onclick="openReviewModal({{ $booking->id }}, '{{ addslashes($field->name ?? 'Lapangan') }}', {{ $field->id ?? 'null' }})">⭐ Beri Ulasan</button>
                                             @endif
                                             <a href="{{ route('booking.detail', $booking->id) }}" class="hbtn hbtn--outline">Rincian</a>
                                             <a href="{{ url('/fields') }}" class="hbtn hbtn--primary" id="rebook-booking-{{ $booking->id }}">Pesan Lagi</a>
@@ -490,7 +490,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
     <div id="reviewModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);justify-content:center;align-items:center;padding:20px;" onclick="if(event.target===this)closeReviewModal()">
         <div style="background:white;border-radius:20px;padding:28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto;">
             <button type="button" onclick="closeReviewModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;line-height:1;">&times;</button>
-            <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Review</h3>
+            <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Ulasan</h3>
             <p id="reviewModalFieldName" style="margin:0 0 16px;font-size:13px;color:#64748b;"></p>
 
             <form id="reviewForm" method="POST" action="{{ route('review.store') }}" enctype="multipart/form-data">
@@ -533,7 +533,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                 </div>
 
                 <p id="reviewError" style="display:none;color:#dc2626;font-size:12px;margin:6px 0 0;"></p>
-                <button type="submit" id="reviewSubmitBtn" style="width:100%;margin-top:8px;padding:14px;background:#EB5436;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Review</button>
+                <button type="submit" id="reviewSubmitBtn" style="width:100%;margin-top:8px;padding:14px;background:#EB5436;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Ulasan</button>
             </form>
         </div>
     </div>
@@ -578,7 +578,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
         var review = document.getElementById('reviewText').value.trim();
         var errorEl = document.getElementById('reviewError');
         if (parseFloat(ratingEl.value) === 0) { e.preventDefault(); errorEl.textContent = 'Pilih rating terlebih dahulu.'; errorEl.style.display = 'block'; return; }
-        if (review.length < 10) { e.preventDefault(); errorEl.textContent = 'Review minimal 10 karakter.'; errorEl.style.display = 'block'; return; }
+        if (review.length < 10) { e.preventDefault(); errorEl.textContent = 'Ulasan minimal 10 karakter.'; errorEl.style.display = 'block'; return; }
         errorEl.style.display = 'none';
     });
     </script>

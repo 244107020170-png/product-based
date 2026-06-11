@@ -383,13 +383,13 @@
                         @endfor
                     </div>
                     <div style="flex:1;">
-                        <p style="margin:0; font-weight:700; color:#02025b; font-size:14px;">Review Anda</p>
+                        <p style="margin:0; font-weight:700; color:#02025b; font-size:14px;">Ulasan Anda</p>
                         <p style="margin:4px 0 0; color:#666; font-size:13px;">{{ $existingReview->review }}</p>
                     </div>
                 </div>
             @else
                 <button onclick="openReviewModal({{ $booking->field_id }}, {{ $booking->id }})" style="width:100%; padding:14px; background:linear-gradient(135deg,#02025b,#11114b); color:white; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:all .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
-                    ⭐ Beri Review & Rating
+                    ⭐ Beri Ulasan & Rating
                 </button>
             @endif
         </div>
@@ -403,7 +403,7 @@
 <div id="reviewModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);justify-content:center;align-items:center;padding:20px;" onclick="if(event.target===this)closeReviewModal()">
     <div style="background:white;border-radius:20px;padding:28px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;max-height:90vh;overflow-y:auto;">
         <button type="button" onclick="closeReviewModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;line-height:1;">&times;</button>
-        <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Review</h3>
+        <h3 style="margin:0 0 4px;font-size:18px;font-weight:800;color:#02025b;">Beri Ulasan</h3>
         <p id="reviewModalFieldName" style="margin:0 0 16px;font-size:13px;color:#64748b;">{{ $booking->field->name ?? 'Lapangan' }}</p>
 
         <form id="reviewForm" method="POST" action="{{ route('review.store') }}" enctype="multipart/form-data">
@@ -446,7 +446,7 @@
             </div>
 
             <p id="reviewError" style="display:none;color:#dc2626;font-size:12px;margin:6px 0 0;"></p>
-            <button type="submit" id="reviewSubmitBtn" style="width:100%;margin-top:8px;padding:14px;background:#EB5436;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Review</button>
+            <button type="submit" id="reviewSubmitBtn" style="width:100%;margin-top:8px;padding:14px;background:#EB5436;color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;">Kirim Ulasan</button>
         </form>
     </div>
 </div>
@@ -488,7 +488,7 @@ document.getElementById('reviewForm').addEventListener('submit', function(e) {
     var review = document.getElementById('reviewText').value.trim();
     var errorEl = document.getElementById('reviewError');
     if (parseFloat(ratingEl.value) === 0) { e.preventDefault(); errorEl.textContent = 'Pilih rating terlebih dahulu.'; errorEl.style.display = 'block'; return; }
-    if (review.length < 10) { e.preventDefault(); errorEl.textContent = 'Review minimal 10 karakter.'; errorEl.style.display = 'block'; return; }
+    if (review.length < 10) { e.preventDefault(); errorEl.textContent = 'Ulasan minimal 10 karakter.'; errorEl.style.display = 'block'; return; }
     errorEl.style.display = 'none';
 });
 </script>

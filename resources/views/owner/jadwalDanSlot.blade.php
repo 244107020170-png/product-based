@@ -86,7 +86,7 @@
                 </div>
                 <button id="reset-filter" class="reset-btn">
                     <i class="fa-solid fa-rotate-right"></i>
-                    Reset Filter
+                    Atur Ulang Filter
                 </button>
             </div>
 

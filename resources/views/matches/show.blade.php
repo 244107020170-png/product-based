@@ -92,6 +92,30 @@
             .detail-cover { height: 200px; }
             .detail-body { padding: 24px; }
         }
+        @media (max-width: 480px) {
+            .detail-body { padding: 16px; }
+            .detail-cover { height: 160px; }
+            .match-title { font-size: 1.4rem; }
+            .info-grid { gap: 12px; }
+            .match-detail-main div[style*="min-width: 220px"] {
+                min-width: 0 !important;
+                flex: 1 1 100% !important;
+                padding: 16px !important;
+            }
+            .match-detail-main div[style*="width: 220px; background: white; border-radius: 18px"] {
+                width: 100% !important;
+                padding: 14px !important;
+            }
+        }
+        @media (max-width: 360px) {
+            .detail-body { padding: 12px; }
+            .detail-cover { height: 130px; }
+            .match-title { font-size: 1.15rem; }
+            .info-grid { gap: 8px; }
+            .info-text-label { font-size: 0.75rem; }
+            .info-text-val { font-size: 0.85rem; }
+            .creator-block { flex-direction: column; text-align: center; padding: 12px; }
+        }
     </style>
 </head>
 <body class="player-dashboard-page" style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">
@@ -247,7 +271,7 @@
                                     </div>
                                 </div>
                                 <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
-                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Biaya Kontribusi / Player</div>
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Biaya Kontribusi / Pemain</div>
                                     <div style="font-size: 20px; font-weight: 800; color: #02025b;">
                                         Rp{{ number_format($match->contribution_per_player, 0, ',', '.') }}
                                         @if($hasPromo)
@@ -257,11 +281,11 @@
                                     </div>
                                 </div>
                                 <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
-                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Max Player</div>
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Maks. Pemain</div>
                                     <div style="font-size: 20px; font-weight: 800; color: #02025b;">{{ $match->max_player }}</div>
                                 </div>
                                 <div style="background: white; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,77,.08);">
-                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Joined Player</div>
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 6px;">Pemain Bergabung</div>
                                     <div style="font-size: 20px; font-weight: 800; color: #02025b;">{{ $playersJoined }}</div>
                                 </div>
                             </div>

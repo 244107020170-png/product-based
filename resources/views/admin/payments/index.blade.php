@@ -20,7 +20,7 @@
             <p class="text-[18px] font-bold text-adm-success mt-0.5">{{ number_format($successCount) }}</p>
         </div>
         <div class="bg-adm-surface-lowest p-4 rounded-[16px] soft-shadow border border-adm-outline-variant">
-            <p class="text-[11px] font-medium text-adm-outline tracking-wide">Pending</p>
+            <p class="text-[11px] font-medium text-adm-outline tracking-wide">Menunggu</p>
             <p class="text-[18px] font-bold text-adm-warning mt-0.5">{{ number_format($pendingCount) }}</p>
         </div>
         <div class="bg-adm-surface-lowest p-4 rounded-[16px] soft-shadow border border-adm-outline-variant">

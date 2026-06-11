@@ -191,7 +191,7 @@
 <div class="w-16 h-16 rounded-2xl bg-on-primary-fixed-variant text-white flex items-center justify-center shadow-lg shadow-primary/20">
 <span class="material-symbols-outlined text-[32px]">military_tech</span>
 </div>
-<h2 class="font-headline-lg text-headline-lg">Achievement Points</h2>
+<h2 class="font-headline-lg text-headline-lg">Poin Prestasi</h2>
 <p class="font-body-lg text-body-lg text-secondary">
                         Kumpulkan poin setiap kali kamu bermain dan naikkan level karaktermu. Dapatkan badge spesial yang bisa dipamerkan di profilmu!
                     </p>
@@ -258,7 +258,7 @@
 @if($popularField->bookings_count >= 5)
 <div class="absolute top-md left-md bg-primary text-white px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
 <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-                            Popular
+                            Populer
 </div>
 @endif
 </div>
@@ -271,7 +271,7 @@
 </div>
 <div class="flex items-center gap-2 mb-md">
 @if($popularField->bookings_count >= 5)
-<span class="bg-primary/10 text-primary px-md py-xs rounded-full text-label-sm font-bold">Popular</span>
+<span class="bg-primary/10 text-primary px-md py-xs rounded-full text-label-sm font-bold">Populer</span>
 @endif
 @if($popularField->bookings_count > 0)
 <span class="bg-amber-50 text-amber-700 px-md py-xs rounded-full text-label-sm font-bold">Paling Dibooking</span>
@@ -449,7 +449,7 @@
         </div>
         <div onclick="faqAnswer('join_match')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
             <span class="material-symbols-outlined" style="color:#EB5436; font-size:20px;">group_add</span>
-            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Join Pertandingan Umum</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
+            <div><div style="font-weight:700; font-size:13px; color:#02025b;">Cara Gabung Pertandingan Umum</div><div style="font-size:11px; color:#888;">Bergabung pertandingan publik</div></div>
         </div>
         <div onclick="faqAnswer('payment')" style="padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,77,.08); margin-bottom:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:10px;" onmouseover="this.style.borderColor='#EB5436';this.style.background='#fff5f2'" onmouseout="this.style.borderColor='rgba(0,0,77,.08)';this.style.background='transparent'">
             <span class="material-symbols-outlined" style="color:#EB5436; font-size:20px;">payments</span>
@@ -487,7 +487,7 @@
                 text: '1. Pilih lapangan yang kamu inginkan.\n2. Pilih tanggal dan jam yang tersedia.\n3. Klik "Pesan" dan ikuti instruksi pembayaran.\n4. Laporkan pembayaran ke owner untuk konfirmasi.\n5. Setelah dikonfirmasi, booking kamu aktif!'
             },
             join_match: {
-                title: 'Cara Join Pertandingan Umum',
+                title: 'Cara Gabung Pertandingan Umum',
                 text: '1. Buka halaman "Cari Tim".\n2. Geser kartu pertandingan yang tersedia.\n3. Klik "Bergabung" pada pertandingan yang diinginkan.\n4. Lanjutkan pembayaran kontribusi jika ada.\n5. Tunggu konfirmasi dari host pertandingan.'
             },
             payment: {

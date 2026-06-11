@@ -352,7 +352,7 @@
                         <div class="pt-1 space-y-2.5">
                             <h4 class="text-[10px] font-extrabold font-archivo text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                                <span>Filter Gender</span>
+                                <span>Filter Jenis Kelamin</span>
                             </h4>
                             <div class="flex gap-2">
                                 <button @click="selectedGender = ''; window.__genderFilter = ''; $nextTick(() => { if(window.buildDeck) window.buildDeck() })"
@@ -1391,7 +1391,7 @@
                                         {{ $sport }}
                                     </span>
                                     <span class="text-[8px] font-extrabold text-emerald-600 bg-emerald-50/70 border border-emerald-100 px-1.5 py-0.5 rounded-md ml-auto flex-shrink-0">
-                                        Confirmed
+                                        Dikonfirmasi
                                     </span>
                                 </div>
                                 <h4 class="text-xs font-extrabold font-archivo text-[#02025b] group-hover:text-indigo-600 transition-colors leading-snug truncate">{{ $booking->field->name }}</h4>
@@ -1531,7 +1531,7 @@
                     <p class="text-sm font-semibold text-slate-400">Pilih olahraga untuk mencari lapangan yang cocok</p>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2.5 max-h-[280px] overflow-y-auto pr-1 upcoming-scroll">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[280px] overflow-y-auto pr-1 upcoming-scroll">
                     @php
                         $privateSportEmoji = [
                             'Futsal' => '⚽', 'Bulu Tangkis' => '🏸', 'Basket' => '🏀',
@@ -1741,9 +1741,9 @@
     const formatContribution = (val) => {
         const num = Number(val);
         if (!isNaN(num) && num > 0) {
-            return 'Rp ' + num.toLocaleString('id-ID') + ' / Player';
+            return 'Rp ' + num.toLocaleString('id-ID') + ' / Pemain';
         }
-        return 'Gratis / Free';
+        return 'Gratis';
     };
 
     // Sport tag color mapping

@@ -21,7 +21,7 @@
                 </div>
             </div>
             @php
-                $vMap = ['approved' => ['label' => 'Terverifikasi', 'class' => 'text-adm-success bg-adm-success/10'], 'pending' => ['label' => 'Pending', 'class' => 'text-adm-warning bg-adm-warning/10'], 'rejected' => ['label' => 'Ditolak', 'class' => 'text-adm-error bg-adm-error/10']];
+                $vMap = ['approved' => ['label' => 'Terverifikasi', 'class' => 'text-adm-success bg-adm-success/10'], 'pending' => ['label' => 'Menunggu', 'class' => 'text-adm-warning bg-adm-warning/10'], 'rejected' => ['label' => 'Ditolak', 'class' => 'text-adm-error bg-adm-error/10']];
                 $vInfo = $vMap[$field->verification_status] ?? ['label' => $field->verification_status, 'class' => 'text-adm-outline bg-adm-surface'];
             @endphp
             <span class="px-3 py-1 rounded-full text-xs font-medium {{ $vInfo['class'] }}">{{ $vInfo['label'] }}</span>
@@ -69,7 +69,7 @@
                         <td class="px-8 py-4 font-adm-body text-adm-body-sm text-adm-on-surface-variant">{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                         <td class="px-8 py-4">
                             @php
-                                $sMap = ['pending' => ['Pending', 'bg-adm-warning/10 text-adm-warning'], 'waiting_payment' => ['Menunggu Bayar', 'bg-adm-warning/10 text-adm-warning'], 'paid' => ['Dibayar', 'bg-adm-accent/10 text-adm-accent'], 'confirmed' => ['Dikonfirmasi', 'bg-adm-accent/10 text-adm-accent'], 'completed' => ['Selesai', 'bg-adm-success/10 text-adm-success'], 'cancelled' => ['Dibatalkan', 'bg-adm-error/10 text-adm-error'], 'expired' => ['Kedaluwarsa', 'bg-adm-error/10 text-adm-error'], 'rejected' => ['Ditolak', 'bg-adm-error/10 text-adm-error']];
+                                $sMap = ['pending' => ['Menunggu', 'bg-adm-warning/10 text-adm-warning'], 'waiting_payment' => ['Menunggu Bayar', 'bg-adm-warning/10 text-adm-warning'], 'paid' => ['Dibayar', 'bg-adm-accent/10 text-adm-accent'], 'confirmed' => ['Dikonfirmasi', 'bg-adm-accent/10 text-adm-accent'], 'completed' => ['Selesai', 'bg-adm-success/10 text-adm-success'], 'cancelled' => ['Dibatalkan', 'bg-adm-error/10 text-adm-error'], 'expired' => ['Kedaluwarsa', 'bg-adm-error/10 text-adm-error'], 'rejected' => ['Ditolak', 'bg-adm-error/10 text-adm-error']];
                                 $sInfo = $sMap[$booking->status] ?? [$booking->status, 'bg-adm-surface text-adm-outline'];
                             @endphp
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $sInfo[1] }}">{{ $sInfo[0] }}</span>

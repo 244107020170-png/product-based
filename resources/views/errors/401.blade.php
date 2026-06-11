@@ -12,7 +12,7 @@
 
         <!-- Error Code & Message -->
         <h1 class="text-7xl font-bold text-[#EB5436] mb-4">401</h1>
-        <h2 class="text-3xl font-bold text-[#00004D] mb-2">Silakan Login</h2>
+        <h2 class="text-3xl font-bold text-[#00004D] mb-2">Silakan Masuk</h2>
         <p class="text-gray-600 mb-6">Anda harus login terlebih dahulu untuk mengakses halaman ini.</p>
         
         <!-- Info Alert -->
@@ -25,7 +25,7 @@
         <div class="space-y-3">
             <a href="{{ route('login') }}" 
                class="inline-block bg-[#EB5436] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#d93d2a] transition-colors duration-300 shadow-md hover:shadow-lg w-full">
-                Login Sekarang
+                Masuk Sekarang
             </a>
             
             <a href="{{ route('home') }}" 

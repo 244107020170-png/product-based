@@ -662,6 +662,20 @@
     }
 }
 
+/* ---- Badge grid (replaces inline style) ---- */
+.profview-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 640px) {
+    .profview-badge-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
 @media (max-width: 400px) {
     .profview-container { padding: 8px; }
     .profview-header { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -674,4 +688,238 @@
     .profview-match-card { grid-template-columns: 1fr; }
     .profview-match-card__img-wrap { min-height: 100px; }
     .profview-badge-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+
+@media (max-width: 480px) {
+    .profview-card {
+        padding: 0 14px 20px;
+    }
+
+    .profview-cover {
+        height: 140px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .profview-avatar-wrap {
+        margin-top: -44px;
+    }
+
+    .profview-avatar-wrap__img {
+        width: 88px;
+        height: 88px;
+        border-width: 3px;
+    }
+
+    .profview-avatar-row {
+        margin-bottom: 10px;
+    }
+
+    .profview-edit-btn {
+        padding: 8px 16px;
+        font-size: 0.82rem;
+        border-radius: 12px;
+        margin-bottom: 4px;
+    }
+
+    .profview-identity {
+        gap: 8px;
+    }
+
+    .profview-name {
+        font-size: 1.2rem;
+    }
+
+    .profview-badge-pill {
+        padding: 4px 10px 4px 6px;
+    }
+
+    .profview-badge-pill__icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .profview-badge-pill__label {
+        font-size: 0.72rem;
+    }
+
+    .profview-username {
+        font-size: 0.82rem;
+        margin-bottom: 10px;
+    }
+
+    .profview-bio {
+        font-size: 0.85rem;
+        margin-bottom: 14px;
+    }
+
+    .profview-tags {
+        gap: 6px;
+        margin-bottom: 18px;
+    }
+
+    .profview-tag {
+        padding: 5px 12px;
+        font-size: 0.78rem;
+    }
+
+    .profview-topbar__title {
+        font-size: 1.2rem;
+    }
+
+    .profview-tabs {
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .profview-tab {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        flex: 1 1 auto;
+    }
+
+    .profview-empty-char {
+        min-height: 160px;
+        padding: 16px 12px;
+    }
+
+    .profview-empty-char__img {
+        height: 100px;
+    }
+
+    .profview-empty-char__text {
+        font-size: 0.8rem;
+        max-width: 220px;
+    }
+
+    .profview-match-card__body {
+        padding: 12px;
+    }
+
+    .profview-match-card__title {
+        font-size: 0.9rem;
+    }
+
+    .profview-match-card__details dt,
+    .profview-match-card__details dd {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .profview-card {
+        padding: 0 8px 14px;
+    }
+
+    .profview-cover {
+        height: 110px;
+        border-radius: 14px 14px 0 0;
+    }
+
+    .profview-avatar-wrap {
+        margin-top: -32px;
+    }
+
+    .profview-avatar-wrap__img {
+        width: 64px;
+        height: 64px;
+        border-width: 3px;
+    }
+
+    .profview-avatar-row {
+        margin-bottom: 6px;
+    }
+
+    .profview-edit-btn {
+        padding: 6px 10px;
+        font-size: 0.7rem;
+        border-radius: 10px;
+        margin-bottom: 2px;
+    }
+
+    .profview-identity {
+        gap: 6px;
+    }
+
+    .profview-name {
+        font-size: 1rem;
+    }
+
+    .profview-badge-pill {
+        padding: 3px 8px 3px 5px;
+        gap: 4px;
+    }
+
+    .profview-badge-pill__icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .profview-badge-pill__label {
+        font-size: 0.62rem;
+    }
+
+    .profview-username {
+        font-size: 0.72rem;
+        margin-bottom: 8px;
+    }
+
+    .profview-bio {
+        font-size: 0.75rem;
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+
+    .profview-tag {
+        padding: 3px 8px;
+        font-size: 0.68rem;
+    }
+
+    .profview-topbar__title {
+        font-size: 0.95rem;
+    }
+
+    .profview-topbar__right {
+        gap: 6px;
+    }
+
+    .profview-tab {
+        padding: 6px 8px;
+        font-size: 0.72rem;
+    }
+
+    .profview-empty-char {
+        min-height: 120px;
+        padding: 12px 8px;
+    }
+
+    .profview-empty-char__img {
+        height: 76px;
+    }
+
+    .profview-empty-char__text {
+        font-size: 0.72rem;
+        max-width: 180px;
+    }
+
+    .profview-match-card__body {
+        padding: 8px 10px;
+    }
+
+    .profview-match-card__title {
+        font-size: 0.82rem;
+    }
+
+    .profview-match-card__details {
+        margin-top: 2px;
+    }
+
+    .profview-match-card__details dt,
+    .profview-match-card__details dd {
+        font-size: 0.7rem;
+    }
+
+    .profview-badge-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 }

@@ -328,6 +328,35 @@
     .sk-badges { grid-template-columns: 1fr 1fr; }
     .sk-sport-bar { display: none; }
 }
+@media(max-width: 480px){
+    .sk-main { padding: 8px 8px 32px; }
+    .sk-hero { gap: 16px; padding: 12px 6px 16px; }
+    .sk-hero__trophy img { width: 100px; }
+    .sk-stats { gap: 10px; }
+    .sk-stat-card { padding: 14px; }
+    .sk-stat-card h3 { font-size: 1.3rem; }
+    .sk-stat-card span { font-size: .72rem; }
+    .sk-badges { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sk-badge { padding: 20px 12px 16px; }
+    .sk-badge h4 { font-size: .82rem; }
+    .sk-badge__icon-wrap { width: 48px; height: 48px; }
+    .sk-badge__chip { font-size: .65rem; padding: 4px 12px; }
+}
+@media(max-width: 360px){
+    .sk-main { padding: 6px 4px 24px; }
+    .sk-hero { gap: 12px; padding: 8px 4px 12px; }
+    .sk-hero__trophy img { width: 80px; }
+    .sk-stats { grid-template-columns: 1fr; gap: 8px; }
+    .sk-stat-card { padding: 10px 12px; }
+    .sk-stat-card h3 { font-size: 1.1rem; }
+    .sk-badges { grid-template-columns: 1fr; gap: 8px; }
+    .sk-badge { padding: 16px 10px 14px; }
+    .sk-badge h4 { font-size: .78rem; }
+    .sk-badge__icon-wrap { width: 40px; height: 40px; }
+    .sk-badge__chip { font-size: .6rem; padding: 3px 10px; }
+    .sk-section-title { font-size: 1.1rem; }
+    .sk-section-sub { font-size: .78rem; }
+}
 </style>
 </head>
 <body class="player-dashboard-page" style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">

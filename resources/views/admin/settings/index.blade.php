@@ -26,7 +26,7 @@
                            class="w-full max-w-xl px-4 py-3 bg-adm-surface-low border border-adm-outline-variant rounded-lg font-adm-body text-adm-body-sm focus:ring-2 focus:ring-adm-secondary-container outline-none">
                 </div>
                 <div>
-                    <label class="block font-adm-body text-adm-label-md text-adm-primary mb-2">Email Support</label>
+                    <label class="block font-adm-body text-adm-label-md text-adm-primary mb-2">Email Dukungan</label>
                     <input type="email" name="email_support" value="{{ $settings['email_support'] }}"
                            class="w-full max-w-xl px-4 py-3 bg-adm-surface-low border border-adm-outline-variant rounded-lg font-adm-body text-adm-body-sm focus:ring-2 focus:ring-adm-secondary-container outline-none">
                 </div>

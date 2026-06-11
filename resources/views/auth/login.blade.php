@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -198,7 +198,7 @@
 <x-custom-modal name="google-info"
                  type="info"
                  title="Fitur Segera Hadir"
-                 message="Login dengan Google belum tersedia. Silakan gunakan email dan password untuk masuk."
+                 message="Masuk dengan Google belum tersedia. Silakan gunakan email dan password untuk masuk."
                  cancelText="Tutup" />
 
 </body>
