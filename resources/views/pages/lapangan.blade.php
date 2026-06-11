@@ -35,11 +35,12 @@
 <body class="bg-[#E0F2F1] font-body-md text-on-surface">
 <!-- Top Navigation -->
 <nav id="mainNav" class="fixed top-0 w-full z-50 transition-all duration-300">
-<div class="flex items-center justify-between px-margin-desktop h-[80px] w-full max-w-[1440px] mx-auto">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-[80px] w-full max-w-[1440px] mx-auto">
 <a href="{{ route('home') }}" class="flex items-center gap-3">
     <img src="{{ asset('assets/images/logo/logo3.png') }}" alt="Logo" class="h-8 w-auto">
-    <span class="font-headline-md text-headline-md font-extrabold tracking-tight">
-        <span style="color: #EB5436;">Spies</span> <span style="color: #00004D;">Sport</span>
+    <span class="font-headline-md text-headline-md font-extrabold tracking-tight leading-none flex flex-col md:flex-row md:gap-1">
+        <span style="color: #EB5436;">Spies</span>
+        <span style="color: #00004D;">Sport</span>
     </span>
 </a>
 <div class="hidden md:flex gap-lg items-center">
@@ -48,7 +49,7 @@
 <a class="text-secondary font-medium hover:text-primary transition-all duration-300" href="{{ route('komunitas') }}">Komunitas</a>
 <a class="text-secondary font-medium hover:text-primary transition-all duration-300" href="{{ route('bantuan') }}">Bantuan</a>
 </div>
-<div class="flex gap-md items-center">
+<div class="flex gap-md items-center mr-9 md:mr-4">
 <a href="{{ route('login') }}" class="hidden sm:block font-label-md text-secondary hover:text-primary active:scale-95 transition-all">Masuk</a>
 <a href="{{ route('choose.role') }}" class="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Daftar</a>
 <button class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-white/80 text-primary shadow-sm hover:bg-white transition-all" onclick="toggleMobileNav()" aria-label="Menu">

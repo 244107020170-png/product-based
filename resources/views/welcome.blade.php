@@ -395,7 +395,7 @@
 <!-- CTA Section -->
 <section class="py-xl relative">
 <div class="container mx-auto px-margin-mobile md:px-margin-desktop">
-<div class="relative bg-primary rounded-xl p-xl overflow-hidden shadow-2xl shadow-primary/30">
+<div class="relative bg-primary rounded-xl p-6 md:p-xl overflow-hidden shadow-2xl shadow-primary/30">
 <div class="absolute top-0 right-0 w-1/2 h-full opacity-20 pointer-events-none">
 <img alt="" class="w-full h-full object-contain scale-150 rotate-12" src="{{ asset('assets/images/bg/explore5.png') }}">
 </div>
@@ -406,7 +406,7 @@
 <p class="font-body-lg text-body-lg mb-xl opacity-90">
                         Gabung dengan 10.000+ penggiat olahraga lainnya. Rasakan pengalaman berolahraga yang lebih modern, sosial, dan seru.
                     </p>
-<a href="{{ route('choose.role') }}" class="bg-white text-primary px-xl py-md rounded-full font-headline-md shadow-xl hover:scale-105 active:scale-95 transition-all">
+<a href="{{ route('choose.role') }}" class="block w-full md:w-auto text-center bg-white text-primary px-6 md:px-xl py-3 md:py-md rounded-full font-headline-md text-sm md:text-headline-md shadow-xl hover:scale-105 active:scale-95 transition-all">
                         Daftar Sekarang Secara Gratis
                     </a>
 </div>
