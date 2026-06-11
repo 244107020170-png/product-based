@@ -113,49 +113,56 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             flex: 1;
             padding: 14px 20px;
-            border-radius: 12px;
-            background: #43a680;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #11114b, #02025b);
             color: #fff;
             font-size: 1rem;
             font-weight: 800;
             border: none;
             cursor: pointer;
-            transition: all .2s;
+            transition: all .25s;
+            box-shadow: 0 4px 14px rgba(17,17,75,0.25);
+            letter-spacing: 0.02em;
         }
         .btn-primary:hover {
-            background: #368d6a;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(67,166,128,0.3);
+            background: linear-gradient(135deg, #02025b, #000045);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(17,17,75,0.35);
         }
         .btn-primary:active {
             transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(17,17,75,0.2);
         }
 
         .btn-danger {
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             flex: 1;
             padding: 14px 20px;
-            border-radius: 12px;
-            background: #e11d48;
-            color: #fff;
+            border-radius: 14px;
+            background: #fff;
+            color: #11114b;
             font-size: 1rem;
-            font-weight: 800;
-            border: none;
+            font-weight: 700;
+            border: 2px solid #e5e7eb;
             cursor: pointer;
-            transition: all .2s;
+            transition: all .25s;
             text-decoration: none;
         }
         .btn-danger:hover {
-            background: #be123c;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(225,29,72,0.3);
+            background: #f9fafb;
+            border-color: #d1d5db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
         .btn-danger:active {
             transform: translateY(0);
+            background: #f3f4f6;
         }
 
         .btn-row {

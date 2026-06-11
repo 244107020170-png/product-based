@@ -543,5 +543,20 @@ document.addEventListener('click', function(e) {
     });
 })();
 </script>
+<style>
+@media (max-width: 640px) {
+    #admin-notif-dropdown {
+        position: fixed !important;
+        top: 60px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: none !important;
+        max-height: calc(100vh - 80px) !important;
+        z-index: 99999 !important;
+        overflow-y: auto !important;
+    }
+}
+</style>
 </body>
 </html>

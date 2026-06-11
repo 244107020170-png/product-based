@@ -18,7 +18,7 @@
             <span data-ntf-badge="1" style="background: #3b82f6; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;">{{ $unreadCount }} baru</span>
         @endif
     </div>
-    <div style="max-height: 360px; overflow-y: auto;">
+    <div id="notif-scroll" style="max-height: 360px; overflow-y: auto;">
         @if($allNotifs->isEmpty())
             <div style="padding: 32px 18px; text-align: center; color: #9ca3af; font-size: 13px;">Belum ada notifikasi</div>
         @else
@@ -143,3 +143,21 @@
     }
 })();
 </script>
+<style>
+@media (max-width: 640px) {
+    #notif-dropdown {
+        position: fixed !important;
+        top: 60px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: none !important;
+        z-index: 99999 !important;
+    }
+    #notif-scroll {
+        max-height: calc(100vh - 170px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+</style>
