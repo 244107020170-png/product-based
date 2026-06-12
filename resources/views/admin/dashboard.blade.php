@@ -3,12 +3,30 @@
 
 @section('content')
 <div class="space-y-5">
+    @if (session('success'))
+    <div class="bg-adm-success/10 border border-adm-success/30 text-adm-success px-6 py-4 rounded-xl font-adm-body text-[13px]">
+        {{ session('success') }}
+    </div>
+    @endif
+
+    @if ($errors->any())
+    <div class="bg-adm-error/10 border border-adm-error/30 text-adm-error px-6 py-4 rounded-xl font-adm-body text-[13px]">
+        @foreach ($errors->all() as $err)
+            <p>{{ $err }}</p>
+        @endforeach
+    </div>
+    @endif
+
     <!-- Header Section -->
     <div class="flex items-center justify-between">
         <div>
             <h2 class="font-adm-headline text-[22px] font-bold text-adm-primary tracking-tight">Ringkasan Eksekutif</h2>
             <p class="text-adm-on-surface-variant font-adm-body text-[13px] mt-0.5">Selamat datang kembali. Berikut adalah performa platform Anda hari ini.</p>
         </div>
+        <button onclick="openTambahAdminModal()" class="bg-adm-dark text-white px-5 py-2.5 rounded-lg font-adm-body text-[13px] font-semibold hover:opacity-90 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer border-none">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Tambah Admin
+        </button>
     </div>
 
     <!-- Global Stats Grid (Bento Style) -->
@@ -325,4 +343,81 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Tambah Admin -->
+<div id="tambahAdminModal" class="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl w-[440px] max-w-[calc(100vw-32px)] flex flex-col">
+        <div class="flex items-center justify-between px-6 pt-4 pb-2 shrink-0">
+            <h3 class="text-[16px] font-bold text-adm-primary">Tambah Admin Baru</h3>
+            <button onclick="closeTambahAdminModal()" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-adm-surface-low cursor-pointer border-none bg-transparent">
+                <span class="material-symbols-outlined text-[18px] text-adm-outline">close</span>
+            </button>
+        </div>
+        <form method="POST" action="{{ route('admin.admin-baru') }}" class="flex flex-col min-h-0">
+            @csrf
+            <div class="px-6 overflow-y-auto custom-scrollbar">
+                <div class="space-y-2.5 max-w-[340px]">
+                    <div>
+                        <label class="block font-adm-body text-[12px] font-semibold text-adm-primary mb-1">Nama Lengkap</label>
+                        <input type="text" name="name" required
+                               class="w-full px-3.5 py-2 bg-adm-surface-low border border-adm-outline-variant rounded-lg font-adm-body text-[13px] focus:ring-2 focus:ring-adm-secondary-container outline-none"
+                               placeholder="Masukkan nama admin">
+                    </div>
+                    <div>
+                        <label class="block font-adm-body text-[12px] font-semibold text-adm-primary mb-1">Username</label>
+                        <input type="text" name="username" required
+                               class="w-full px-3.5 py-2 bg-adm-surface-low border border-adm-outline-variant rounded-lg font-adm-body text-[13px] focus:ring-2 focus:ring-adm-secondary-container outline-none"
+                               placeholder="Masukkan username">
+                    </div>
+                    <div>
+                        <label class="block font-adm-body text-[12px] font-semibold text-adm-primary mb-1">Email</label>
+                        <input type="email" name="email" required
+                               class="w-full px-3.5 py-2 bg-adm-surface-low border border-adm-outline-variant rounded-lg font-adm-body text-[13px] focus:ring-2 focus:ring-adm-secondary-container outline-none"
+                               placeholder="admin@example.com">
+                    </div>
+                    <div>
+                        <label class="block font-adm-body text-[12px] font-semibold text-adm-primary mb-1">Password</label>
+                        <input type="password" name="password" required minlength="8"
+                               class="w-full px-3.5 py-2 bg-adm-surface-low border border-adm-outline-variant rounded-lg font-adm-body text-[13px] focus:ring-2 focus:ring-adm-secondary-container outline-none"
+                               placeholder="Minimal 8 karakter">
+                    </div>
+                    <div>
+                        <label class="block font-adm-body text-[12px] font-semibold text-adm-primary mb-1">Konfirmasi Password</label>
+                        <input type="password" name="password_confirmation" required
+                               class="w-full px-3.5 py-2 bg-adm-surface-low border border-adm-outline-variant rounded-lg font-adm-body text-[13px] focus:ring-2 focus:ring-adm-secondary-container outline-none"
+                               placeholder="Ulangi password">
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-3 mt-3 border-t border-adm-outline-variant shrink-0">
+                <div class="max-w-[340px] flex gap-2.5 justify-end">
+                    <button type="button" onclick="closeTambahAdminModal()"
+                            class="px-4 py-2 rounded-lg border border-adm-outline-variant text-[12px] font-semibold text-gray-600 hover:bg-adm-surface-low transition-colors cursor-pointer bg-white">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 rounded-lg bg-adm-dark text-white text-[12px] font-semibold hover:opacity-90 transition-all cursor-pointer border-none">
+                        Simpan
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+function openTambahAdminModal() {
+    document.getElementById('tambahAdminModal').style.display = 'flex';
+}
+
+function closeTambahAdminModal() {
+    document.getElementById('tambahAdminModal').style.display = 'none';
+}
+
+document.getElementById('tambahAdminModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeTambahAdminModal();
+});
+</script>
+@endpush
 @endsection

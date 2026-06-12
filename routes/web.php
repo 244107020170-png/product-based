@@ -523,6 +523,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
         Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+        Route::post('/admin-baru', [AdminUserController::class, 'createAdmin'])->name('admin-baru');
     });
 
     /* OWNER */

@@ -78,7 +78,9 @@
     <!-- NAVBAR -->
     <div class="absolute top-0 left-0 w-full flex justify-between items-center px-10 py-6 z-20">
         <!-- LOGO (GANTI) -->
-        <img src="{{ asset('assets/images/logo/logo1.png') }}" class="h-6" alt="Logo">
+        <a href="{{ route('login') }}">
+            <img src="{{ asset('assets/images/logo/logo1.png') }}" class="h-6" alt="Logo">
+        </a>
 
         <div class="flex gap-6 text-orange-100 font-semibold">
             <a href="{{ route('login') }}" class="hover:text-white">Masuk</a>

@@ -97,7 +97,7 @@ function facilityIcon($name) {
         {{-- WELCOME SECTION --}}
         <div class="welcome-section">
             <div>
-                <h1>Ayo tambahkan lapangan mu!</h1>
+                <h1>Ayo tambahkan lapanganmu!</h1>
                 <p>Kelola lapangan olahraga di sini.</p>
             </div>
 

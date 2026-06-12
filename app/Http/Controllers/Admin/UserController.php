@@ -45,4 +45,21 @@ class UserController extends Controller
         $user->load(['bookings' => fn($q) => $q->latest()->take(10)->with('field:id,name')]);
         return view('admin.users.show', compact('user'));
     }
+
+    public function createAdmin(Request $request)
+    {
+        $data = $request->validate([
+            'name'     => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email'    => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $data['password'] = bcrypt($data['password']);
+        $data['role'] = 'admin';
+
+        User::create($data);
+
+        return redirect()->back()->with('success', 'Admin baru berhasil ditambahkan!');
+    }
 }
