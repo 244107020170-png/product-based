@@ -91,7 +91,7 @@
 
         <!-- SLIDE 1 -->
         <div class="slide active">
-            <img src="{{ asset('assets/images/bg/Explore.png') }}" class="slide-image" alt="Preview slide 1">
+            <img src="{{ asset('assets/images/bg/Explore.jpg') }}" class="slide-image" alt="Preview slide 1">
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-indigo-950/90"></div>
 
             <div class="slide-content absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-white">
@@ -104,7 +104,7 @@
 
         <!-- SLIDE 2 -->
         <div class="slide">
-            <img src="{{ asset('assets/images/bg/Explore2.png') }}" class="slide-image" alt="Preview slide 2">
+            <img src="{{ asset('assets/images/bg/Explore2.jpg') }}" class="slide-image" alt="Preview slide 2">
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-indigo-950/90"></div>
 
             <div class="slide-content absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-white">
@@ -117,7 +117,7 @@
 
         <!-- SLIDE 3 -->
         <div class="slide">
-            <img src="{{ asset('assets/images/bg/Explore3.png') }}" class="slide-image" alt="Preview slide 3">
+            <img src="{{ asset('assets/images/bg/Explore3.jpg') }}" class="slide-image" alt="Preview slide 3">
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-indigo-950/90"></div>
 
             <div class="slide-content absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-white">
@@ -130,7 +130,7 @@
 
         <!-- SLIDE 4 -->
         <div class="slide">
-            <img src="{{ asset('assets/images/bg/Explore4.png') }}" class="slide-image" alt="Preview slide 4">
+            <img src="{{ asset('assets/images/bg/Explore4.jpeg') }}" class="slide-image" alt="Preview slide 4">
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-indigo-950/90"></div>
 
             <div class="slide-content absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-white">
