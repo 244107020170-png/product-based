@@ -156,7 +156,7 @@ window.addEventListener('resize', function() {
 @forelse($fields as $f)
 <div class="glass-card rounded-lg overflow-hidden flex flex-col group">
 <div class="relative h-[200px]">
-<img class="w-full h-full object-cover" alt="{{ $f->name }}" src="{{ $f->image_url ?? 'https://via.placeholder.com/400x300?text=' . urlencode($f->name) }}" onerror="this.style.display='none'">
+<img class="w-full h-full object-cover" alt="{{ $f->name }}" src="{{ $f->image_url ?? 'https://via.placeholder.com/400x300?text=' . urlencode($f->name) }}" onerror="this.onerror=null;this.src='{{ $f->fallback_image }}'">
 <div class="absolute top-sm right-sm bg-primary/90 text-on-primary px-sm py-xs rounded-full text-label-sm flex items-center gap-xs">
 <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
                         {{ number_format($f->rating ?? 0, 1) }}

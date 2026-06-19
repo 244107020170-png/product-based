@@ -257,7 +257,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                 id="booking-{{ $booking->id }}">
                                 <div class="history-card__image">
                                     @if ($field)
-                                        <img src="{{ $field->image_url }}" alt="{{ $field->name ?? 'Lapangan' }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                        <img src="{{ $field->image_url }}" alt="{{ $field->name ?? 'Lapangan' }}" onerror="this.onerror=null;this.src='{{ $field->fallback_image }}';this.nextElementSibling.style.display='flex'">
                                         <div class="history-card__image-placeholder" aria-hidden="true" style="display:none">
                                             <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
                                                 <rect x="3" y="8" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/>

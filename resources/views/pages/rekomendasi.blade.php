@@ -191,7 +191,7 @@
 @forelse($promoFields as $field)
 <div class="promo-card min-w-[280px] sm:min-w-[320px] bg-white rounded-[15px] custom-shadow group cursor-pointer overflow-hidden border border-[#e6bdb8]/30 transition-all hover:translate-y-[-4px]">
 <div class="relative h-40 sm:h-48 overflow-hidden">
-<img alt="{{ $field->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="{{ $field->image_url }}" loading="lazy"/>
+<img alt="{{ $field->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="{{ $field->image_url }}" loading="lazy" onerror="this.onerror=null;this.src='{{ $field->fallback_image }}'"/>
 <div class="absolute top-3 left-3 md:top-4 md:left-4 bg-[#EB5436] text-white px-2 md:px-3 py-1 rounded-full text-[10px] md:text-label-caps font-bold">{{ $field->promo_badge ?? 'Promo' }}</div>
 <div class="absolute bottom-3 left-3 md:bottom-4 md:left-4 bg-black/50 backdrop-blur-md text-white px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[12px] flex items-center">
 <span class="material-symbols-outlined text-[12px] md:text-[14px] mr-1">local_offer</span>
@@ -234,7 +234,7 @@ Belum ada promo tersedia saat ini.
 <div class="space-y-4 md:space-y-stack-md">
 @forelse($popularFields as $field)
 <div class="flex flex-col sm:flex-row bg-white rounded-[15px] p-3 md:p-4 custom-shadow hover:translate-x-1 transition-all group border border-transparent hover:border-[#EB5436]/20">
-<img alt="{{ $field->name }}" class="w-full sm:w-32 h-48 sm:h-32 rounded-[15px] object-cover" src="{{ $field->image_url }}" loading="lazy"/>
+<img alt="{{ $field->name }}" class="w-full sm:w-32 h-48 sm:h-32 rounded-[15px] object-cover" src="{{ $field->image_url }}" loading="lazy" onerror="this.onerror=null;this.src='{{ $field->fallback_image }}'"/>
 <div class="sm:ml-6 flex-1 flex flex-col justify-between mt-3 sm:mt-0">
 <div>
 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">

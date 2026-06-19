@@ -427,7 +427,7 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
         <div class="fav-card" x-show="activeSport==='all' || activeSport==='{{ $sport }}'" data-field-id="{{ $field->id }}" data-sport="{{ $sport }}" onclick="window.location.href='{{ route('booking.show', $field->id) }}'">
           {{-- Image wrap --}}
           <div class="fav-card__img-wrap">
-            <img src="{{ $field->image_url }}" alt="{{ $field->name }}" class="fav-card__img">
+            <img src="{{ $field->image_url }}" alt="{{ $field->name }}" class="fav-card__img" onerror="this.onerror=null;this.src='{{ $field->fallback_image }}'">
 
             {{-- Heart toggle --}}
             <button type="button" class="fav-card__heart" onclick="event.stopPropagation();" data-toggle="{{ $field->id }}">❤️</button>

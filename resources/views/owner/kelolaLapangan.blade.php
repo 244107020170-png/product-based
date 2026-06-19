@@ -216,7 +216,7 @@ function facilityIcon($name) {
                 @forelse ($fields as $field)
                 <div class="field-card" data-type="{{ $field->type ?? '' }}">
                     <div class="field-image">
-                        <img src="{{ $field->image_url }}" alt="{{ $field->name }}" onerror="this.style.display='none'">
+                        <img src="{{ $field->image_url }}" alt="{{ $field->name }}" onerror="this.onerror=null;this.src='{{ $field->fallback_image }}'">
                         <span class="badge" style="background:{{ ($sportColors[$field->type] ?? null) ? $sportColors[$field->type]['bg'] : '#fee2e2' }};color:{{ ($sportColors[$field->type] ?? null) ? $sportColors[$field->type]['text'] : '#b91c1c' }};">{{ $field->type ?? 'Olahraga' }}</span>
                     </div>
                     <div class="field-content">

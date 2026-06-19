@@ -8,6 +8,14 @@ use Illuminate\Support\Facades\Storage;
 
 class OwnerFieldController extends Controller
 {
+    // NOTE: Images are stored on the 'public' disk (local storage: storage/app/public/fields/).
+    // On hosting platforms like Railway, local storage is ephemeral and files will be lost on redeploy.
+    // For production, swap to cloud storage by changing the disk to 's3' in config/filesystems.php
+    // and setting AWS_* env vars. See: https://laravel.com/docs/filesystem#s3-driver-configuration
+    //
+    // If storage files are lost, Field@getImageUrlAttribute will automatically fall back to
+    // sport-type SVG icons from public/assets/images/sports/ (committed in repo).
+
     public function store(Request $request)
     {
         $data = $request->validate([

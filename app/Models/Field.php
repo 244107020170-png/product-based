@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Field extends Model
 {
-    protected $appends = ['image_url', 'has_active_promo', 'promo_price', 'promo_badge', 'promo_price_raw', 'promo_start', 'promo_end'];
+    protected $appends = ['image_url', 'fallback_image', 'has_active_promo', 'promo_price', 'promo_badge', 'promo_price_raw', 'promo_start', 'promo_end'];
 
     protected $fillable = [
         'name',
@@ -100,17 +101,11 @@ class Field extends Model
     }
 
     /**
-     * Get the best available image URL for this field.
-     * - Owner uploaded image → use it
-     * - No image but has sport type → use sport default from assets
-     * - Fallback → default.jpg
+     * Get the fallback sport icon URL based on field type.
+     * Always returns a valid asset path (committed in repo).
      */
-    public function getImageUrlAttribute(): string
+    public function getFallbackImageAttribute(): string
     {
-        if ($this->image) {
-            return asset('storage/' . $this->image);
-        }
-
         $typeLower = $this->type ? strtolower(trim($this->type)) : '';
 
         $sportImages = [
@@ -140,6 +135,20 @@ class Field extends Model
         $file = $sportImages[$typeLower] ?? 'default.svg';
 
         return asset('assets/images/sports/' . $file);
+    }
+
+    /**
+     * Get image URL with file existence check.
+     * If uploaded file is missing (e.g. lost after redeploy),
+     * falls back to sport icon from public/assets.
+     */
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
+            return asset('storage/' . $this->image);
+        }
+
+        return $this->fallback_image;
     }
 
     public function formattedPrice(): string

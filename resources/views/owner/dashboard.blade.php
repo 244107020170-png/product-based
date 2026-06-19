@@ -185,7 +185,7 @@
                         @foreach($fields as $f)
                         <div class="bg-white rounded-[15px] overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                             <div class="h-32 relative bg-gray-200">
-                                <img src="{{ $f->image_url }}" alt="{{ $f->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                                <img src="{{ $f->image_url }}" alt="{{ $f->name }}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='{{ $f->fallback_image }}'">
                                 <span class="absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full
                                     {{ $f->is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                     {{ $f->is_available ? 'Tersedia' : 'Tidak Tersedia' }}

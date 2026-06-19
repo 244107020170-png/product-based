@@ -250,7 +250,7 @@
 @forelse($popularFields as $popularField)
 <div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
 <div class="h-64 overflow-hidden relative">
-<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $popularField->name }}" src="{{ $popularField->image_url }}" onerror="this.style.display='none'">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $popularField->name }}" src="{{ $popularField->image_url }}" onerror="this.onerror=null;this.src='{{ $popularField->fallback_image }}'">
 <div class="absolute top-md right-md bg-white/90 backdrop-blur-md px-md py-xs rounded-full font-label-sm flex items-center gap-xs">
 <span class="material-symbols-outlined text-orange-400 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
                             {{ number_format($popularField->rating ?? 0, 1) }}
@@ -333,7 +333,7 @@
     @php $promo = $item->promo; $f = $item->field; @endphp
     <div class="group relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
         <div class="h-64 overflow-hidden relative">
-            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $f->name }}" src="{{ $f->image_url }}" onerror="this.style.display='none'">
+            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ $f->name }}" src="{{ $f->image_url }}" onerror="this.onerror=null;this.src='{{ $f->fallback_image }}'">
             <div class="absolute top-md left-md flex gap-xs flex-wrap">
                 @if($promo->type === 'percentage')
                 <div class="bg-red-500 text-white px-lg py-xs rounded-full font-label-sm font-bold flex items-center gap-xs shadow-lg shadow-red-500/30">

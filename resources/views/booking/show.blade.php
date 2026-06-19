@@ -13,7 +13,7 @@
 
     $field->load('discounts');
 
-    $visibleFields = ['id', 'name', 'location', 'price_per_hour', 'image', 'image_url', 'facilities', 'rating',
+    $visibleFields = ['id', 'name', 'type', 'location', 'price_per_hour', 'image', 'image_url', 'fallback_image', 'facilities', 'rating',
         'promo_price', 'promo_badge', 'promo_price_raw', 'promo_start', 'promo_end', 'has_active_promo'];
     $selectedFieldJson = $field->makeVisible($visibleFields);
     $allFieldsJson = $allFields->map(fn($f) => $f->makeVisible($visibleFields))->toArray();
@@ -300,7 +300,7 @@
             <div class="bk-top-wrap">
                 {{-- Carousel --}}
                 <div class="bk-carousel">
-                    <img :src="selectedField.image_url" alt="Lapangan" onerror="this.style.display='none'">
+                    <img :src="selectedField.image_url" alt="Lapangan" onerror="if(selectedField.fallback_image)this.src=selectedField.fallback_image;this.onerror=null">
                     <button class="bk-carousel-btn right">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                     </button>
