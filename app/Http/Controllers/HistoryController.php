@@ -13,8 +13,6 @@ class HistoryController extends Controller
     {
         $user = Auth::user();
 
-        $nonSelesaiStatuses = ['cancelled', 'expired', 'rejected'];
-
         // ---- Bookings ----
         $query = Booking::with('field', 'review')
             ->where('user_id', $user->id);
@@ -47,13 +45,7 @@ class HistoryController extends Controller
         $allItems = collect();
 
         foreach ($bookings as $b) {
-            $statusKey = $b->status;
-            if (!in_array($statusKey, $nonSelesaiStatuses)) {
-                $bookingEnd = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
-                if ($bookingEnd->isPast()) {
-                    $statusKey = 'selesai';
-                }
-            }
+            $statusKey = $b->display_status;
             $allItems->push([
                 'type' => 'booking',
                 'original' => $b,
@@ -95,11 +87,12 @@ class HistoryController extends Controller
         $allMatchJoins = MatchPlayer::where('user_id', $user->id)
             ->whereHas('match')
             ->get();
-        $now = now();
 
         $totalSemua = $allBookings->count() + $allMatchJoins->count();
 
-        $totalSelesai = $allBookings->filter(function ($b) use ($nonSelesaiStatuses, $now) {
+        $nonSelesaiStatuses = ['cancelled', 'expired', 'rejected'];
+
+        $totalSelesai = $allBookings->filter(function ($b) use ($nonSelesaiStatuses) {
             if (in_array($b->status, $nonSelesaiStatuses)) return false;
             $end = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
             return $end->isPast();
@@ -107,7 +100,7 @@ class HistoryController extends Controller
             return $mp->match && $mp->match->date < now()->toDateString();
         })->count();
 
-        $totalAkan = $allBookings->filter(function ($b) use ($nonSelesaiStatuses, $now) {
+        $totalAkan = $allBookings->filter(function ($b) use ($nonSelesaiStatuses) {
             if (in_array($b->status, $nonSelesaiStatuses)) return false;
             $end = \Carbon\Carbon::parse($b->date->format('Y-m-d').' '.$b->end_time);
             return !$end->isPast();

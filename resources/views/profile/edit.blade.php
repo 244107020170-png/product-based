@@ -197,7 +197,7 @@
                             <label>Level Keahlian</label>
                             <div style="padding:13px 16px; border-radius:14px; background:rgba(0,0,77,.04); border:1.5px solid rgba(0,0,77,.08); font-size:.93rem; font-weight:700; color:rgba(0,0,77,.5); display:flex; align-items:center; gap:8px;">
                                 @php
-                                    $_pBookings = \App\Models\Booking::where('user_id', $user->id)->whereIn('status', ['selesai','confirmed','pending'])->count();
+                                    $_pBookings = \App\Models\Booking::where('user_id', $user->id)->whereNotIn('status', ['cancelled','expired','rejected'])->count();
                                     $_pMatches = \Illuminate\Support\Facades\DB::table('match_players')->where('user_id', $user->id)->count();
                                     $_pReviews = \App\Models\Review::where('user_id', $user->id)->count();
                                     $_pPoints = ($_pBookings * 1) + ($_pMatches * 2) + ($_pReviews * 3);

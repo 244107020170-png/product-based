@@ -81,8 +81,14 @@ class BookingService
             throw ValidationException::withMessages(['date' => 'Booking tanggal lalu tidak diperbolehkan.']);
         }
 
-        if ($date->isToday() && $start->lessThanOrEqualTo(Carbon::now())) {
+        $bookingStart = $date->copy()->setTimeFrom($start);
+
+        if ($bookingStart->lessThanOrEqualTo(Carbon::now())) {
             throw ValidationException::withMessages(['start_time' => 'Waktu mulai harus di masa depan untuk booking hari ini.']);
+        }
+
+        if ($bookingStart->lessThan(Carbon::now()->addHours(3))) {
+            throw ValidationException::withMessages(['start_time' => 'Pemesanan tidak dapat dilakukan karena jadwal bermain kurang dari 3 jam dari waktu saat ini.']);
         }
     }
 

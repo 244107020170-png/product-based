@@ -1,27 +1,10 @@
 @php
     use Carbon\Carbon;
+    use App\Models\Booking;
     $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
 
-    $statusLabels = [
-        'pending' => 'Menunggu',
-        'waiting_payment' => 'Menunggu Pembayaran',
-        'waiting_confirmation' => 'Menunggu Konfirmasi',
-        'paid' => 'Dibayar',
-        'confirmed' => 'Terkonfirmasi',
-        'completed' => 'Selesai',
-        'cancelled' => 'Dibatalkan',
-        'expired' => 'Kadaluarsa',
-        'rejected' => 'Ditolak',
-    ];
-
-    $bookings->each(function ($b) {
-        if ($b->status === 'waiting_payment' && $b->payment_deadline && now()->greaterThan($b->payment_deadline)) {
-            $b->status = 'expired';
-        }
-    });
-    
     // Sidebar
     $sidebarItems = [
         ['label'=>'Beranda',  'icon'=>asset('assets/images/icons/dashboard.png'), 'href'=>route('dashboard'),    'active'=>false],
@@ -158,6 +141,10 @@
         @else
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
             @foreach($bookings as $booking)
+            @php
+                $displayStatusKey = $booking->display_status;
+                $displayInfo = Booking::statusDisplayInfo($displayStatusKey);
+            @endphp
             <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,77,.08); border: 1px solid rgba(0,0,77,.06); display: flex; flex-direction: column; height: 100%;">
                 <div style="background: linear-gradient(135deg, #02025b 0%, #11114b 100%); color: white; padding: 16px;">
                     <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 800; letter-spacing: .02em;">{{ $booking->field->name }}</h3>
@@ -194,14 +181,13 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 14px; color: #666;">Total: <span style="font-weight: 800; color: #02025b;">Rp{{ number_format($booking->total_price ?? 0, 0, ',', '.') }}</span></span>
-                        <span style="display: inline-block; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 600;
-                            {{ $booking->status === 'confirmed' ? 'background: #d4edda; color: #155724;' : ($booking->status === 'cancelled' ? 'background: #fee2e2; color: #991b1b;' : ($booking->status === 'expired' ? 'background: #fce4e4; color: #842029;' : ($booking->status === 'rejected' ? 'background: #fce4e4; color: #991b1b;' : 'background: #fff3cd; color: #856404;'))) }}">
-                            {{ $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status)) }}
+                        <span style="display: inline-block; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; background: {{ $displayInfo['bg'] }}; color: {{ $displayInfo['color'] }};">
+                            {{ $displayInfo['label'] }}
                         </span>
                     </div>
                     
                     <div style="margin-top: auto; border-top: 1px dashed rgba(0,0,77,.1); padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
-                        @if($booking->status === 'expired')
+                        @if($displayStatusKey === 'expired')
                         <a href="{{ route('booking.show', $booking->field_id) }}" class="booking-detail-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 0; background: #842029; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: .95rem; border: none; transition: all .2s ease;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                             Pesan Lapangan Lagi

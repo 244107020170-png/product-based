@@ -394,14 +394,14 @@
 }
 
 .history-status--selesai {
-    background: linear-gradient(135deg, rgba(30,143,103,0.10), rgba(30,143,103,0.04));
-    color: #0f6b4a;
-    border-color: rgba(30,143,103,0.22);
-    box-shadow: 0 1px 4px rgba(30,143,103,0.08);
+    background: linear-gradient(135deg, rgba(59,130,246,0.10), rgba(59,130,246,0.04));
+    color: #1d4ed8;
+    border-color: rgba(59,130,246,0.22);
+    box-shadow: 0 1px 4px rgba(59,130,246,0.08);
 }
 .history-status--selesai::before {
-    background: #1e8f67;
-    box-shadow: 0 0 5px rgba(30,143,103,0.45);
+    background: #3b82f6;
+    box-shadow: 0 0 5px rgba(59,130,246,0.45);
 }
 
 .history-status--akan {

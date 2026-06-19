@@ -280,6 +280,7 @@ class BookingController extends Controller
             ->with('field')
             ->orderBy('date', 'desc')
             ->orderBy('start_time', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return view('booking.index', ['bookings' => $bookings]);
@@ -521,6 +522,11 @@ class BookingController extends Controller
 
         if ($bookingDate < $today || ($bookingDate === $today && $booking->start_time <= $currentTime)) {
             return back()->with('error', 'Tidak dapat membatalkan booking yang sudah atau sedang berlangsung.');
+        }
+
+        $bookingDateTime = $booking->date instanceof Carbon ? $booking->date->copy()->setTimeFromTimeString($booking->start_time) : Carbon::parse($booking->date . ' ' . $booking->start_time);
+        if ($bookingDateTime->lessThanOrEqualTo(now()->addHours(8))) {
+            return back()->with('error', 'Pembatalan hanya dapat dilakukan maksimal 8 jam sebelum jadwal bermain.');
         }
 
         if (!self::isValidTransition($booking->status, BookingStatus::CANCELLED)) {

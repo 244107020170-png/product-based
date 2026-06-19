@@ -1,46 +1,20 @@
 @php
     use Carbon\Carbon;
+    use App\Models\Booking;
     $userName = Auth::user()->name ?? 'Pemain';
     $userAvatar = Auth::user()->avatarUrl();
     $currentDate = Carbon::now()->locale('id')->translatedFormat('j F Y');
 
-    $statusLabels = [
-        'pending' => 'Menunggu',
-        'waiting_payment' => 'Menunggu Pembayaran',
-        'waiting_confirmation' => 'Menunggu Konfirmasi',
-        'paid' => 'Dibayar',
-        'confirmed' => 'Dikonfirmasi',
-        'completed' => 'Selesai',
-        'cancelled' => 'Dibatalkan',
-        'expired' => 'Kadaluarsa',
-        'rejected' => 'Ditolak',
-    ];
-
-    $statusStyles = [
-        'pending' => ['bg' => '#fef3c7', 'color' => '#92400e', 'dot' => '#d97706'],
-        'waiting_payment' => ['bg' => '#fef3c7', 'color' => '#92400e', 'dot' => '#d97706'],
-        'waiting_confirmation' => ['bg' => '#fef3c7', 'color' => '#92400e', 'dot' => '#d97706'],
-        'paid' => ['bg' => '#d1fae5', 'color' => '#065f46', 'dot' => '#10b981'],
-        'confirmed' => ['bg' => '#bbf7d0', 'color' => '#166534', 'dot' => '#16a34a'],
-        'completed' => ['bg' => '#d1fae5', 'color' => '#065f46', 'dot' => '#10b981'],
-        'cancelled' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'dot' => '#ef4444'],
-        'expired' => ['bg' => '#fee2e2', 'color' => '#842029', 'dot' => '#dc2626'],
-        'rejected' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'dot' => '#dc2626'],
-    ];
-
-    $isExpired = $booking->status === 'expired' || ($booking->status === 'waiting_payment' && $booking->payment_deadline && now()->greaterThan($booking->payment_deadline));
-    if ($isExpired) {
-        $booking->status = 'expired';
-    }
-    $bookingStatusLabel = $statusLabels[$booking->status] ?? ucfirst(str_replace('_', ' ', $booking->status));
-    $bookingStatusStyle = $statusStyles[$booking->status] ?? ['bg' => '#f4f6fb', 'color' => '#111', 'dot' => '#43a680'];
+    $displayStatusKey = $booking->display_status;
+    $displayInfo = Booking::statusDisplayInfo($displayStatusKey);
 
     $paymentCountdownLabel = '-';
-    if (in_array($booking->status, ['waiting_confirmation', 'confirmed', 'paid', 'completed'])) {
+    $originalStatus = $booking->status;
+    if (in_array($originalStatus, ['waiting_confirmation', 'confirmed', 'paid', 'completed'])) {
         $paymentCountdownLabel = 'Selesai';
-    } elseif ($booking->status === 'expired') {
+    } elseif ($displayStatusKey === 'expired') {
         $paymentCountdownLabel = 'Kadaluarsa';
-    } elseif ($booking->status === 'waiting_payment' && $booking->payment_deadline) {
+    } elseif ($originalStatus === 'waiting_payment' && $booking->payment_deadline) {
         if (now()->lte($booking->payment_deadline)) {
             $remaining = $booking->payment_deadline->diff(now());
             $segments = [];
@@ -70,10 +44,13 @@
         ['label'=>'Pengaturan', 'icon'=>asset('assets/images/icons/pengaturan.png'), 'href'=>route('profile.edit')],
     ];
 
-    $isUpcoming = $booking->status === 'confirmed' && (
+    $isUpcoming = $originalStatus === 'confirmed' && $displayStatusKey !== 'selesai' && (
         $booking->date > now()->toDateString() ||
         ($booking->date == now()->toDateString() && $booking->start_time > now()->toTimeString())
     );
+
+    $bookingDateTime = $booking->date instanceof Carbon ? $booking->date->copy()->setTimeFromTimeString($booking->start_time) : Carbon::parse($booking->date . ' ' . $booking->start_time);
+    $canCancel = $bookingDateTime->greaterThan(now()->addHours(8));
 
     $referer = request()->headers->get('referer');
     $previousUrl = url()->previous();
@@ -180,9 +157,9 @@
                         <p style="margin: 0; font-size: 14px; opacity: 0.9;">ID Pemesanan: #{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</p>
                     </div>
                     <div style="margin-top: 8px;">
-                        <span style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 50px; font-size: 14px; font-weight: 700; background: {{ $bookingStatusStyle['bg'] }}; color: {{ $bookingStatusStyle['color'] }};">
-                            <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ $bookingStatusStyle['dot'] }}; display: inline-block;"></span>
-                            {{ $bookingStatusLabel }}
+                        <span style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 50px; font-size: 14px; font-weight: 700; background: {{ $displayInfo['bg'] }}; color: {{ $displayInfo['color'] }};">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ $displayInfo['dot'] }}; display: inline-block;"></span>
+                            {{ $displayInfo['label'] }}
                         </span>
                     </div>
             </div>
@@ -279,7 +256,7 @@
 
                             <div style="margin-bottom: 12px;">
                                 <div style="color: #666; font-size: 14px; margin-bottom: 4px;">Status Pembayaran</div>
-                                <div style="font-weight: 700; color: #111;">{{ $bookingStatusLabel }}</div>
+                                <div style="font-weight: 700; color: #111;">{{ $displayInfo['label'] }}</div>
                             </div>
 
                             <div style="margin-bottom: 12px;">
@@ -291,21 +268,21 @@
 
                             <div style="margin-bottom: 18px;">
                                 <div style="color: #666; font-size: 14px; margin-bottom: 4px;">Countdown</div>
-                                <div id="payment-countdown" data-deadline="{{ $booking->status === 'waiting_payment' && $booking->payment_deadline ? $booking->payment_deadline->toIso8601String() : '' }}" style="font-weight: 700; color: {{ $paymentCountdownLabel === 'Selesai' ? '#16a34a' : ($paymentCountdownLabel === 'Kadaluarsa' ? '#dc2626' : '#111') }};">
+                                <div id="payment-countdown" data-deadline="{{ $originalStatus === 'waiting_payment' && $booking->payment_deadline ? $booking->payment_deadline->toIso8601String() : '' }}" style="font-weight: 700; color: {{ $paymentCountdownLabel === 'Selesai' ? '#16a34a' : ($paymentCountdownLabel === 'Kadaluarsa' ? '#dc2626' : '#111') }};">
                                     {{ $paymentCountdownLabel }}
                                 </div>
                             </div>
 
                             <div style="display: grid; gap: 12px;">
-                                @if($booking->status === 'waiting_payment' && $booking->payment_deadline && now()->lte($booking->payment_deadline))
+                                @if($originalStatus === 'waiting_payment' && $booking->payment_deadline && now()->lte($booking->payment_deadline))
                                     <div style="padding: 14px 16px; border-radius: 14px; background: #eafaf1; color: #155724; font-weight: 700; text-align:center;">
                                         Scan QR Code atau klik gambar QR untuk konfirmasi pembayaran.
                                     </div>
-                                @elseif($booking->status === 'waiting_confirmation')
+                                @elseif($originalStatus === 'waiting_confirmation')
                                     <!-- payment success shown in QR card -->
-                                @elseif($booking->status === 'confirmed')
+                                @elseif($originalStatus === 'confirmed')
                                     <div style="padding: 14px 16px; border-radius: 14px; background: #d4edda; color: #155724; font-weight: 700;">Pemesanan sudah dikonfirmasi.</div>
-                                @elseif($booking->status === 'expired')
+                                @elseif($displayStatusKey === 'expired')
                                     <div style="padding: 16px; border-radius: 14px; background: #fff4f4; color: #842029; font-weight: 700; text-align: center;">
                                         <div style="margin-bottom: 12px;">Pembayaran sudah kadaluarsa.</div>
                                         <a href="{{ route('booking.show', $booking->field_id) }}" style="display: inline-block; padding: 10px 24px; background: #842029; color: white; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700;">Pesan Lapangan Lagi</a>
@@ -318,7 +295,7 @@
 
                         @php
                             $payUrl = route('booking.payment', $booking->id);
-                            $isPaid = in_array($booking->status, ['waiting_confirmation', 'confirmed', 'paid', 'completed']);
+                            $isPaid = $displayStatusKey !== 'expired' && in_array($originalStatus, ['waiting_confirmation', 'confirmed', 'paid', 'completed']);
                         @endphp
                         <div class="qr-card" style="width: 100%; background: white; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,77,.08); padding: 24px; text-align: center;">
                             @if($isPaid)
@@ -329,7 +306,7 @@
                                 </div>
                                 <div style="font-size: 15px; font-weight: 700; color: #16a34a; margin-bottom: 4px;">Pembayaran Berhasil</div>
                                 <div style="font-size: 13px; color: #666;">
-                                    {{ $booking->status === 'confirmed' ? 'Pesanan otomatis dikonfirmasi' : ($booking->status === 'completed' ? 'Pesanan selesai' : 'Menunggu konfirmasi owner') }}
+                                    {{ $displayStatusKey === 'selesai' ? 'Pesanan selesai' : 'Pesanan otomatis dikonfirmasi' }}
                                 </div>
                             @else
                                 <div style="font-size: 13px; color: #666; margin-bottom: 12px;">Scan QR untuk bayar</div>
@@ -347,30 +324,45 @@
         </div>
 
         @if($isUpcoming)
-        <div x-data="{}" x-on:modal-confirmed.window="if ($event.detail.name === 'cancel-booking') $refs.cancelForm.submit()" style="margin-top:24px; background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,77,.06); border:1px solid rgba(0,0,77,.08);">
+        <div x-data="{
+            canCancel: @js($canCancel),
+            checkCancellation() {
+                if (this.canCancel) {
+                    this.$dispatch('open-modal-cancel-booking');
+                } else {
+                    this.$dispatch('open-modal-cancel-not-allowed');
+                }
+            }
+        }" x-on:modal-confirmed.window="if ($event.detail.name === 'cancel-booking') $refs.cancelForm.submit()" style="margin-top:24px; background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,77,.06); border:1px solid rgba(0,0,77,.08);">
             <form method="POST" action="{{ route('booking.cancel', $booking->id) }}" x-ref="cancelForm">
                 @csrf
                 <p style="margin:0 0 16px; color:#666; font-size:14px;">Jika kamu membatalkan pesanan, slot lapangan akan dikembalikan dan tersedia untuk pemesan lain.</p>
                 <button type="button" style="width:100%; padding:14px; background:#dc2626; color:white; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:all .2s;"
                     onmouseover="this.style.background='#b91c1c';this.style.transform='scale(1.02)'"
                     onmouseout="this.style.background='#dc2626';this.style.transform='scale(1)'"
-                    @click="$dispatch('open-modal-cancel-booking')">
+                    @click="checkCancellation()">
                     Batalkan Pesanan
                 </button>
             </form>
 
+            <x-custom-modal name="cancel-not-allowed"
+                             type="info"
+                             title="Pembatalan Tidak Dapat Dilakukan"
+                             message="Pesanan ini sudah melewati batas waktu pembatalan. Pembatalan hanya dapat dilakukan maksimal 8 jam sebelum jadwal bermain."
+                             cancelText="Mengerti" />
+
             <x-custom-modal name="cancel-booking"
                              type="confirm"
-                             title="Batalkan Pesanan"
-                             message="Anda yakin ingin membatalkan pesanan ini? Pesanan yang dibatalkan akan diproses untuk refund sesuai kebijakan yang berlaku."
+                             title="Batalkan Pesanan?"
+                             message="Pesanan ini masih memenuhi ketentuan pembatalan. Apakah Anda yakin ingin membatalkan pesanan?"
                              confirmText="Ya, Batalkan"
-                             cancelText="Kembali"
+                             cancelText="Tidak"
                              confirmVariant="danger" />
         </div>
         @endif
 
         {{-- REVIEW SECTION --}}
-        @if(in_array($booking->status, ['confirmed', 'completed', 'selesai']))
+        @if(in_array($displayStatusKey, ['selesai', 'confirmed', 'completed']))
         <div style="margin-top:24px; background:white; border-radius:16px; padding:24px; box-shadow:0 8px 24px rgba(0,0,77,.06); border:1px solid rgba(0,0,77,.08);">
             @php
                 $existingReview = \App\Models\Review::where('user_id', Auth::id())->where('booking_id', $booking->id)->first();
@@ -525,7 +517,7 @@ document.getElementById('reviewForm').addEventListener('submit', function(e) {
         showToast('{{ session('error') }}', 'error');
     @endif
 
-    @if($booking->status === 'waiting_payment')
+    @if($originalStatus === 'waiting_payment' && $displayStatusKey !== 'expired')
     (function() {
         var countdownEl = document.getElementById('payment-countdown');
         if (!countdownEl) return;

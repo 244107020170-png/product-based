@@ -1,5 +1,6 @@
 @php
     use Carbon\Carbon;
+    use App\Models\Booking;
 
     $user            = auth()->user();
 $userName = $user?->name ?: 'Pecinta Olahraga';
@@ -22,21 +23,6 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
         ['label' => 'Pengaturan','icon' => asset('assets/images/icons/pengaturan.png'), 'href' => route('profile.edit')],
     ];
 
-    // Status map for display
-    $statusMap = [
-        'selesai'             => ['label' => 'Selesai',              'class' => 'history-status--selesai', 'filter' => 'selesai'],
-        'completed'           => ['label' => 'Selesai',              'class' => 'history-status--selesai', 'filter' => 'selesai'],
-        'confirmed'           => ['label' => 'Akan Datang',          'class' => 'history-status--akan',    'filter' => 'akan_datang'],
-        'pending'             => ['label' => 'Menunggu Konfirmasi',  'class' => 'history-status--pending',  'filter' => 'akan_datang'],
-        'waiting_payment'     => ['label' => 'Menunggu Pembayaran',  'class' => 'history-status--pending',  'filter' => 'akan_datang'],
-        'waiting_confirmation'=> ['label' => 'Menunggu Konfirmasi',  'class' => 'history-status--pending',  'filter' => 'akan_datang'],
-        'paid'                => ['label' => 'Dibayar',              'class' => 'history-status--akan',    'filter' => 'akan_datang'],
-        'cancelled'           => ['label' => 'Dibatalkan',           'class' => 'history-status--dibatal', 'filter' => 'dibatalkan'],
-        'expired'             => ['label' => 'Kadaluarsa',           'class' => 'history-status--dibatal', 'filter' => 'dibatalkan'],
-        'rejected'            => ['label' => 'Ditolak',              'class' => 'history-status--dibatal', 'filter' => 'dibatalkan'],
-    ];
-
-    $nonSelesaiStatuses = ['cancelled', 'expired', 'rejected'];
 @endphp
 
 <!DOCTYPE html>
@@ -258,7 +244,9 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                 $booking = $item['original'];
                                 $field   = $booking->field;
                                 $statusKey = $item['status_key'];
-                                $statusInfo = $statusMap[$statusKey] ?? ['label' => ucfirst($statusKey), 'class' => 'history-status--pending', 'filter' => $statusKey];
+                                $statusInfo = Booking::statusDisplayInfo($statusKey);
+                                $statusFilter = in_array($statusKey, ['confirmed', 'pending', 'waiting_payment', 'waiting_confirmation', 'paid']) ? 'akan_datang' : ($statusKey === 'selesai' || $statusKey === 'completed' ? 'selesai' : 'dibatalkan');
+                                $statusInfo['filter'] = $statusFilter;
                                 $bookingDate = \Carbon\Carbon::parse($booking->date)->locale('id')->translatedFormat('j M Y');
                                 $timeRange   = \Carbon\Carbon::parse($booking->start_time)->format('H:i').' - '.\Carbon\Carbon::parse($booking->end_time)->format('H:i');
                                 $price       = $booking->total_price;
@@ -339,12 +327,13 @@ $userName = $user?->name ?: 'Pecinta Olahraga';
                                 $mj = $item['original'];
                                 $cm = $mj->match;
                                 $mStatusKey = $item['status_key'];
-                                $mStatusInfo = $statusMap[$mStatusKey] ?? ['label' => 'Selesai', 'class' => 'history-status--selesai', 'filter' => 'selesai'];
+                                $mStatusInfo = Booking::statusDisplayInfo($mStatusKey);
+                                $mStatusFilter = $mStatusKey === 'selesai' ? 'selesai' : 'akan_datang';
                                 $mDate = \Carbon\Carbon::parse($cm->date)->locale('id')->translatedFormat('j M Y');
                                 $mTime = $cm->time ? substr($cm->time, 0, 5) . ' WIB' : '-';
                             @endphp
                             <article class="history-card"
-                                data-booking-status="{{ $mStatusInfo['filter'] ?? 'selesai' }}"
+                                data-booking-status="{{ $mStatusFilter }}"
                                 data-booking-id="match-{{ $mj->id }}">
                                 <div class="history-card__image">
                                     <div class="history-card__image-placeholder" aria-hidden="true" style="background: #f0fdf4;">

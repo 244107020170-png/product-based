@@ -9,7 +9,7 @@
 
     /* Badge logic — booking=1, match=2, review=3 */
     $badgeBookings = \App\Models\Booking::where('user_id', $user->id)
-        ->whereIn('status', ['selesai', 'confirmed', 'pending'])
+        ->whereNotIn('status', ['cancelled', 'expired', 'rejected'])
         ->count();
     $badgeMatches = \Illuminate\Support\Facades\DB::table('match_players')
         ->where('user_id', $user->id)
@@ -35,7 +35,7 @@
         default => '#6b7280',
     };
     $thinkChar = asset('assets/images/characters/think.png');
-    $coverImg   = $user->cover_photo ? (str_starts_with($user->cover_photo, 'covers/') ? asset('storage/' . $user->cover_photo) : $user->cover_photo) : asset('assets/images/bg/Explore.png');
+    $coverImg   = $user->cover_photo ? (str_starts_with($user->cover_photo, 'covers/') ? asset('storage/' . $user->cover_photo) : $user->cover_photo) : asset('assets/images/bg/Explore.jpg');
 
     /* Sidebar */
     $sidebarItems = [

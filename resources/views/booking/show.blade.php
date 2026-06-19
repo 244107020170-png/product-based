@@ -162,6 +162,54 @@
             .bk-time-pill { font-size: 10px; padding: 5px 2px; }
             .bk-subfield-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* Ketentuan Pemesanan Card */
+        .bk-ketentuan-card {
+            background: #fff8e7;
+            border: 1px solid #f0d78c;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .bk-ketentuan-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 1px;
+            line-height: 1;
+        }
+        .bk-ketentuan-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #92400e;
+            margin-bottom: 6px;
+        }
+        .bk-ketentuan-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font-size: 12px;
+            color: #a16207;
+            line-height: 1.7;
+        }
+        .bk-ketentuan-list li {
+            position: relative;
+            padding-left: 14px;
+        }
+        .bk-ketentuan-list li::before {
+            content: "•";
+            position: absolute;
+            left: 2px;
+            color: #d97706;
+            font-weight: 700;
+        }
+        @media (max-width: 480px) {
+            .bk-ketentuan-card { padding: 10px 12px; }
+            .bk-ketentuan-title { font-size: 12px; }
+            .bk-ketentuan-list { font-size: 11px; }
+        }
     </style>
 </head>
 <body class="player-dashboard-page" style="--player-dashboard-bg:url('{{ asset('assets/images/bg/bg-login.png') }}');">
@@ -266,6 +314,18 @@
                 
                 {{-- Info --}}
                 <div class="bk-info">
+                    {{-- Ketentuan Pemesanan --}}
+                    <div class="bk-ketentuan-card">
+                        <div class="bk-ketentuan-icon">⚠️</div>
+                        <div style="flex:1;">
+                            <div class="bk-ketentuan-title">Ketentuan Pemesanan</div>
+                            <ul class="bk-ketentuan-list">
+                                <li>Pemesanan minimal 3 jam sebelum jadwal bermain.</li>
+                                <li>Pembatalan maksimal 8 jam sebelum jadwal bermain.</li>
+                                <li>Pesanan lewat batas tidak dapat dibatalkan via sistem.</li>
+                            </ul>
+                        </div>
+                    </div>
                     <h1 x-text="selectedField.name"></h1>
                     <template x-if="selectedField.has_active_promo">
                         <div style="display:inline-flex;align-items:center;gap:6px;background:#dc2626;color:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:800;margin-bottom:10px;">
@@ -777,6 +837,15 @@ function bookingApp() {
         submitBooking() {
             if (!this.selectedDate || !this.selectedStartTime || !this.selectedEndTime) {
                 showToast('Pilih tanggal dan jam terlebih dahulu', 'error');
+                return;
+            }
+
+            // Validasi minimal 3 jam sebelum jadwal
+            const now = new Date();
+            const playDate = new Date(this.selectedDate + 'T' + this.selectedStartTime + ':00');
+            const diffHours = (playDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+            if (diffHours < 3) {
+                showToast('Pemesanan tidak dapat dilakukan karena jadwal bermain kurang dari 3 jam dari waktu saat ini.', 'error');
                 return;
             }
 

@@ -76,13 +76,14 @@ class ProfileController extends Controller
         $bookingActivities = $bookings->map(function (Booking $booking) {
             $field = $booking->field;
             $activityAt = Carbon::parse($booking->date->format('Y-m-d') . ' ' . ($booking->start_time ?: '00:00:00'));
+            $displayInfo = Booking::statusDisplayInfo($booking->display_status);
 
             return [
                 'name' => 'Booking ' . ($field?->name ?? 'Lapangan'),
                 'date' => $activityAt,
                 'date_label' => $activityAt->locale('id')->translatedFormat('j F Y'),
-                'status' => $this->bookingStatusLabel($booking->status),
-                'status_class' => $this->statusClass($booking->status, false),
+                'status' => $displayInfo['label'],
+                'status_class' => $displayInfo['class'],
                 'location' => $field?->location,
                 'sort_at' => $activityAt,
             ];
@@ -108,21 +109,6 @@ class ProfileController extends Controller
             ->sortByDesc('sort_at')
             ->take(5)
             ->values();
-    }
-
-    private function bookingStatusLabel(?string $status): string
-    {
-        return match ($status) {
-            'selesai', 'completed' => 'Selesai',
-            'confirmed' => 'Akan Datang',
-            'pending', 'waiting_confirmation' => 'Menunggu Konfirmasi',
-            'waiting_payment' => 'Menunggu Pembayaran',
-            'paid' => 'Dibayar',
-            'cancelled' => 'Dibatalkan',
-            'expired' => 'Kadaluarsa',
-            'rejected' => 'Ditolak',
-            default => $status ? ucfirst(str_replace('_', ' ', $status)) : 'Menunggu',
-        };
     }
 
     private function statusClass(?string $status, bool $isPast): string

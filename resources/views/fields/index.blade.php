@@ -877,9 +877,9 @@
 
             <!-- Level Pemain -->
             @php
-                $_bookings = \App\Models\Booking::where('user_id', Auth::id())
-                    ->whereIn('status', ['selesai', 'confirmed', 'pending'])
-                    ->count();
+$_bookings = \App\Models\Booking::where('user_id', Auth::id())
+    ->whereNotIn('status', ['cancelled', 'expired', 'rejected'])
+    ->count();
                 $_matches = \Illuminate\Support\Facades\DB::table('match_players')
                     ->where('user_id', Auth::id())
                     ->count();
