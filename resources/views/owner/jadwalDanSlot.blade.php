@@ -439,8 +439,10 @@
 
         updateWeekHeader(field);
 
+        const openHour = parseInt(field.open_time?.split(':')[0] || '08');
+        const closeHour = parseInt(field.close_time?.split(':')[0] || '22');
         const hours = [];
-        for (let h = 8; h <= 22; h++) hours.push(h);
+        for (let h = openHour; h <= closeHour; h++) hours.push(h);
         const numCourts = field.number_of_courts;
 
         let html = '<table class="schedule-table">';
@@ -594,8 +596,10 @@
     function renderCourtSchedule(field, fieldId) {
         const weekDates = getWeekDates(currentDate);
         const cn = selectedCourt;
+        const openHour = parseInt(field.open_time?.split(':')[0] || '08');
+        const closeHour = parseInt(field.close_time?.split(':')[0] || '22');
         const hours = [];
-        for (let h = 8; h <= 22; h++) hours.push(h);
+        for (let h = openHour; h <= closeHour; h++) hours.push(h);
 
         let html = '<table class="schedule-table">';
         html += '<thead><tr>';
@@ -716,6 +720,28 @@
     }
 
     // ── Modal ──
+    function populateModalHours() {
+        const fieldId = parseInt(document.getElementById('modal-field').value);
+        const field = fields.find(f => f.id === fieldId);
+        const openHour = field ? parseInt(field.open_time?.split(':')[0] || '08') : 8;
+        const closeHour = field ? parseInt(field.close_time?.split(':')[0] || '22') : 22;
+
+        const startSelect = document.getElementById('modal-start-hour');
+        startSelect.innerHTML = '';
+        for (let h = openHour; h < closeHour; h++) {
+            const val = String(h).padStart(2, '0');
+            startSelect.innerHTML += '<option value="' + h + '">' + val + '.00</option>';
+        }
+
+        const endSelect = document.getElementById('modal-end-hour');
+        endSelect.innerHTML = '';
+        for (let h = openHour + 1; h <= closeHour; h++) {
+            const val = String(h).padStart(2, '0');
+            endSelect.innerHTML += '<option value="' + h + '">' + val + '.00</option>';
+        }
+        if (openHour + 1 <= closeHour) endSelect.value = openHour + 1;
+    }
+
     function openAddSlotModal() {
         const currentFieldId = getSelectedFieldId();
         const fieldSelect = document.getElementById('modal-field');
@@ -725,24 +751,10 @@
         if (currentFieldId) fieldSelect.value = currentFieldId;
 
         updateModalCourtSelect();
+        populateModalHours();
 
         const today = toDateStr(new Date());
         document.getElementById('modal-date').value = today;
-
-        const startSelect = document.getElementById('modal-start-hour');
-        startSelect.innerHTML = '';
-        for (let h = 8; h <= 22; h++) {
-            const val = String(h).padStart(2, '0');
-            startSelect.innerHTML += '<option value="' + h + '">' + val + '.00</option>';
-        }
-
-        const endSelect = document.getElementById('modal-end-hour');
-        endSelect.innerHTML = '';
-        for (let h = 9; h <= 23; h++) {
-            const val = String(h).padStart(2, '0');
-            endSelect.innerHTML += '<option value="' + h + '">' + val + '.00</option>';
-        }
-        endSelect.value = 9;
 
         document.getElementById('modal-error').classList.remove('is-visible');
         document.getElementById('addSlotModal').classList.add('is-visible');
@@ -951,6 +963,12 @@
             tab.addEventListener('click', function () {
                 switchTab(this.dataset.tab);
             });
+        });
+
+        // Modal field change -> update court and hour options
+        document.getElementById('modal-field').addEventListener('change', function () {
+            updateModalCourtSelect();
+            populateModalHours();
         });
 
         // Close modal on overlay click

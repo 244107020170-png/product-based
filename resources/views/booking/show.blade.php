@@ -14,7 +14,8 @@
     $field->load('discounts');
 
     $visibleFields = ['id', 'name', 'type', 'location', 'price_per_hour', 'image', 'image_url', 'fallback_image', 'facilities', 'rating',
-        'promo_price', 'promo_badge', 'promo_price_raw', 'promo_start', 'promo_end', 'has_active_promo'];
+        'promo_price', 'promo_badge', 'promo_price_raw', 'promo_start', 'promo_end', 'has_active_promo',
+        'open_time', 'close_time'];
     $selectedFieldJson = $field->makeVisible($visibleFields);
     $allFieldsJson = $allFields->map(fn($f) => $f->makeVisible($visibleFields))->toArray();
     
@@ -470,7 +471,7 @@
                                     <button type="button" @click="selectedStartTime='';selectedEndTime='';timeSelectionPhase='start'" style="margin-left:auto;background:none;border:none;color:#dc2626;font-size:12px;cursor:pointer;text-decoration:underline;">Ubah</button>
                                 </div>
                                 <div class="bk-time-grid">
-                                    <template x-for="time in availableTimes.filter(t => t.start > selectedStartTime)" :key="time.start">
+                                    <template x-for="time in endTimeOptions" :key="time.start">
                                         <div class="bk-time-pill" 
                                              :class="{ 
                                                 'selected-end': selectedEndTime === time.start,
@@ -495,7 +496,7 @@
                                     <button type="button" @click="selectedStartTime='';selectedEndTime='';timeSelectionPhase='start'" style="margin-left:8px;background:none;border:none;color:#dc2626;font-size:12px;cursor:pointer;text-decoration:underline;">Ubah</button>
                                 </div>
                                 <div class="bk-time-grid">
-                                    <template x-for="time in availableTimes.filter(t => t.start > selectedStartTime)" :key="time.start">
+                                    <template x-for="time in endTimeOptions" :key="time.start">
                                         <div class="bk-time-pill" 
                                              :class="{ 
                                                 'selected-end': selectedEndTime === time.start,
@@ -820,6 +821,28 @@ function bookingApp() {
             this.promoTotalPrice = (price * hrs) + this.adminFee;
         },
         
+        get endTimeOptions() {
+            if (!this.selectedStartTime) return [];
+            const startHour = parseInt(this.selectedStartTime.split(':')[0]);
+            const closeTime = this.selectedField.close_time || '22:00';
+            const closeHour = parseInt(closeTime.split(':')[0]);
+            const options = [];
+            for (let h = startHour + 1; h <= closeHour; h++) {
+                const timeStr = String(h).padStart(2, '0') + ':00';
+                let isFull = false;
+                for (let check = startHour; check < h; check++) {
+                    const checkStr = String(check).padStart(2, '0') + ':00';
+                    const slot = this.availableTimes.find(t => t.start === checkStr);
+                    if (slot && slot.isFull) {
+                        isFull = true;
+                        break;
+                    }
+                }
+                options.push({ start: timeStr, isFull });
+            }
+            return options;
+        },
+
         get isTimeComplete() {
             return this.selectedStartTime && this.selectedEndTime;
         },

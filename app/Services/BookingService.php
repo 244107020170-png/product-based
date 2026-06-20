@@ -57,7 +57,7 @@ class BookingService
         ]);
 
         $this->validateDate($date, $start);
-        $this->validateDuration($start, $end);
+        $this->validateDuration($start, $end, $field);
 
         return $this->db->transaction(function () use ($field, $user, $date, $start, $end, $data) {
             $this->ensureSlotIsAvailable($field, $date, $start, $end);
@@ -69,30 +69,33 @@ class BookingService
                 'start_time' => $start->format('H:i:s'),
                 'end_time' => $end->format('H:i:s'),
                 'status' => BookingStatus::WAITING_PAYMENT,
-                'payment_deadline' => Carbon::now()->addMinutes(15),
-                'expired_at' => Carbon::now()->addHours(4),
+                'payment_deadline' => Carbon::now('Asia/Jakarta')->addMinutes(15),
+                'expired_at' => Carbon::now('Asia/Jakarta')->addHours(4),
             ]);
         });
     }
 
     protected function validateDate(Carbon $date, Carbon $start): void
     {
-        if ($date->isPast()) {
-            throw ValidationException::withMessages(['date' => 'Booking tanggal lalu tidak diperbolehkan.']);
+        $now = Carbon::now('Asia/Jakarta');
+        $todayStart = $now->copy()->startOfDay();
+
+        if ($date->lt($todayStart)) {
+            throw ValidationException::withMessages(['date' => 'Tanggal booking sudah lewat.']);
         }
 
         $bookingStart = $date->copy()->setTimeFrom($start);
 
-        if ($bookingStart->lessThanOrEqualTo(Carbon::now())) {
-            throw ValidationException::withMessages(['start_time' => 'Waktu mulai harus di masa depan untuk booking hari ini.']);
+        if ($bookingStart->lte($now)) {
+            throw ValidationException::withMessages(['start_time' => 'Jam booking sudah lewat.']);
         }
 
-        if ($bookingStart->lessThan(Carbon::now()->addHours(3))) {
-            throw ValidationException::withMessages(['start_time' => 'Pemesanan tidak dapat dilakukan karena jadwal bermain kurang dari 3 jam dari waktu saat ini.']);
+        if ($bookingStart->lt($now->copy()->addHours(3))) {
+            throw ValidationException::withMessages(['start_time' => 'Pemesanan minimal 3 jam sebelum jadwal bermain.']);
         }
     }
 
-    protected function validateDuration(Carbon $start, Carbon $end): void
+    protected function validateDuration(Carbon $start, Carbon $end, Field $field): void
     {
         if (! $start->lt($end)) {
             throw ValidationException::withMessages(['end_time' => 'Waktu selesai harus setelah waktu mulai.']);
@@ -108,11 +111,11 @@ class BookingService
             throw ValidationException::withMessages(['end_time' => 'Durasi booking harus kelipatan 1 jam.']);
         }
 
-        $opening = Carbon::createFromTime(8, 0);
-        $closing = Carbon::createFromTime(20, 0);
+        $opening = Carbon::parse($field->open_time ?? '08:00');
+        $closing = Carbon::parse($field->close_time ?? '22:00');
 
         if ($start->lt($opening) || $end->gt($closing)) {
-            throw ValidationException::withMessages(['start_time' => 'Slot booking hanya tersedia antara 08:00 dan 20:00.']);
+            throw ValidationException::withMessages(['start_time' => 'Slot booking hanya tersedia antara ' . $opening->format('H:i') . ' dan ' . $closing->format('H:i') . '.']);
         }
     }
 
@@ -143,9 +146,12 @@ class BookingService
             ->orderBy('start_time')
             ->get();
 
+        $openHour = (int) Carbon::parse($field->open_time ?? '08:00')->format('G');
+        $closeHour = (int) Carbon::parse($field->close_time ?? '22:00')->format('G');
+
         $times = [];
 
-        for ($hour = 8; $hour < 20; $hour++) {
+        for ($hour = $openHour; $hour < $closeHour; $hour++) {
             $startTime = Carbon::createFromTimeString(sprintf('%02d:00', $hour));
             $endTime = Carbon::createFromTimeString(sprintf('%02d:00', $hour + 1));
             $available = true;

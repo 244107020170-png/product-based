@@ -823,7 +823,9 @@ Route::middleware('auth')->group(function () {
                         );
                         $field = \App\Models\Field::find($h['field_id']);
                         $numCourts = $field ? ($field->number_of_courts ?? 1) : 1;
-                        foreach (range(8, 22) as $hour) {
+                        $openHour = $field ? (int) \Carbon\Carbon::parse($field->open_time ?? '08:00')->format('G') : 8;
+                        $closeHour = $field ? (int) \Carbon\Carbon::parse($field->close_time ?? '22:00')->format('G') : 22;
+                        foreach (range($openHour, $closeHour) as $hour) {
                             for ($court = 1; $court <= $numCourts; $court++) {
                                 Slot::updateOrCreate(
                                     ['field_id' => $h['field_id'], 'court_number' => $court, 'date' => $h['date'], 'hour' => $hour],
@@ -832,8 +834,10 @@ Route::middleware('auth')->group(function () {
                             }
                         }
                     } else {
+                        $openHour = (int) \Carbon\Carbon::parse($field->open_time ?? '08:00')->format('G');
+                        $closeHour = (int) \Carbon\Carbon::parse($field->close_time ?? '22:00')->format('G');
                         Holiday::where('field_id', $h['field_id'])->where('date', $h['date'])->delete();
-                        Slot::where('field_id', $h['field_id'])->where('date', $h['date'])->whereIn('hour', range(8, 22))->delete();
+                        Slot::where('field_id', $h['field_id'])->where('date', $h['date'])->whereIn('hour', range($openHour, $closeHour))->delete();
                     }
                 }
             }
