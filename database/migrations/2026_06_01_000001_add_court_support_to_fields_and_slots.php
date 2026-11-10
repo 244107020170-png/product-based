@@ -19,14 +19,15 @@ return new class extends Migration
                 $table->unsignedTinyInteger('court_number')->default(1)->after('field_id');
             });
 
+            // Add new unique key that includes court_number before dropping the
+            // old one, so the field_id foreign key always has a usable index.
+            Schema::table('slots', function (Blueprint $table) {
+                $table->unique(['field_id', 'court_number', 'date', 'hour'], 'slots_field_court_date_hour_unique');
+            });
+
             // Drop the old unique key that didn't include court_number
             Schema::table('slots', function (Blueprint $table) {
                 $table->dropUnique(['field_id', 'date', 'hour']);
-            });
-
-            // Add new unique key that includes court_number
-            Schema::table('slots', function (Blueprint $table) {
-                $table->unique(['field_id', 'court_number', 'date', 'hour'], 'slots_field_court_date_hour_unique');
             });
         }
     }
@@ -34,6 +35,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('slots', function (Blueprint $table) {
+            // Restore a field_id index before removing the new unique key,
+            // otherwise MySQL refuses to drop the index used by the foreign key.
+            $table->unique(['field_id', 'date', 'hour']);
             $table->dropUnique('slots_field_court_date_hour_unique');
             $table->dropColumn('court_number');
         });
