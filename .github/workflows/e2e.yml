@@ -65,18 +65,7 @@ jobs:
         run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Install Node dependencies
-        shell: bash
-        run: |
-          set -o pipefail
-          if ! npm ci 2>&1 | tee npm-ci.log; then
-            {
-              echo "### npm ci failed"
-              echo '```'
-              tail -n 60 npm-ci.log
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
